@@ -1,10 +1,10 @@
-## What does this PR do?
+##1 What does this PR do?
 
 <!-- Briefly describe the change. Link any related issues (e.g., "Closes #42"). -->
 
 
 
-## Which part of Rebuildr does this touch?
+##2 Which part of Rebuildr does this touch?
 
 - [ ] Backend (Flask)
 - [ ] Frontend (Next.js)
@@ -15,7 +15,7 @@
 - [ ] Database / migrations
 - [ ] Config / environment / deployment
 
-## How can the reviewer test it?
+##3 How can the reviewer test it?
 
 <!-- Step-by-step instructions to verify the change works. Include any setup needed (env vars, test files, sample uploads). -->
 
@@ -23,7 +23,7 @@
 2. 
 3. 
 
-## Checklist
+##4 Checklist
 
 - [ ] No hard-coded secrets, API keys, or magic numbers
 - [ ] Error responses don't leak internal details (column names, file paths, stack traces)
@@ -35,7 +35,7 @@
 - [ ] Works on mobile viewport
 - [ ] Tests added or updated
 
-## Are there any breaking changes?
+##5 Are there any breaking changes?
 
 <!-- Does this change any API contracts, database schema, environment variables, or file storage paths that would affect other contributors? If yes, describe what needs to change and where. -->
 
