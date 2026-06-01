@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from .config import Config
 from .db import init_db
+from .errors import CaseError
 
 
 def create_app(config_object=None):
@@ -21,6 +22,11 @@ def create_app(config_object=None):
 
     from .routes.cases import cases_bp
     app.register_blueprint(cases_bp)
+
+    @app.errorhandler(CaseError)
+    def handle_case_error(e):
+        body, status = e.to_response()
+        return body, status
 
     @app.errorhandler(HTTPException)
     def handle_http(e):
