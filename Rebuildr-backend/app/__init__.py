@@ -10,7 +10,8 @@ def create_app(config_object=None):
         config_object = Config()
     app.config.from_object(config_object)
 
-    init_db(app.config["SUPABASE_URL"], app.config["SUPABASE_SERVICE_ROLE_KEY"])
+    if not app.config.get("TESTING"):
+        init_db(app.config["SUPABASE_URL"], app.config["SUPABASE_SERVICE_ROLE_KEY"])
 
     from .routes.cases import cases_bp
     app.register_blueprint(cases_bp)
