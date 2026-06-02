@@ -5,11 +5,11 @@
 
 | Role | Who | Focus |
 |---|---|---|
-| **FS-1** (Full-Stack Dev 1) | Person A | Backend API, Supabase, database |
-| **FS-2** (Full-Stack Dev 2) | Person B | Frontend (React/Next.js), UI integration |
-| **ML-1** (ML/Research Lead) | Person C | Image classification pipeline (Phase I models) |
-| **ML-2** (ML/Research 2) | Person D | Document processing + LLM tasks (Phase II/III) |
-| **WC** (Wildcard) | Person E | Data collection, UI/UX design, demo prep, testing |
+| Person A | Backend API, Supabase, database |
+| Person B | Frontend (React/Next.js), UI integration |
+| Person C | Image classification pipeline (Phase I models) |
+| Person D | Document processing + LLM tasks (Phase II/III) |
+| Person E | Data collection, UI/UX design, demo prep, testing |
 
 ---
 
