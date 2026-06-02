@@ -1,7 +1,7 @@
 # rebuildr — AI-Powered Disaster Recovery Assistant
 
 ## Project Overview
-rebuildr (formerly EmberPath) is an AI-powered disaster readiness and post-disaster recovery platform for **Alberta and the rest of Canada**, helping disaster-affected communities navigate insurance claims, recovery processes, and fragmented support systems.
+rebuildr is an AI-powered disaster readiness and post-disaster recovery platform for **Alberta and the rest of Canada**, helping disaster-affected communities navigate insurance claims, recovery processes, and fragmented support systems.
 
 The platform is built **disaster-generic** (wildfires, floods, severe storms, other emergencies) but **geography-specific** — anchored in Alberta's regulatory, alerting, and aid ecosystem first (Alberta Emergency Alert, Alberta Disaster Recovery Program, IBC claim standards, Alberta Wildfire), extensible to other Canadian provinces.
 
@@ -80,7 +80,7 @@ rebuildr is **disaster-type-generic** but **geography-specific**. Alberta is the
 
 # Phase I — Image Classification → Claims
 
-*From whiteboard. Capture experience inspired by Encircle's verified field documentation workflow, retargeted at the consumer pre-loss market Encircle explicitly walked away from.*
+*Capture experience inspired by Encircle's verified field documentation workflow, retargeted at the consumer pre-loss market Encircle explicitly walked away from.*
 
 ## Pre-Disaster Flow
 - User uploads photos of their home (or captures live during a guided walkthrough)
@@ -123,8 +123,6 @@ Encircle's published feature set for restoration contractors maps directly onto 
 
 # Phase II — Document Processing & Recovery Guidance
 
-*From whiteboard.*
-
 ## Inputs (Pre & Post)
 - Insurance policies
 - Claim documents
@@ -143,8 +141,6 @@ Encircle's published feature set for restoration contractors maps directly onto 
 ---
 
 # Phase III — Personalized Recovery Plan
-
-*From whiteboard.*
 
 A guided onboarding flow that tailors the recovery experience to each user's situation. This is the personalization layer that makes the recovery to-do list and resource recommendations specific to the person, not generic.
 
@@ -166,12 +162,32 @@ A **progress bar** keeps users motivated through the multi-step recovery process
 
 # Models — Concrete AI Architecture
 
-*From whiteboard.*
-
 ## Task 1 — Identifying objects in images & estimating price
-- **Pipeline:** Input → **YOLOv8m** *or* **EfficientNet-B0** → **Linear Regression** (?) for price estimation
-- Regression estimates monetary value using **similar-looking objects scraped from the internet** as reference data
-- *Adopt Encircle's single-photo AI Item Descriptions pattern: one photo → description + brand + model + value, not many photos per item*
+
+Two parallel approaches; build either as primary, keep the other as fallback.
+
+### Approach A — Specialist pipeline (YOLO + lookup, local-first)
+- **Identification:** Input → **YOLOv8m** *or* **EfficientNet-B0** *or* **Bingsu/vit-base-patch16-224-furniture** (pre-trained furniture ViT) → category label
+- **Price:** category label → **curated Canadian retail price lookup table (CAD)** → user-adjustable default → optional **receipt OCR (PaddleOCR)** for exact purchase price
+- *Note:* an earlier plan to use a "Furniture-price-prediction-by-regression" repo was scrapped — that turned out to be a 2,000-row African-market tabular dataset with a starter linear-regression script, not a pre-trained vision model.
+- **Strengths:** deterministic, offline-friendly, no hallucination, easy to debug
+- **Weaknesses:** more components to stitch together; quality capped by lookup table coverage
+
+### Approach B — Multimodal LLM wrapper (single-call pipeline)
+- **Single call:** Image + structured JSON prompt → response containing `room_type`, `items[]` (name, count, category, condition, visible brand, CAD price range), `notes`
+- **Cloud (demo):** **Gemini 2.0 Flash** free tier (~15 req/min, ~1M tokens/day)
+- **Local (production / offline):** **Ollama + Llama 3.2 Vision 11B** or **Qwen2-VL**
+- Replaces YOLO + classifier + lookup table + description model in one call
+- **Strengths:** one call does everything; quality often higher because the LLM combines visual recognition with world knowledge (knows a Herman Miller chair is expensive even in a dim photo)
+- **Weaknesses:** occasional JSON drift (use Instructor/Outlines), price hallucination (clamp + user override), cloud variant needs internet
+- See *Multimodal LLM Wrapping* section below for full options and the reference prompt
+
+### Receipt OCR (used by both approaches)
+**PaddleOCR** or **TrOCR** extracts exact purchase price, date, and merchant from attached receipts — beats any estimation and matches what insurance adjusters prefer. This is the highest-accuracy path for items where the user has receipts.
+
+### Build recommendation
+Build **Approach B with Gemini Flash** for the recorded demo (fastest end-to-end Phase I). Keep **Approach A with local YOLO + lookup** as the offline fallback, production path, and sanity check on Approach B's outputs. Apply receipt OCR on top of either approach for items with receipts attached.
+
 - Powers inventory + delta-loss calculation in Phase I
 
 ## Task 2 — Identifying scams
@@ -196,7 +212,336 @@ Encircle's publicly described AI architecture is a useful blueprint for rebuildr
 - **"Accuracy over completion"** — the system refuses to guess when input data is incomplete, rather than hallucinating. This is critical for claims and aid applications where errors have real financial consequences and could invalidate a submission.
 - **Audit logging** — every AI interaction logged for an audit trail, so users (and adjusters) can see exactly how a recommendation was derived. Important when the output is going into a legal claim document.
 
-The project constraints rule out external LLM API calls. Where Encircle uses external foundation LLMs, rebuildr substitutes local models (the project requirement) — but the layered architecture pattern still applies.
+The project constraint is **no paid APIs** — free-tier cloud services (Google Cloud Vision, Azure Computer Vision, HuggingFace Inference API, etc.) and locally-running pre-trained models are both fair game. Where Encircle uses paid foundation LLMs (OpenAI, Anthropic, Google), rebuildr substitutes free-tier or local equivalents — but the layered architecture pattern still applies.
+
+---
+
+# Pre-Trained Models — Available Building Blocks
+
+The project constraint is **no paid APIs**. That leaves two options on the table:
+1. **Free-tier cloud APIs** (Google Cloud Vision, Azure Computer Vision, HuggingFace Inference, etc.) — save development time, but watch quota limits and verify the free tier covers MVP usage
+2. **Pre-trained models running locally** — full control, offline-capable, no quota concerns; most are on HuggingFace, downloadable once, and run on consumer-grade hardware (smaller variants run on a laptop or even a phone)
+
+For the MVP demo, **mixing both is reasonable** — use free cloud APIs where they accelerate development, swap to local for production / scale / privacy concerns (especially since rebuildr's pitch includes offline-first capture and handling household photos of vulnerable populations).
+
+*Note: this catalog reflects training-data knowledge of the model ecosystem; verify latest variants, free-tier limits, and licenses before committing. Newer versions likely exist for several of these families.*
+
+## Free-Tier Cloud APIs (no payment required for demo-scale usage)
+
+These have free tiers that typically cover demo / hackathon / small-scale MVP usage without payment. Quotas vary and change; verify current limits at build time.
+
+| API | Capabilities | Free Tier (approximate) |
+|---|---|---|
+| **Google Cloud Vision API** | Label detection, object localization, OCR, logo/landmark detection, text recognition | ~1,000 requests/month free |
+| **Azure Computer Vision** | Image analysis, OCR (Read API), object detection, image tagging | ~5,000 transactions/month free |
+| **AWS Rekognition** | Object/scene detection, OCR (DetectText), face detection | 5,000 images/month free (first 12 months) |
+| **HuggingFace Inference API** | Run thousands of HF models via hosted API (vision, NLP, audio) | Rate-limited free tier |
+| **Roboflow Universe** | Community-trained object detection models for specific domains | Free model hosting + inference |
+| **Replicate** | Run open-source models (Llama, SAM, Whisper, etc.) via API | Some free credits, then per-second pricing |
+| **Together AI** | Open-source LLM and vision model hosting | Free credits on signup |
+
+**Trade-offs to weigh:**
+- *Offline mode breaks* — every cloud call needs internet. Conflicts with rebuildr's post-disaster offline-first design.
+- *Privacy* — sending household photos (potentially including kids, valuables, identifying info) to third-party clouds. Disaster-affected vulnerable populations may not consent.
+- *Quota risk* — if usage spikes during an actual disaster event, free tier may not hold.
+- *Control* — provider changes / deprecations could break your pipeline.
+
+**Pragmatic call:** use cloud APIs for development speed and demo, build local fallbacks for the path to production.
+
+## Multimodal LLM Wrapping 
+
+A multimodal LLM can do object identification, counting, attribute extraction, and price estimation in **one prompted call** — replacing what would otherwise require YOLO + classifier + lookup table + description model stitched together. This is the "wrap a ChatGPT-like model" pattern and is often the fastest path to a working Phase I demo.
+
+### Free cloud multimodal LLMs (demo path)
+
+| Provider | Model | Free tier (approximate) |
+|---|---|---|
+| **Google Gemini** | **Gemini 2.0 Flash** *(recommended)* | ~15 req/min, ~1M tokens/day |
+| Google Gemini | Gemini 1.5 Flash | similar, slightly older |
+| **Groq** | Llama 4 Scout / Maverick (multimodal) | free tier, very fast |
+| **HuggingFace Inference API** | LLaVA / Qwen2-VL / etc. | rate-limited free |
+| **Cloudflare Workers AI** | LLaVA | free tier |
+| **OpenRouter** | Several free multimodal endpoints (Llama 4 variants, etc.) | varies by model |
+
+Vision quality on Gemini 2.0 Flash is comparable to GPT-4o for inventory-style tasks; integration is a single API call.
+
+### Local multimodal LLMs (production / offline path)
+
+| Tool | Model | Hardware needed |
+|---|---|---|
+| **Ollama** | **Llama 3.2 Vision 11B** *(recommended for production)* | ~12–16 GB RAM |
+| Ollama | Llama 3.2 Vision 90B | high-end GPU |
+| Ollama | Qwen2-VL — often better at structured JSON output | ~8–16 GB RAM |
+| HF Transformers | LLaVA-1.5 / LLaVA-Next | varies |
+| HF Transformers | **Moondream2** (1.8B) — runs on basic laptops | minimal |
+
+Ollama setup is `ollama pull llama3.2-vision` then send images via its local API. This is the realistic offline path for disaster zones with no connectivity.
+
+### Reference prompt pattern (Task 1)
+
+```
+Analyze this room photo. Return ONLY valid JSON:
+{
+  "room_type": "kitchen | bedroom | living_room | bathroom | other",
+  "items": [
+    {
+      "name": "...",
+      "category": "furniture | appliance | electronics | decor | clothing | other",
+      "count": <integer>,
+      "condition": "new | good | fair | worn | damaged",
+      "visible_brand": "..." or null,
+      "approximate_size": "small | medium | large",
+      "canadian_retail_estimate_cad": {"low": <int>, "high": <int>}
+    }
+  ],
+  "notes": "any visible damage, layout observations, or quality cues"
+}
+```
+
+### Reliability tooling
+- **Instructor** (Python) — forces valid JSON schema compliance, auto-retries on drift
+- **Outlines** — alternative schema enforcement library
+- **Pydantic** — validate parsed response structure
+
+### Risks and mitigations
+- *JSON drift:* schema enforcement libraries above; or a retry-on-parse-fail loop
+- *Price hallucination:* clamp output to sane ranges (same lookup table as Approach A), let user override
+- *Cloud offline-break:* swap to Ollama local for production / disaster zones
+- *Quota limits:* Gemini's free tier handles tens of thousands of demo-scale calls; only an issue at real production scale
+
+### Where this pattern fits in rebuildr
+- **Phase I Task 1** (image → inventory + value) — primary application; one call replaces 4 specialist components
+- **Phase II Task 3** (legal docs + user context → personalized to-do) — same pattern, text-only or multimodal LLM
+- **Phase II scam detection** — combine with pre-trained phishing classifier for layered confidence
+- **Document understanding** — multimodal LLM can read forms directly, replacing Donut/LayoutLM for many use cases
+
+## Phase I — Image & Visual Tasks
+
+### Object Detection (whole-room photos)
+- **YOLOv8** (Ultralytics) — Variants: n, s, m, l, x. AGPL-3.0 (commercial use needs Ultralytics license).
+- **YOLOv9 / YOLOv11** — newer in the same family
+- **YOLO-World** — open-vocabulary detection (detect arbitrary classes via text prompt — useful for "find the dishwasher" without fine-tuning)
+- **DETR / Deformable DETR** (Meta) — transformer-based end-to-end detector
+- **Detectron2** (Meta) — Faster R-CNN, Mask R-CNN, RetinaNet
+
+### Image Classification
+- **EfficientNet-B0 → B7** — alternative
+- **ResNet-50 / -101** — classic baselines
+- **Vision Transformer (ViT)** — base, large
+- **ConvNeXt-V2** — modern CNN
+- **MobileNetV3** — best for on-device
+
+### Single-Photo Item Identification (Encircle AI Item Descriptions pattern)
+This is the key Encircle-inspired pattern — one photo → description + brand + model. Requires multimodal vision-language models:
+- **CLIP** (OpenAI, open weights) — zero-shot classification via text prompts; great for "is this a couch / fridge / TV?"
+- **BLIP-2** (Salesforce) — image captioning and visual question answering
+- **LLaVA-1.5 / LLaVA-Next** — open multimodal LLM; describes images and answers questions about them
+- **Moondream2** — very small (~1.8B params) multimodal model; runs on modest hardware
+- **Qwen-VL / Qwen2-VL** (Alibaba) — open weights, multilingual
+- **Florence-2** (Microsoft) — vision foundation model; detection, captioning, VQA in one
+- **InstructBLIP**, **IDEFICS** (HuggingFace)
+
+### Price Estimation / Item Valuation (Task 1 — money value estimation)
+
+**Reality check from verified research:** there is no good off-the-shelf pre-trained model that goes from a single household-item photo to an accurate retail price. Price depends on brand, material, and current market — none reliably extractable from a generic image. The earlier candidate `Furniture-price-prediction-by-regression` turned out to be a 2,000-row Jumia (African e-commerce) tabular dataset with a starter linear regression script, **not** a pre-trained vision model. Unusable for Canadian household pricing.
+
+**Practical no-training approach** — split Task 1 in two:
+
+**Step 1 — Identification (fully pre-trained, zero or near-zero training):**
+- **YOLOv8 (COCO weights)** — detects ~80 common objects including chair, couch, bed, dining table, TV, laptop, microwave, oven, toaster, sink, refrigerator. No training. 
+- **CLIP** (OpenAI, open weights) — zero-shot classification by text prompt. Define your category list, embed item photos, classify by text similarity. No training.
+- **Bingsu/vit-base-patch16-224-furniture** (HuggingFace) — pre-trained ViT classifier specifically for furniture taxonomy. Plug-and-play.
+- **YOLO-World** — open-vocabulary detection with arbitrary text prompts. No training.
+- **LLaVA-1.5 / Moondream2** — multimodal LLMs that describe items in natural language (item type, material, approximate quality). No training, just prompt.
+
+**Step 2 — Valuation (no pre-trained model exists for this; use simpler approaches):**
+- **Option A — Curated category-level price ranges** *(recommended for MVP).* A small JSON lookup table: `{"couch": [500, 3000], "fridge": [1000, 3000], "tv_55in": [600, 2000], ...}` with Canadian retail medians (CAD). Fast, transparent, no model, easy to maintain.
+- **Option B — CLIP-based nearest-neighbor lookup.** Pre-embed a few hundred labeled Canadian retail listings. At inference: embed the user's photo, find closest reference items, average prices. No model training; just embedding + KNN.
+- **Option C — Live web lookup at runtime.** Query a product search (free-tier API or scraping Amazon.ca / Best Buy / IKEA Canada) for similar items, return median price. Always current, but needs internet.
+- **Option D — User-adjustable defaults.** Pre-fill a sensible default per category (from Option A), let user override. Most defensible for a demo since the user owns the final number.
+
+**Recommended for rebuildr MVP:** **Option A + Option D combined** — pre-fill defaults from a curated table, user adjusts per item, optionally attach a receipt for exact price (Step 3 below). Zero training, deterministic, transparent.
+
+**Step 3 — Receipt OCR for ground truth (where available):**
+This is the Encircle pattern and the highest-accuracy path. If the user attached a purchase receipt to the inventory item, **PaddleOCR** or **TrOCR** extracts the actual purchase price, date, and merchant — which beats any estimation. Insurance adjusters prefer receipts; this aligns rebuildr's output with what claims processors actually want.
+
+**Honest framing for the demo:** any single-image "AI price estimate" is a rough range. The pitch shouldn't be *"AI predicts your couch is worth $1,847"* — it should be *"AI identifies the couch, suggests a Canadian retail range, you confirm or adjust, and we attach receipts where you have them."* That's accurate, claim-defensible, and doesn't oversell.
+
+### Image Segmentation (damage masks, photo annotations)
+- **SAM / SAM-2** (Meta, Segment Anything) — segment anything in an image
+- **Mask R-CNN** — instance segmentation
+- **DeepLabV3+** — semantic segmentation
+
+### Floor Plan Generation (smartphone-video walkthrough)
+- **DUSt3R** — geometric 3D reconstruction from images
+- **CubiCasa5K-based** research models for floor plans
+- For on-device capture: native **ARKit (iOS)** / **ARCore (Android)** APIs (platform capability, not a model per se)
+
+### OCR (Receipts, Document Images)
+- **Tesseract** — classic open-source baseline
+- **PaddleOCR** (Baidu) — high accuracy, multilingual, free
+- **EasyOCR** — Python-friendly
+- **TrOCR** (Microsoft) — transformer-based
+- **Donut** (Naver) — OCR-free document understanding (reads documents directly)
+- **LayoutLMv3** — text + layout for receipts/forms
+
+### Pre- / Post-Disaster Damage Comparison
+- **xView2 / xBD-trained models** — public building damage assessment models (satellite imagery)
+- For consumer phone photos: image similarity via embeddings (CLIP image embeddings, Siamese networks)
+
+## Phase II — Document & Text Tasks
+
+### Document Text Extraction
+- **PyMuPDF / pdfplumber** for native PDF text
+- **Tesseract / PaddleOCR** for scanned documents
+- **LayoutLMv3** for forms with structured layout
+
+### Document Understanding
+- **LayoutLM v1 / v2 / v3** — text + layout
+- **Donut** — visual document understanding without OCR
+
+### Text Simplification & Generation (local LLMs)
+- **Llama 3.1 / 3.2 / 3.3** (Meta) — 1B, 3B, 8B, 70B variants. **Llama 3.2 1B/3B run on phones.**
+- **Mistral 7B / Mistral Nemo (12B) / Mistral Small** — Apache 2.0
+- **Phi-3 / Phi-3.5 / Phi-4** (Microsoft) — small but capable; **Phi-3.5-mini is a strong laptop default**
+- **Qwen 2.5** (Alibaba) — 0.5B to 72B; strong multilingual including French
+- **Gemma 2** (Google) — 2B, 9B, 27B
+- **TinyLlama (1.1B)** — runs anywhere
+- For pure simplification (not full chat): **T5 / FLAN-T5 / BART** are smaller and task-specific
+
+### Text Classification (Scam Detection — Task 2)
+- **DistilBERT** — fast, small, accurate (recommended default)
+- **BERT / RoBERTa** — classic baselines
+- **DeBERTa-v3** — stronger but heavier
+- Fine-tune any of these on a labeled scam/legitimate corpus
+
+### Named Entity Recognition (date extraction, agency names, deadlines)
+- **spaCy** (`en_core_web_sm / md / lg / trf`) — production-ready
+- **Flair NER**
+- **BERT-NER** variants on HuggingFace
+
+### Embeddings for RAG / Retrieval (chatbot, document Q&A)
+- **sentence-transformers**: `all-MiniLM-L6-v2`, `all-mpnet-base-v2`
+- **BGE** (BAAI): `bge-small-en`, `bge-base-en`, `bge-large-en`
+- **E5** (Microsoft): `e5-small`, `e5-base`, `e5-large`, **`multilingual-e5`** for French
+- **ColBERT** for retrieval
+
+## Cross-Cutting Capabilities
+
+### Speech-to-Text (Voice Notes, Video Narration)
+- **Whisper** (OpenAI, MIT-licensed open weights) — `tiny / base / small / medium / large-v3`. Multilingual including French.
+- **Whisper.cpp / Faster-Whisper** — efficient local inference
+- **NeMo** (Nvidia) — alternative ASR toolkit
+- **wav2vec 2.0** — older but solid
+
+### Translation (Multi-Language Support)
+- **NLLB** (No Language Left Behind, Meta) — 200 languages including some Cree and Inuktitut. *CC-BY-NC license — non-commercial only*
+- **M2M-100** (Meta) — 100 languages, MIT-friendly
+- **MarianMT** — language-pair-specific models, lightweight
+- **mBART** — multilingual generation
+
+*Indigenous Alberta language coverage in mainstream pre-trained models is limited. Cree (nêhiyawêwin), Blackfoot, Stoney Nakoda, and Dene have minimal open NLP support. Real coverage will likely require partnerships with First Nations University, the Indigenous Languages Component (Canadian Heritage), or community-led data efforts — not just plugging in a model.*
+
+### Time-Series Forecasting (Predictive Capabilities — shelter shortages, recovery bottlenecks)
+- **Prophet** (Meta) — classical, well-documented (recommended default)
+- **NeuralProphet** — neural extension
+- **TimesFM** (Google) — foundation model for time series
+- **Chronos** (Amazon) — foundation model for time series
+- **PatchTST** — transformer-based forecasting
+
+### Geospatial / Clustering
+Not pre-trained models in the LLM sense, but standard libraries and resources:
+- **scikit-learn** — DBSCAN, k-means, HDBSCAN
+- **torchgeo** — pre-trained models on satellite imagery (Sentinel, Landsat)
+- **Segment Anything (SAM)** — for satellite/aerial image segmentation
+- Wildfire spread modeling: research models like **WildFire-PINNs**, cellular automata simulations
+
+## Licensing Quick Reference
+
+| Family | License | Commercial Use |
+|---|---|---|
+| YOLOv8 / v11 (Ultralytics) | AGPL-3.0 | Requires paid Ultralytics license |
+| EfficientNet, ResNet, ViT (via `timm`) | Apache 2.0 / MIT | Fine |
+| CLIP | MIT | Fine |
+| BLIP-2 | BSD-3 | Fine |
+| LLaVA | Apache 2.0 (model); check base LLM | Check base |
+| Moondream2 | Apache 2.0 | Fine |
+| Llama 3.x | Custom Llama license | OK for most uses with attribution |
+| Mistral | Apache 2.0 | Fine |
+| Phi-3 / 3.5 / 4 | MIT | Fine |
+| Gemma 2 | Custom Gemma license | OK with terms |
+| Qwen 2.5 | Apache 2.0 (most variants) | Fine |
+| Whisper | MIT | Fine |
+| NLLB | CC-BY-NC | **Non-commercial only** |
+| M2M-100, MarianMT | MIT | Fine |
+| BERT / DistilBERT / RoBERTa | Apache 2.0 / MIT | Fine |
+| Tesseract, PaddleOCR | Apache 2.0 | Fine |
+| Donut, LayoutLMv3 | MIT / CC-BY-NC-SA (check variant) | Verify variant |
+| SAM / SAM-2 | Apache 2.0 | Fine |
+
+*Pragmatic note: for the academic/demo MVP scope, all of the above are usable. If rebuildr ever moves toward commercial deployment, prioritize Apache 2.0 / MIT / BSD models, swap YOLOv8 → DETR / Detectron2 if Ultralytics licensing is a concern, and swap NLLB → M2M-100 for translation. Licenses change; verify current terms on HuggingFace at integration time.*
+
+## Recommended MVP Default Stack
+
+Two viable architectures for Phase I. **Build both — Approach B as the headline demo path, Approach A as the offline fallback.**
+
+### Architecture choice for Phase I
+
+| | Approach A — Specialist pipeline | Approach B — Multimodal LLM wrapper |
+|---|---|---|
+| **Strategy** | YOLO + classifier + price lookup, stitched together | One multimodal LLM call does identification + count + description + valuation |
+| **Demo speed** | Slower (more glue code) | **Faster** (single API call) |
+| **Quality** | Capped by lookup table coverage | **Higher** — LLM uses visual + world knowledge together |
+| **Offline** | **Yes** (all local) | Cloud variant breaks offline; local Ollama variant works |
+| **Determinism** | **Predictable** | Occasional JSON drift, price hallucination |
+| **When to use** | Production / offline / strict reproducibility | Demo, fast iteration, high quality |
+
+### Phase I — Approach A (specialist pipeline, local-first)
+
+| Capability | Primary pick | Free cloud alternative |
+|---|---|---|
+| Object detection | **YOLOv8m** COCO weights — 80 common household objects out of the box | Google Cloud Vision label/object detection |
+| Furniture-specific classification | **Bingsu/vit-base-patch16-224-furniture** — pre-trained ViT | — |
+| Zero-shot item classification | **CLIP** — prompt with category list, no training | HuggingFace Inference API (CLIP hosted) |
+| Single-photo item description | **Moondream2** or **LLaVA-1.5-7B** | HuggingFace Inference API (BLIP-2 / LLaVA) |
+| Price estimation | **Curated CAD lookup table** + user-adjustable + receipt OCR for exact values | Live web search of Amazon.ca / Best Buy (free-tier or scraping) |
+
+### Phase I — Approach B (multimodal LLM wrapper)
+
+| Capability | Cloud (demo) | Local (production / offline) |
+|---|---|---|
+| All-in-one Phase I (identify + count + describe + value) | **Gemini 2.0 Flash** free tier | **Ollama + Llama 3.2 Vision 11B** or **Qwen2-VL** |
+| Lightweight local fallback | — | **Moondream2** (1.8B, runs anywhere) |
+| Schema enforcement | **Instructor** + **Pydantic** | Same |
+| Receipt OCR (still useful for ground truth) | **PaddleOCR** (or Gemini reads receipts directly) | **PaddleOCR** |
+
+### Shared across both approaches (Phase II, Phase III, cross-cutting)
+
+| Capability | Primary pick | Notes |
+|---|---|---|
+| Document OCR | **PaddleOCR** | Pre-trained, multilingual, no training |
+| Document understanding | **Donut** | Pre-trained, OCR-free |
+| Text simplification + Task 3 LLM | **Phi-3.5-mini** *or* **Llama 3.2 3B** (local) / **Gemini 2.0 Flash** (cloud) | Prompt-based, no fine-tuning |
+| Scam classification (Task 2) | **ealvaradob/bert-finetuned-phishing** + LLM few-shot prompt | Pre-trained phishing classifier |
+| Date / entity extraction | **spaCy** `en_core_web_trf` | Pre-trained NER |
+| Embeddings / RAG | **`all-MiniLM-L6-v2`** | Pre-trained |
+| Speech-to-text | **Whisper-base** or **Whisper-small** | Pre-trained, multilingual |
+| Translation (EN ↔ FR) | **MarianMT** `en-fr` / `fr-en` | Pre-trained pair models |
+| Time-series forecasting | **Prophet** | Classical, no neural training |
+| Clustering (geospatial) | scikit-learn **HDBSCAN** | Unsupervised |
+| Image segmentation | **SAM-2** | Pre-trained, zero-shot |
+
+### Training summary
+
+Of ~17 capabilities across both approaches, **only scam classification might benefit from light fine-tuning** for disaster-specific scams beyond generic phishing — and even that has a no-training fallback (pre-trained phishing model + few-shot LLM prompts). Everything else is download-and-run or prompt-and-go.
+
+### Build sequence
+
+1. **Week 1:** Approach B with Gemini Flash — get end-to-end Phase I working in days, not weeks
+2. **Week 2:** Phase II + Phase III layered on top, using Gemini for Task 3 as well
+3. **Week 3:** Approach A built in parallel as the offline fallback; swap Gemini → Ollama for the local story; demo polish
+
+This sequence protects the recorded-demo deadline (Approach B ships fast) while still delivering the offline-capable production story (Approach A as backup).
 
 ---
 
@@ -255,7 +600,7 @@ Forecasting based on historical and live data:
 
 ## Clustering + Geospatial AI
 
-**Priority focus** (per whiteboard):
+**Priority focus**:
 - **Recovery speed by region**
 - **Damage severity by area**
 
@@ -415,8 +760,6 @@ The Phase III intake explicitly tailors recovery plans across **residency / citi
 
 # Name
 ## rebuildr
-
-Replaces **EmberPath**. Broader (not tied to fire/embers), action-oriented, and works across disaster types.
 
 ---
 
