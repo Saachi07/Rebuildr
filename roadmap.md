@@ -5,11 +5,11 @@
 
 | Role | Who | Focus |
 |---|---|---|
-| **FS-1** (Full-Stack Dev 1) | Person A | Backend API, Supabase, database |
-| **FS-2** (Full-Stack Dev 2) | Person B | Frontend (React/Next.js), UI integration |
-| **ML-1** (ML/Research Lead) | Person C | Image classification pipeline (Phase I models) |
-| **ML-2** (ML/Research 2) | Person D | Document processing + LLM tasks (Phase II/III) |
-| **WC** (Wildcard) | Person E | Data collection, UI/UX design, demo prep, testing |
+| Person A | Backend API, Supabase, database |
+| Person B | Frontend (React/Next.js), UI integration |
+| Person C | Image classification pipeline (Phase I models) |
+| Person D | Document processing + LLM tasks (Phase II/III) |
+| Person E | Data collection, UI/UX design, demo prep, testing |
 
 ---
 
@@ -112,7 +112,7 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 1:** Backend API is functional. Frontend has basic screens. Gemini Flash is identifying objects in photos and returning JSON. Document extraction works on sample PDFs.
 
-## FS-1 (Backend)
+## Person A (Backend)
 
 **Days 1–2: Finish the recovery cases CRUD**
 - Complete Tasks 5–10 from the backend progress doc (repository layer, service layer, routes, tests)
@@ -137,7 +137,7 @@ If something isn't working, here are fallback options:
 - `GET /cases/<id>/photos` — list photos for a case
 - Wire up: photo upload → call ML endpoint → save returned items to inventory
 
-## FS-2 (Frontend)
+## Person B (Frontend)
 
 **Days 1–2: Project setup + Dashboard + Case creation**
 - Initialize React (or Next.js) project with Tailwind CSS
@@ -153,7 +153,7 @@ If something isn't working, here are fallback options:
 - User can edit any field, add items manually, delete items
 - Running total of estimated value at the bottom
 
-## ML-1 (Image Pipeline)
+## Person C (Image Pipeline)
 
 **Days 1–2: Gemini Flash integration**
 - Set up Gemini API access (Google AI Studio, free tier)
@@ -172,7 +172,7 @@ If something isn't working, here are fallback options:
 - This is what FS-1's photo upload endpoint will call
 - Deploy locally, test end-to-end with frontend
 
-## ML-2 (Documents + LLM)
+## Person D (Documents + LLM)
 
 **Days 1–3: Document text extraction pipeline**
 - Build extraction function: PDF → text using PyMuPDF (for native PDFs) and PaddleOCR (for scanned docs)
@@ -192,7 +192,7 @@ If something isn't working, here are fallback options:
 - Each plan = a list of to-do items with links to the right Alberta programs
 - Output: JSON structure that the frontend can render as a checklist
 
-## WC (Data + UI + Testing)
+## Person E (Data + UI + Testing)
 
 **Days 1–2: Data collection**
 - Gather 30 room photos (varied rooms, quality levels)
@@ -216,7 +216,7 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 2:** All three phases work end-to-end in the app. User can go from creating a case → uploading photos → seeing inventory → uploading documents → getting simplified summaries → answering intake questions → seeing a personalized recovery plan.
 
-## FS-1 (Backend)
+## Person A (Backend)
 
 **Days 1–2: Document endpoints**
 - New table: `case_documents` (case_id FK, filename, storage_url, original_text, simplified_text, key_deadlines JSON, created_at)
@@ -234,7 +234,7 @@ If something isn't working, here are fallback options:
 - `GET /cases/<id>/loss-report` — return the report (later: PDF export)
 - Wire up pre/post photo comparison if ML-1 has it ready, otherwise just aggregate the inventory
 
-## FS-2 (Frontend)
+## Person B (Frontend)
 
 **Days 1–2: Document Center page**
 - Upload component for PDFs/images
@@ -254,7 +254,7 @@ If something isn't working, here are fallback options:
 - Status indicators on dashboard
 - Basic responsive design (mobile-friendly)
 
-## ML-1 (Image Pipeline)
+## Person C (Image Pipeline)
 
 **Days 1–3: Post-disaster photo analysis + comparison**
 - Adapt the Gemini prompt for post-disaster photos: "Identify damaged items, severity of damage, items that appear destroyed vs. salvageable"
@@ -269,7 +269,7 @@ If something isn't working, here are fallback options:
 - Improve price accuracy based on WC's testing feedback from Week 1
 - Document model limitations honestly
 
-## ML-2 (Documents + LLM)
+## Person D (Documents + LLM)
 
 **Days 1–2: Improve document pipeline**
 - Handle multi-page documents
@@ -288,7 +288,7 @@ If something isn't working, here are fallback options:
 - End-to-end test: upload a real-ish insurance PDF → see simplified summary + tasks appear in the recovery plan
 - Fix integration bugs
 
-## WC (Data + UI + Testing)
+## Person E (Data + UI + Testing)
 
 **Days 1–2: Demo scenario creation**
 - Build "Sarah's story" from instructions.md as a complete test scenario:
@@ -300,7 +300,7 @@ If something isn't working, here are fallback options:
 - This becomes THE demo walkthrough
 
 **Days 3–4: UI polish + UX improvements**
-- Work with FS-2 on visual polish: loading states, error messages, empty states
+- Work with Person B on visual polish: loading states, error messages, empty states
 - Write copy for the intake questions (clear, empathetic language)
 - Write recovery plan task descriptions (actionable, linked to real Alberta resources)
 - Test the full flow as a user — document friction points
@@ -323,7 +323,7 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 3:** A polished, demonstrable MVP. Someone can watch a 5-minute demo and understand exactly what Rebuildr does and why it matters. All rough edges smoothed for the happy path.
 
-## FS-1 (Backend)
+## Person A
 
 **Days 1–2: Loss report generation**
 - Combine pre/post inventory data into a structured loss report
@@ -343,7 +343,7 @@ If something isn't working, here are fallback options:
 - Test all endpoints from the deployed URL
 - If deployment is painful: have a clean local setup script so the demo runs from a laptop reliably
 
-## FS-2 (Frontend)
+## Person B
 
 **Days 1–2: Loss report page + PDF download**
 - Display the loss report: side-by-side pre/post photos, item table with damage status, total loss estimate
@@ -363,7 +363,7 @@ If something isn't working, here are fallback options:
 - Run through Sarah's story 3 times end-to-end
 - Fix any last visual bugs
 
-## ML-1 (Image Pipeline)
+## Person C
 
 **Days 1–2: Final accuracy improvements**
 - Tune prompts based on Week 2 accuracy audit
@@ -377,7 +377,7 @@ If something isn't working, here are fallback options:
 - Document the pipeline: what model, what prompt, what post-processing, known limitations
 - Be available for bug fixes
 
-## ML-2 (Documents + LLM)
+## Person D
 
 **Days 1–2: Final pipeline tuning**
 - Improve document simplification quality based on Week 2 feedback
@@ -390,7 +390,7 @@ If something isn't working, here are fallback options:
 - Document the pipeline and limitations
 - Be available for integration bug fixes
 
-## WC (Wildcard)
+## Person E
 
 **Days 1–2: Demo script + presentation**
 - Write a 5-minute demo script based on Sarah's story
