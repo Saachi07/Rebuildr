@@ -1,6 +1,6 @@
-# EmberPath Intake Engine
+# Rebuildr Intake Engine
 
-An adaptive (Akinator-style) intake module for the EmberPath recovery
+An adaptive (Akinator-style) intake module for the Rebuildr recovery
 assistant. Asks the user a small number of questions and routes them to
 one of 12 recovery plans aligned with real Alberta / Canadian programs
 (DRP, ISC, IBC, 211 Alberta, EI, AHS).
