@@ -205,8 +205,8 @@ If something isn't working, here are fallback options:
 - Help Person B with Tailwind config and component styling
 
 **Day 5: Testing + bug reporting**
-- Test every endpoint  Person A built (use Postman or similar)
-- Test  Person C's photo analysis with all 30 sample photos
+- Test every endpoint Person A built (use Postman or similar)
+- Test Person C's photo analysis with all 30 sample photos
 - Document what works, what breaks, accuracy issues
 - Create a shared bug/issue tracker (GitHub Issues)
 
