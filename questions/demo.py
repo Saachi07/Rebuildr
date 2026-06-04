@@ -75,7 +75,7 @@ def run_interactive():
     answers = {}
     print()
     print("━" * 60)
-    print("  EmberPath — Recovery Intake")
+    print("  Rebuildr — Recovery Intake")
     print("━" * 60)
     print("  Take a breath. We'll ask a few questions, no more than we need.")
 

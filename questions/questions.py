@@ -1,5 +1,5 @@
 """
-Question definitions for the EmberPath intake.
+Question definitions for the Rebuildr intake.
 
 Each question is rendered to the user as a card with a title, a short
 subtitle, and a set of options. Internally, every question maps to one
