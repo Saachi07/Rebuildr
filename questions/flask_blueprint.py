@@ -27,6 +27,9 @@ intake_bp = Blueprint("intake", __name__, url_prefix="/api")
 # Singleton — load the model once when the app starts.
 _engine: IntakeEngine | None = None
 
+# Temporary in-memory session store for the example implementation.
+# Production should persist sessions in the database (see IntakeSession sketch above).
+_sessions: dict[str, dict] = {}
 
 def init_engine(model_path: str, data_path: str) -> None:
     """Call this once during app startup, e.g. from create_app()."""
