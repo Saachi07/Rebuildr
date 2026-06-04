@@ -99,10 +99,9 @@ def submit_answer(session_id: str):
     question_id = payload["question_id"]
     answer = payload["answer"]
 
-    # session = IntakeSession.query.get_or_404(session_id)
-    # answers = dict(session.answers)
-    answers = {}  # load from session in real implementation
-
+    answers = _sessions.get(session_id)
+    if answers is None:
+        return jsonify({"error": "unknown session_id"}), 404
     q = question_by_id(question_id)
     engine().record_answer(answers, q, answer)
 
