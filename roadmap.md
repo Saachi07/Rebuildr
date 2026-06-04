@@ -220,7 +220,7 @@ If something isn't working, here are fallback options:
 
 **Days 1–2: Document endpoints**
 - New table: `case_documents` (case_id FK, filename, storage_url, original_text, simplified_text, key_deadlines JSON, created_at)
-- `POST /cases/<id>/documents` — upload doc, extract text (call  Person D's pipeline), store results
+- `POST /cases/<id>/documents` — upload doc, extract text (call Person D's pipeline), store results
 - `GET /cases/<id>/documents` — list docs with summaries
 
 **Days 3–4: Recovery plan endpoints**
