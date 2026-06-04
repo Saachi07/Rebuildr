@@ -169,7 +169,7 @@ If something isn't working, here are fallback options:
 
 **Day 5: Create a Flask endpoint for the image pipeline**
 - `POST /ml/analyze-photo` — accepts image, returns structured inventory JSON
-- This is what  Person A's photo upload endpoint will call
+- This is what Person A's photo upload endpoint will call
 - Deploy locally, test end-to-end with frontend
 
 ## Person D (Documents + LLM)
