@@ -73,11 +73,11 @@ def start_intake(case_id: int):
     question (chosen adaptively — typically the housing question, but
     the engine decides).
     """
-    # session = IntakeSession(case_id=case_id, answers={})
-    # db.session.add(session); db.session.commit()
-    session_id = "stub-session-id"  # replace with session.id
-    answers = {}
+    from uuid import uuid4
 
+    session_id = str(uuid4())
+    answers = {}
+    _sessions[session_id] = answers
     q = engine().next_question(answers)
     return jsonify({
         "session_id": session_id,
