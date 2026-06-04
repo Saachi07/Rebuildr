@@ -232,7 +232,7 @@ If something isn't working, here are fallback options:
 **Day 5: Loss summary endpoint**
 - `POST /cases/<id>/loss-report` — aggregate inventory items, calculate total estimated loss range, generate a summary
 - `GET /cases/<id>/loss-report` — return the report (later: PDF export)
-- Wire up pre/post photo comparison if  Person C has it ready, otherwise just aggregate the inventory
+- Wire up pre/post photo comparison if Person C has it ready, otherwise just aggregate the inventory
 
 ## Person B (Frontend)
 
