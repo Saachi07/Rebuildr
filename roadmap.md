@@ -416,11 +416,11 @@ If something isn't working, here are fallback options:
 
 | What | Where to Look | Who |
 |---|---|---|
-| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes |Person E |
-| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives |Person E |
-| Alberta DRP application form | alberta.ca/disaster-recovery-programs |  Person D +Person E |
-| Sample insurance policy (Canadian) | IBC website, or create realistic mock |  Person D +Person E |
-| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet |  Person C +Person E |
+| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes | Person E |
+| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives | Person E |
+| Alberta DRP application form | alberta.ca/disaster-recovery-programs | Person D + Person E |
+| Sample insurance policy (Canadian) | IBC website, or create realistic mock | Person D + Person E |
+| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet | Person C + Person E |
 | Alberta Emergency Alert info | emergencyalert.alberta.ca |Person E (reference only, no integration) |
 | Indigenous Services Canada disaster aid info | sac-isc.gc.ca |Person E (for plan content) |
 | 211 Alberta resource info | ab.211.ca |Person E (for plan content) |
