@@ -6,8 +6,8 @@ that prevent it from memorizing synthetic noise, evaluates on a held-out
 split, and saves the trained model as a pickle.
 
 Constraints worth knowing:
-  * max_depth=8       - tree can't grow deeper than the question count
-  * min_samples_leaf=20 - every leaf reflects at least 20 cases (smoothing)
+  * max_depth=12        - tree can't grow deeper than the feature/question budget
+  * min_samples_leaf=15 - every leaf reflects at least 15 cases (smoothing)
   * class_weight="balanced" - rare plans (like Emergency Shelter) don't
     get drowned by common ones during training.
 
