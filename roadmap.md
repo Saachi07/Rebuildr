@@ -266,7 +266,7 @@ If something isn't working, here are fallback options:
 - Test with poor lighting, cluttered rooms, unusual angles
 - Add retry logic for Gemini failures
 - Handle: "no items detected", blurry photos, non-room photos
-- Improve price accuracy based onPerson E's testing feedback from Week 1
+- Improve price accuracy based on Person E's testing feedback from Week 1
 - Document model limitations honestly
 
 ## Person D (Documents + LLM)
