@@ -16,6 +16,7 @@ class ExtractionResult:
     ocr_pages: int = 0
     ocr_engine: str | None = None
     warnings: list[str] = field(default_factory=list)
+    extraction_format: str = "text"  # "text" (page-labelled) or "markdown" (MarkItDown)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

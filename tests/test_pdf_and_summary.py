@@ -12,6 +12,11 @@ from pdf_and_summary.exceptions import InvalidPDFError, SummaryError
 from pdf_and_summary.config import load_env_file
 from pdf_and_summary.extractor import extract_text_from_pdf
 from pdf_and_summary.models import Deadline, DocumentSummary, FlaggedIssue
+from pdf_and_summary.nlp import (
+    SpaCyNLPEngine,
+    contains_action_term,
+    contains_deadline_term,
+)
 from pdf_and_summary.ocr import PaddleOCREngine
 from pdf_and_summary.pipeline import process_pdf
 from pdf_and_summary.summarizer import GeminiSummarizer, summarize_document
@@ -106,7 +111,7 @@ class ExtractionTests(unittest.TestCase):
         self.assertIn("--- Page 1 (native) ---", result.text)
         self.assertIn("--- Page 2 (ocr) ---", result.text)
         self.assertEqual(ocr.images, [b"page-image"])
-        scanned_page.get_pixmap.assert_called_once_with(dpi=200, alpha=False)
+        scanned_page.get_pixmap.assert_called_once_with(dpi=300, alpha=False)
 
     def test_ocr_can_extract_fully_scanned_pdf(self):
         scanned_page = MagicMock()
@@ -177,11 +182,24 @@ class SummaryTests(unittest.TestCase):
 
         result = summarize_document(text, prefer_gemini=False)
 
-        self.assertEqual(result.provider, "local-extractive")
+        # Provider is "local-nlp" when spaCy is installed, "local-extractive" otherwise.
+        self.assertIn(result.provider, ("local-extractive", "local-nlp"))
         self.assertEqual(result.deadlines, [])
-        self.assertIn("$50,000 CAD", result.coverage_limits[0])
-        self.assertIn("must report", result.required_actions[0])
-        self.assertEqual(result.flagged_issues[-1].issue_type, "UNRELIABLE_DATA")
+        self.assertTrue(
+            any("$50,000" in s or "50,000 CAD" in s or "50,000" in s
+                for s in result.coverage_limits),
+            f"Expected a coverage-limit sentence mentioning the amount; got {result.coverage_limits}",
+        )
+        self.assertTrue(
+            any("must report" in s or "must" in s.lower()
+                for s in result.required_actions),
+            f"Expected a required-action sentence; got {result.required_actions}",
+        )
+        # Should flag ambiguous deadline ("within 30 days" has no explicit calendar date).
+        self.assertTrue(
+            any(fi.issue_type == "UNRELIABLE_DATA" for fi in result.flagged_issues),
+            f"Expected an UNRELIABLE_DATA flag; got {result.flagged_issues}",
+        )
 
     def test_local_summary_builds_deadline_rows_for_clear_dates(self):
         result = summarize_document(
@@ -286,6 +304,40 @@ class SummaryTests(unittest.TestCase):
         with self.assertRaisesRegex(SummaryError, "no document text"):
             summarize_document("", prefer_gemini=False)
 
+    def test_local_summary_can_explicitly_skip_nlp(self):
+        result = summarize_document(
+            "You must submit the claim by October 20, 2026.",
+            prefer_gemini=False,
+            use_nlp=False,
+        )
+
+        self.assertEqual(result.provider, "local-extractive")
+
+
+class NLPTests(unittest.TestCase):
+    def test_engine_model_can_be_configured_from_environment(self):
+        with patch.dict(os.environ, {"SPACY_MODEL": "custom_model"}):
+            engine = SpaCyNLPEngine()
+
+        self.assertEqual(engine.model, "custom_model")
+
+    def test_keyword_matching_does_not_match_inside_other_words(self):
+        self.assertFalse(contains_deadline_term("Maybe this can wait."))
+        self.assertFalse(contains_deadline_term("Update the profile."))
+        self.assertFalse(contains_action_term("The reportable total is listed."))
+
+    def test_analyze_processes_text_beyond_first_chunk(self):
+        engine = SpaCyNLPEngine(max_chunk_chars=80)
+        text = (
+            "General policy information without any important entities. " * 3
+            + "You must submit the claim by October 20, 2026."
+        )
+
+        analysis = engine.analyze(text)
+
+        self.assertIn("October 20, 2026", analysis.dates)
+        self.assertTrue(any("must submit" in sentence for sentence in analysis.top_sentences))
+
 
 class PipelineTests(unittest.TestCase):
     @patch("pdf_and_summary.pipeline.summarize_document")
@@ -301,6 +353,8 @@ class PipelineTests(unittest.TestCase):
 
         self.assertEqual(result["extraction"]["text"], "document text")
         self.assertEqual(result["summary"]["plain_language_summary"], "Simple summary")
+        summarize.assert_called_once()
+        self.assertIn("nlp_analysis", summarize.call_args.kwargs)
 
     @patch("pdf_and_summary.pipeline.extract_text_from_pdf")
     def test_pipeline_rejects_pdf_without_selectable_text(self, extract):

@@ -15,8 +15,8 @@ from .exceptions import SummaryError
 from .models import Deadline, DocumentSummary, FlaggedIssue
 
 DEFAULT_MODEL = "gemini-2.5-flash"
-DEFAULT_MAX_INPUT_CHARACTERS = 120_000
-DEFAULT_MAX_RETRIES = 2
+DEFAULT_MAX_INPUT_CHARACTERS = 300_000
+DEFAULT_MAX_RETRIES = 3
 RETRYABLE_HTTP_STATUS_CODES = {429, 500, 502, 503, 504}
 
 SYSTEM_PROMPT = """You simplify disaster-recovery and insurance documents.
@@ -27,9 +27,13 @@ level or below.
 The result will appear in a Documents Page with a Document Summary card and a
 Deadlines table. Flag only issues supported by the text. Use one of these flag
 types: MISSING, UNRELIABLE_DATA, ACTION_REQUIRED, WARNING. For a deadline, use
-the task and date stated in the document. If the date is ambiguous, do not put
-it in deadlines; add an UNRELIABLE_DATA flag instead. Clearly say when the
-document does not provide enough information.
+the task and date stated in the document; reproduce the date exactly as written.
+If the date is ambiguous, do not put it in deadlines; add an UNRELIABLE_DATA
+flag instead. Clearly say when the document does not provide enough information.
+
+For coverage_limits, include the monetary amount and what it covers in the same
+string (e.g. "Fire and water damage up to $50,000 CAD"). For required_actions,
+start each entry with an imperative verb (Submit, Contact, Report, Provide).
 
 Return only valid JSON with this exact shape:
 {
@@ -124,6 +128,7 @@ class GeminiSummarizer:
         if not text.strip():
             raise SummaryError("There is no document text to summarize.")
 
+        truncated = len(text) > DEFAULT_MAX_INPUT_CHARACTERS
         endpoint = (
             "https://generativelanguage.googleapis.com/v1beta/models/"
             f"{quote(self.model, safe='')}:generateContent"
@@ -214,9 +219,19 @@ class GeminiSummarizer:
         response_payload = self._send_request(request)
         try:
             content = response_payload["candidates"][0]["content"]["parts"][0]["text"]
-            return _summary_from_payload(json.loads(content), f"gemini:{self.model}")
+            result = _summary_from_payload(json.loads(content), f"gemini:{self.model}")
         except (KeyError, IndexError, json.JSONDecodeError) as exc:
             raise SummaryError("Gemini returned an invalid structured response.") from exc
+        if truncated:
+            import dataclasses
+            result = dataclasses.replace(
+                result,
+                warnings=result.warnings + [
+                    f"Only the first {DEFAULT_MAX_INPUT_CHARACTERS:,} characters were "
+                    "sent to Gemini. Review the full document for additional details."
+                ],
+            )
+        return result
 
     def _send_request(self, request: Request) -> dict[str, Any]:
         for attempt in range(self.max_retries + 1):
@@ -271,7 +286,8 @@ def _local_deadlines(text: str) -> list[Deadline]:
     return deadlines[:8]
 
 
-def _local_summary(text: str) -> DocumentSummary:
+def _regex_local_summary(text: str) -> DocumentSummary:
+    """Regex-based local summary; used when spaCy is unavailable."""
     cleaned = re.sub(r"--- Page \d+(?: \((?:native|ocr)\))? ---", "", text)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     if not cleaned:
@@ -316,11 +332,102 @@ def _local_summary(text: str) -> DocumentSummary:
     )
 
 
+def _nlp_local_summary(text: str, analysis: Any = None) -> DocumentSummary:
+    """NLP-enhanced local summary using spaCy NER and sentence ranking."""
+    from .nlp import (
+        SpaCyNLPEngine,
+        contains_action_term,
+        contains_coverage_term,
+        contains_deadline_term,
+        is_calendar_date,
+    )
+
+    cleaned = re.sub(r"--- Page \d+(?: \((?:native|ocr)\))? ---", "", text)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if not cleaned:
+        raise SummaryError("There is no document text to summarize.")
+
+    if analysis is None:
+        analysis = SpaCyNLPEngine().analyze(cleaned, top_n=15)
+
+    # Build deadlines: DATE entities whose surrounding sentence contains
+    # deadline-context words.
+    deadlines: list[Deadline] = []
+    for date_text, sent in zip(analysis.dates, analysis.date_sentences):
+        if is_calendar_date(date_text) and contains_deadline_term(sent):
+            deadlines.append(Deadline(task=sent, date=date_text))
+    deadlines = deadlines[:8]
+
+    # Coverage limits: sentences from top_sentences that mention coverage/money,
+    # plus raw money amounts when no sentences qualify.
+    coverage_sentences = [
+        s for s in analysis.top_sentences
+        if contains_coverage_term(s)
+    ]
+    if not coverage_sentences and analysis.money:
+        coverage_sentences = [f"Amount: {m}" for m in analysis.money[:4]]
+    coverage_limits = coverage_sentences[:8]
+
+    # Required actions: sentences with action words from the ranked list.
+    action_sentences = [
+        s for s in analysis.top_sentences
+        if contains_action_term(s)
+    ]
+
+    # Plain-language summary: leading top sentences (up to 5).
+    summary_sentences = analysis.top_sentences[:5]
+    if summary_sentences:
+        opening = " ".join(summary_sentences)
+    else:
+        opening = cleaned[:700].rsplit(" ", 1)[0]
+        if len(cleaned) > len(opening):
+            opening += "..."
+
+    flagged_issues = [
+        FlaggedIssue(issue_type="ACTION_REQUIRED", message=action)
+        for action in action_sentences[:6]
+    ]
+    if analysis.dates and not deadlines:
+        flagged_issues.append(
+            FlaggedIssue(
+                issue_type="UNRELIABLE_DATA",
+                message="Date references were found but could not be mapped to clear "
+                "deadlines. Review the original document.",
+            )
+        )
+
+    return DocumentSummary(
+        plain_language_summary=opening,
+        flagged_issues=flagged_issues,
+        deadlines=deadlines,
+        coverage_limits=coverage_limits,
+        required_actions=action_sentences[:8],
+        warnings=[
+            "This is an NLP-enhanced local summary. Verify all details against the "
+            "original document."
+        ],
+        provider="local-nlp",
+    )
+
+
+def _local_summary(text: str, *, use_nlp: bool = True, nlp_analysis: Any = None) -> DocumentSummary:
+    """Try NLP-enhanced summary first; fall back to regex when spaCy is unavailable."""
+    if not use_nlp:
+        return _regex_local_summary(text)
+    from .nlp import NLPError
+    try:
+        return _nlp_local_summary(text, nlp_analysis)
+    except NLPError:
+        return _regex_local_summary(text)
+
+
 def summarize_document(
     text: str,
     *,
     summarizer: GeminiSummarizer | None = None,
     prefer_gemini: bool = True,
+    use_nlp: bool = True,
+    nlp_analysis: Any = None,
 ) -> DocumentSummary:
     """Summarize text with Gemini when configured, otherwise use a local fallback."""
 
@@ -328,4 +435,4 @@ def summarize_document(
         return summarizer.summarize(text)
     if prefer_gemini and os.environ.get("GEMINI_API_KEY"):
         return GeminiSummarizer().summarize(text)
-    return _local_summary(text)
+    return _local_summary(text, use_nlp=use_nlp, nlp_analysis=nlp_analysis)

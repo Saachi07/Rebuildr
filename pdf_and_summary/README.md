@@ -19,8 +19,18 @@ The result contract matches the Documents Page UX in
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -r pdf_and_summary/requirements-ocr.txt
+python3 -m pip install -r pdf_and_summary/requirements-nlp.txt
+python3 -m spacy download en_core_web_sm
 export GEMINI_API_KEY="your-key"        # optional
 export GEMINI_MODEL="gemini-2.5-flash"  # optional
+```
+
+The local NLP path defaults to `en_core_web_sm`. For higher NER accuracy, install
+another spaCy English model and set `SPACY_MODEL`, for example:
+
+```bash
+python3 -m spacy download en_core_web_trf
+export SPACY_MODEL="en_core_web_trf"
 ```
 
 Never commit a real key. `.env` variants are ignored, and `.env.example`

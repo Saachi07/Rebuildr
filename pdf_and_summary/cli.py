@@ -32,6 +32,17 @@ def main() -> None:
         help="Disable PaddleOCR fallback for pages without selectable text",
     )
     parser.add_argument(
+        "--markitdown",
+        action="store_true",
+        help="Use MarkItDown to convert native PDF pages to structured Markdown "
+        "(requires: pip install markitdown[pdf])",
+    )
+    parser.add_argument(
+        "--no-nlp",
+        action="store_true",
+        help="Skip spaCy NLP entity extraction",
+    )
+    parser.add_argument(
         "--env-file",
         default=".env",
         help="Local environment file to load before analysis (default: .env)",
@@ -42,13 +53,15 @@ def main() -> None:
         if args.extract_only:
             result = {
                 "extraction": extract_text_from_pdf(
-                    args.pdf, use_ocr=not args.no_ocr
+                    args.pdf,
+                    use_ocr=not args.no_ocr,
+                    use_markitdown=args.markitdown,
                 ).to_dict()
             }
         else:
             summarizer = None
             if args.local:
-                print("Using summary provider: local-extractive", file=sys.stderr)
+                print("Using summary provider: local (NLP or regex)", file=sys.stderr)
             else:
                 summarizer = GeminiSummarizer()
                 print(
@@ -60,6 +73,8 @@ def main() -> None:
                 summarizer=summarizer,
                 prefer_gemini=not args.local,
                 use_ocr=not args.no_ocr,
+                use_nlp=not args.no_nlp,
+                use_markitdown=args.markitdown,
             )
         print(json.dumps(result, indent=2))
     except DocumentProcessingError as exc:
