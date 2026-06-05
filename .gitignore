@@ -1,0 +1,27 @@
+# AI tooling
+.claude/
+docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# ML artifacts
+ml/checkpoints/
+ml/outputs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
