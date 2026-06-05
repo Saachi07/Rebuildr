@@ -1,0 +1,193 @@
+[
+  {
+    "severity": 0.7643931976376923,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.687
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.666
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.727
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_13.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_13_burn_000.jpg"
+  },
+  {
+    "severity": 0.5053907353620014,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.672
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.696
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_13.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_13_burn_001.jpg"
+  },
+  {
+    "severity": 0.8762764490114758,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 1.0
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.712
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.965
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.681
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.689
+      },
+      {
+        "name": "charring",
+        "severity": 0.802
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_13.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_13_burn_002.jpg"
+  },
+  {
+    "severity": 0.5308527470107212,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.558
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.416
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.509
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.327
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.722
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_21.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_21_burn_000.jpg"
+  },
+  {
+    "severity": 0.707536183183781,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.767
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.63
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.617
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_21.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_21_burn_001.jpg"
+  },
+  {
+    "severity": 0.567210891894499,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.721
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.464
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.513
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.593
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\charred_wooden_chair_fire_aftermath_1780616934_21.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\charred_wooden_chair_fire_aftermath_1780616934_21_burn_002.jpg"
+  },
+  {
+    "severity": 0.736298653570358,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.667
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.868
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.776
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.642
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\fire_damaged_chair_debris_1780616908_9.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\fire_damaged_chair_debris_1780616908_9_burn_000.jpg"
+  },
+  {
+    "severity": 0.23561576842373144,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.05
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.463
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\fire_damaged_chair_debris_1780616908_9.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\fire_damaged_chair_debris_1780616908_9_burn_001.jpg"
+  },
+  {
+    "severity": 0.7123585525689995,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.897
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.877
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.724
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable\\fire_damaged_chair_debris_1780616908_9.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_damaged\\salvageable_synthetic\\fire_damaged_chair_debris_1780616908_9_burn_002.jpg"
+  }
+]

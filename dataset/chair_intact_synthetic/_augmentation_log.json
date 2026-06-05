@@ -1,0 +1,1374 @@
+[
+  {
+    "severity": 0.4739979553728447,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.477
+      },
+      {
+        "name": "charring",
+        "severity": 0.357
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.693
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.484
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_22.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_22_burn_000.jpg"
+  },
+  {
+    "severity": 0.673866316217514,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.761
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.636
+      },
+      {
+        "name": "charring",
+        "severity": 0.594
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.671
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.856
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.712
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.675
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_22.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_22_burn_001.jpg"
+  },
+  {
+    "severity": 0.9802161040016728,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.991
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.962
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.85
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "charring",
+        "severity": 0.747
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_22.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_22_burn_002.jpg"
+  },
+  {
+    "severity": 0.7761967627719286,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.673
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_25_burn_000.jpg"
+  },
+  {
+    "severity": 0.6336729255398097,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.765
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.755
+      },
+      {
+        "name": "charring",
+        "severity": 0.79
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.576
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_25_burn_001.jpg"
+  },
+  {
+    "severity": 0.9193970578938429,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.995
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.843
+      },
+      {
+        "name": "charring",
+        "severity": 0.872
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.737
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 1.0
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_25_burn_002.jpg"
+  },
+  {
+    "severity": 0.3877334644063516,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.397
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.375
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.185
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.464
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.342
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_26_burn_000.jpg"
+  },
+  {
+    "severity": 0.8026784050785718,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.888
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.635
+      },
+      {
+        "name": "charring",
+        "severity": 0.921
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.71
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.709
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_26_burn_001.jpg"
+  },
+  {
+    "severity": 0.49846414162229824,
+    "effects": [],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_26_burn_002.jpg"
+  },
+  {
+    "severity": 0.527846891270155,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.806
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_27_burn_000.jpg"
+  },
+  {
+    "severity": 0.8812552217608196,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.699
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.94
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.756
+      },
+      {
+        "name": "charring",
+        "severity": 0.877
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.818
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_27_burn_001.jpg"
+  },
+  {
+    "severity": 0.23143017770249197,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.053
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.47
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.302
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_27_burn_002.jpg"
+  },
+  {
+    "severity": 0.816413272254847,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.823
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.789
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.742
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_28_burn_000.jpg"
+  },
+  {
+    "severity": 0.9223061229541756,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.975
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.843
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.925
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_28_burn_001.jpg"
+  },
+  {
+    "severity": 0.2783626433919828,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.352
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.311
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_28_burn_002.jpg"
+  },
+  {
+    "severity": 0.227892623916517,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.437
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.15
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_7.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_7_burn_000.jpg"
+  },
+  {
+    "severity": 0.7051064008999508,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.67
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.795
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.542
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.892
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.623
+      },
+      {
+        "name": "charring",
+        "severity": 0.827
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_7.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_7_burn_001.jpg"
+  },
+  {
+    "severity": 0.3187179641796271,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.236
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.389
+      },
+      {
+        "name": "charring",
+        "severity": 0.195
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\kitchen_chair_domestic_setting_1780616881_7.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\kitchen_chair_domestic_setting_1780616881_7_burn_002.jpg"
+  },
+  {
+    "severity": 0.756349550260931,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.979
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_17.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_17_burn_000.jpg"
+  },
+  {
+    "severity": 0.29447403641883413,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.241
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.258
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.215
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_17.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_17_burn_001.jpg"
+  },
+  {
+    "severity": 0.6632373971545868,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.668
+      },
+      {
+        "name": "charring",
+        "severity": 0.713
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.819
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_17.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_17_burn_002.jpg"
+  },
+  {
+    "severity": 0.7088173079449192,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.741
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.661
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.581
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_25_burn_000.jpg"
+  },
+  {
+    "severity": 0.6695972277008664,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.674
+      },
+      {
+        "name": "charring",
+        "severity": 0.476
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.22
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_25_burn_001.jpg"
+  },
+  {
+    "severity": 0.2568901293379403,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.324
+      },
+      {
+        "name": "charring",
+        "severity": 0.149
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.279
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_25_burn_002.jpg"
+  },
+  {
+    "severity": 0.35240687180968777,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.253
+      },
+      {
+        "name": "charring",
+        "severity": 0.48
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_26_burn_000.jpg"
+  },
+  {
+    "severity": 0.6898585729348046,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.639
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.852
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.872
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_26_burn_001.jpg"
+  },
+  {
+    "severity": 0.24265214220539866,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.242
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_26_burn_002.jpg"
+  },
+  {
+    "severity": 0.350836059232559,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.182
+      },
+      {
+        "name": "charring",
+        "severity": 0.385
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_28_burn_000.jpg"
+  },
+  {
+    "severity": 0.9680592022252501,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.854
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.935
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.875
+      },
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.795
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_28_burn_001.jpg"
+  },
+  {
+    "severity": 0.6611505776792421,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.568
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.748
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.731
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.723
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\office_chair_in_room_1780616864_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\office_chair_in_room_1780616864_28_burn_002.jpg"
+  },
+  {
+    "severity": 0.6655029816800588,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.503
+      },
+      {
+        "name": "charring",
+        "severity": 0.561
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_1.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_1_burn_000.jpg"
+  },
+  {
+    "severity": 0.8306350355422669,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.654
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.776
+      },
+      {
+        "name": "charring",
+        "severity": 0.504
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.838
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.962
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_1.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_1_burn_001.jpg"
+  },
+  {
+    "severity": 0.9315833396009092,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.873
+      },
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "ember_glow",
+        "severity": 1.0
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.982
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_1.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_1_burn_002.jpg"
+  },
+  {
+    "severity": 0.4413464551111701,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.788
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.472
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.654
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.489
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_11.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_11_burn_000.jpg"
+  },
+  {
+    "severity": 0.8018056339059607,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.871
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.886
+      },
+      {
+        "name": "charring",
+        "severity": 0.718
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.85
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_11.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_11_burn_001.jpg"
+  },
+  {
+    "severity": 0.34817106386555974,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.481
+      },
+      {
+        "name": "charring",
+        "severity": 0.458
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.46
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_11.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_11_burn_002.jpg"
+  },
+  {
+    "severity": 0.7119513833393605,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.782
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.738
+      },
+      {
+        "name": "charring",
+        "severity": 0.962
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.455
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.307
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_14.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_14_burn_000.jpg"
+  },
+  {
+    "severity": 0.4599768683312515,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.406
+      },
+      {
+        "name": "charring",
+        "severity": 0.209
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.457
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.513
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_14.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_14_burn_001.jpg"
+  },
+  {
+    "severity": 0.9556004397265776,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 1.0
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      },
+      {
+        "name": "ash_debris",
+        "severity": 1.0
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.893
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_14.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_14_burn_002.jpg"
+  },
+  {
+    "severity": 0.4890112238190889,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.335
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.428
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.408
+      },
+      {
+        "name": "charring",
+        "severity": 0.48
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.315
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_18.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_18_burn_000.jpg"
+  },
+  {
+    "severity": 0.3805831293432242,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.389
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.622
+      },
+      {
+        "name": "charring",
+        "severity": 0.62
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.438
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.573
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_18.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_18_burn_001.jpg"
+  },
+  {
+    "severity": 0.7860604726313161,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.877
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.639
+      },
+      {
+        "name": "charring",
+        "severity": 0.958
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.767
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_18.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_18_burn_002.jpg"
+  },
+  {
+    "severity": 0.24622105870592403,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.483
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_23_burn_000.jpg"
+  },
+  {
+    "severity": 0.6418367371562353,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.789
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.657
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.743
+      },
+      {
+        "name": "charring",
+        "severity": 0.844
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_23_burn_001.jpg"
+  },
+  {
+    "severity": 0.22875151200666083,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.05
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.379
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.465
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_23_burn_002.jpg"
+  },
+  {
+    "severity": 0.8750352566941035,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.772
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.839
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_24.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_24_burn_000.jpg"
+  },
+  {
+    "severity": 0.49845356794515444,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.237
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.375
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.496
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_24.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_24_burn_001.jpg"
+  },
+  {
+    "severity": 0.4347008322600532,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.548
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.566
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_24.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_24_burn_002.jpg"
+  },
+  {
+    "severity": 0.6296251395479252,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.693
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_25_burn_000.jpg"
+  },
+  {
+    "severity": 0.9210111070400075,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.903
+      },
+      {
+        "name": "charring",
+        "severity": 0.92
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.845
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_25_burn_001.jpg"
+  },
+  {
+    "severity": 0.9999927816118894,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.829
+      },
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.986
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_25.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_25_burn_002.jpg"
+  },
+  {
+    "severity": 0.38645515248051,
+    "effects": [],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_26_burn_000.jpg"
+  },
+  {
+    "severity": 0.5757847655070225,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.645
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.756
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.541
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_26_burn_001.jpg"
+  },
+  {
+    "severity": 0.7399259070860156,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.599
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.627
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.959
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.755
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.558
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_26_burn_002.jpg"
+  },
+  {
+    "severity": 0.5705526666612106,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.65
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.697
+      },
+      {
+        "name": "charring",
+        "severity": 0.388
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_27_burn_000.jpg"
+  },
+  {
+    "severity": 0.29102926357690956,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.176
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.207
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.443
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.353
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_27_burn_001.jpg"
+  },
+  {
+    "severity": 0.39740413003708297,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.619
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.332
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_27.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_27_burn_002.jpg"
+  },
+  {
+    "severity": 0.9208427280058766,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 1.0
+      },
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.894
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.988
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_28_burn_000.jpg"
+  },
+  {
+    "severity": 0.6527717555645431,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.42
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.753
+      },
+      {
+        "name": "charring",
+        "severity": 0.511
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_28_burn_001.jpg"
+  },
+  {
+    "severity": 0.37671576216882835,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.557
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.192
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.428
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.362
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_28.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_28_burn_002.jpg"
+  },
+  {
+    "severity": 0.6771299284358041,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.697
+      },
+      {
+        "name": "charring",
+        "severity": 0.729
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.704
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_29.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_29_burn_000.jpg"
+  },
+  {
+    "severity": 0.5599916886761189,
+    "effects": [
+      {
+        "name": "ember_glow",
+        "severity": 0.557
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.261
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_29.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_29_burn_001.jpg"
+  },
+  {
+    "severity": 0.2651232162887518,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.447
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.478
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.216
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\upholstered_armchair_home_interior_1780616846_29.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\upholstered_armchair_home_interior_1780616846_29_burn_002.jpg"
+  },
+  {
+    "severity": 0.9446292612802849,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 1.0
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.905
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.936
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.963
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\wooden_dining_chair_in_living_room_1780616811_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\wooden_dining_chair_in_living_room_1780616811_23_burn_000.jpg"
+  },
+  {
+    "severity": 0.883294451229583,
+    "effects": [
+      {
+        "name": "crack_pattern",
+        "severity": 0.763
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.893
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.896
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.942
+      },
+      {
+        "name": "charring",
+        "severity": 0.704
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\wooden_dining_chair_in_living_room_1780616811_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\wooden_dining_chair_in_living_room_1780616811_23_burn_001.jpg"
+  },
+  {
+    "severity": 0.8811497592145947,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.871
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.763
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.781
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.967
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact\\wooden_dining_chair_in_living_room_1780616811_23.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\chair_intact_synthetic\\wooden_dining_chair_in_living_room_1780616811_23_burn_002.jpg"
+  }
+]
