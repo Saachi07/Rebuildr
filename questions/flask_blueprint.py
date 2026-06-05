@@ -20,27 +20,43 @@ from flask import Blueprint, jsonify, request
 from intake_engine import IntakeEngine
 from plans import plan_by_id
 from questions import question_by_id
+from recommender import Recommender
 
 
 intake_bp = Blueprint("intake", __name__, url_prefix="/api")
 
 # Singleton — load the model once when the app starts.
 _engine: IntakeEngine | None = None
+_recommender: Recommender | None = None
 
 # Temporary in-memory session store for the example implementation.
 # Production should persist sessions in the database (see IntakeSession sketch above).
 _sessions: dict[str, dict] = {}
 
+# Append-only in-memory feedback log. Production should write to a
+# `recommendation_feedback` table (see schema sketch near the bottom).
+# Collecting now, even if we don't act on it yet — once ~1k events
+# accumulate, this becomes training data for a learning-to-rank model.
+_feedback_log: list[dict] = []
+
+
 def init_engine(model_path: str, data_path: str) -> None:
     """Call this once during app startup, e.g. from create_app()."""
-    global _engine
+    global _engine, _recommender
     _engine = IntakeEngine(model_path=model_path, data_path=data_path)
+    _recommender = Recommender()
 
 
 def engine() -> IntakeEngine:
     if _engine is None:
         raise RuntimeError("Intake engine not initialised — call init_engine() first.")
     return _engine
+
+
+def recommender() -> Recommender:
+    if _recommender is None:
+        raise RuntimeError("Recommender not initialised — call init_engine() first.")
+    return _recommender
 
 
 # ---------------------------------------------------------------------------
@@ -144,6 +160,110 @@ def get_session(session_id: str):
         # "status": session.status,
         # "final_plan_id": session.final_plan_id,
     })
+
+
+# ---------------------------------------------------------------------------
+# Recommendations
+# ---------------------------------------------------------------------------
+
+@intake_bp.post("/intake/<session_id>/recommendations")
+def get_recommendations(session_id: str):
+    """
+    Return categorised "maybe you can do" suggestions for the given
+    intake session, combined with backend-known context.
+
+    Body (all keys optional except none — but more context = better recs):
+        {
+          "region": "AB",
+          "disaster_type": "wildfire",
+          "disaster_date": "2026-06-01",
+          "insurance_company": "Intact",
+          "completed_resource_ids": ["ei", ...]
+        }
+    """
+    payload = request.get_json(silent=True) or {}
+    answers = _sessions.get(session_id)
+    if answers is None:
+        return jsonify({"error": "unknown session_id"}), 404
+
+    dist = engine().predict_distribution(answers)
+    user_context = {
+        "region": payload.get("region"),
+        "disaster_type": payload.get("disaster_type"),
+        "disaster_date": payload.get("disaster_date"),
+        "insurance_company": payload.get("insurance_company"),
+        "intake_answers": answers,
+    }
+    done = set(payload.get("completed_resource_ids") or [])
+    by_category = recommender().recommend(
+        dist, user_context, completed_resource_ids=done,
+    )
+
+    return jsonify({
+        "session_id": session_id,
+        "groups": [
+            {
+                "category": cat,
+                "items": [r.to_dict() for r in items],
+            }
+            for cat, items in by_category.items()
+        ],
+    })
+
+
+# ---------------------------------------------------------------------------
+# Feedback collection
+# ---------------------------------------------------------------------------
+
+@intake_bp.post("/feedback")
+def submit_feedback():
+    """
+    Record a user signal on a recommendation. Don't train on this yet —
+    just collect. Once ~1k events have piled up, replace the linear
+    scorer with a LightGBM ranker fitted on (user_features, resource_id,
+    action) triples.
+
+    Body:
+        {
+          "session_id": "...",
+          "resource_id": "ab-drp",
+          "action": "useful" | "not_for_me" | "saved" | "done"
+        }
+    """
+    payload = request.get_json(force=True)
+    required = {"session_id", "resource_id", "action"}
+    missing = required - payload.keys()
+    if missing:
+        return jsonify({"error": f"missing fields: {sorted(missing)}"}), 400
+
+    if payload["action"] not in {"useful", "not_for_me", "saved", "done"}:
+        return jsonify({"error": "invalid action"}), 400
+
+    _feedback_log.append({
+        "session_id": payload["session_id"],
+        "resource_id": payload["resource_id"],
+        "action": payload["action"],
+        "ts": datetime.now(timezone.utc).isoformat(),
+    })
+
+    # Production:
+    #   db.session.add(RecommendationFeedback(**payload, ts=now))
+    #   db.session.commit()
+
+    return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# Production model sketches — add these to your models package.
+# ---------------------------------------------------------------------------
+# class RecommendationFeedback(db.Model):
+#     __tablename__ = "recommendation_feedback"
+#     id = Column(Integer, primary_key=True)
+#     session_id = Column(String(64), nullable=False, index=True)
+#     resource_id = Column(String(64), nullable=False, index=True)
+#     action = Column(String(32), nullable=False)  # useful | not_for_me | saved | done
+#     ts = Column(DateTime(timezone=True),
+#                 default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 # ---------------------------------------------------------------------------
