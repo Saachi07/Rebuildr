@@ -1,33 +1,32 @@
-import sys, os
+import sys, os, json, io
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from unittest.mock import patch, MagicMock
-import io
+from unittest.mock import patch
 from app import app
 
-FAKE_DAMAGE = {
+
+FAKE_PRE = {
     "room_type": "living_room",
-    "overall_damage_notes": "heavy fire damage",
     "items": [
         {
             "name": "leather sofa",
+            "yolo_label": "sofa",
             "category": "furniture",
-            "damage_description": "armrest charred",
-            "bounding_box": {"x1": 100, "y1": 200, "x2": 600, "y2": 700},
+            "count": 1,
+            "condition": "good",
+            "approximate_size": "large",
+            "canadian_retail_estimate_cad": {"low": 800, "high": 2500},
         },
         {
             "name": "floor lamp",
+            "yolo_label": "lamp",
             "category": "decor",
-            "damage_description": "melted",
-            "bounding_box": None,
+            "count": 1,
+            "condition": "good",
+            "approximate_size": "medium",
+            "canadian_retail_estimate_cad": {"low": 50, "high": 150},
         },
     ],
-}
-
-FAKE_VIT = {
-    "damage_grade": "salvageable",
-    "confidence": 0.91,
-    "scores": {"intact": 0.03, "salvageable": 0.91, "destroyed": 0.06},
 }
 
 
@@ -40,48 +39,79 @@ def _fake_image():
     return buf
 
 
-@patch("app.predict_damage", return_value=FAKE_VIT)
-@patch("app.analyze_damage_photo")
-def test_vit_called_for_item_with_bounding_box(mock_gemini, mock_vit):
-    mock_gemini.return_value = MagicMock(model_dump=lambda: FAKE_DAMAGE)
+@patch("app.detect_furniture", return_value={"sofa": 1, "lamp": 0})
+def test_detected_item_is_safe(mock_yolo):
     client = app.test_client()
     resp = client.post(
         "/ml/analyze-damage",
-        data={"image": (_fake_image(), "test.jpg")},
+        data={"image": (_fake_image(), "test.jpg"), "pre_inventory": json.dumps(FAKE_PRE)},
         content_type="multipart/form-data",
     )
     assert resp.status_code == 200
-    assert mock_vit.call_count == 1  # only the item with a bounding_box
+    data = resp.get_json()
+    sofa = next(i for i in data["items"] if i["name"] == "leather sofa")
+    assert sofa["status"] == "safe"
+    assert sofa["salvageable_count"] == 1
+    assert sofa["damaged_count"] == 0
 
 
-@patch("app.predict_damage", return_value=FAKE_VIT)
-@patch("app.analyze_damage_photo")
-def test_item_without_bbox_gets_destroyed(mock_gemini, mock_vit):
-    mock_gemini.return_value = MagicMock(model_dump=lambda: FAKE_DAMAGE)
+@patch("app.detect_furniture", return_value={"sofa": 1, "lamp": 0})
+def test_undetected_item_is_damaged(mock_yolo):
     client = app.test_client()
     resp = client.post(
         "/ml/analyze-damage",
-        data={"image": (_fake_image(), "test.jpg")},
+        data={"image": (_fake_image(), "test.jpg"), "pre_inventory": json.dumps(FAKE_PRE)},
         content_type="multipart/form-data",
     )
     data = resp.get_json()
     lamp = next(i for i in data["items"] if i["name"] == "floor lamp")
-    assert lamp["damage_grade"] == "destroyed"
-    assert lamp["vit_confidence"] == 0.0
+    assert lamp["status"] == "damaged"
+    assert lamp["salvageable_count"] == 0
+    assert lamp["damaged_count"] == 1
 
 
-@patch("app.predict_damage", return_value=FAKE_VIT)
-@patch("app.analyze_damage_photo")
-def test_vit_grade_attached_to_item(mock_gemini, mock_vit):
-    mock_gemini.return_value = MagicMock(model_dump=lambda: FAKE_DAMAGE)
+@patch("app.detect_furniture", return_value={"chair": 2})
+def test_partial_detection_gives_partial_status(mock_yolo):
+    pre = {
+        "room_type": "living_room",
+        "items": [{
+            "name": "dining chair",
+            "yolo_label": "chair",
+            "category": "furniture",
+            "count": 3,
+            "condition": "good",
+            "approximate_size": "medium",
+            "canadian_retail_estimate_cad": {"low": 100, "high": 200},
+        }],
+    }
+    client = app.test_client()
+    resp = client.post(
+        "/ml/analyze-damage",
+        data={"image": (_fake_image(), "test.jpg"), "pre_inventory": json.dumps(pre)},
+        content_type="multipart/form-data",
+    )
+    data = resp.get_json()
+    chair = data["items"][0]
+    assert chair["status"] == "partial"
+    assert chair["salvageable_count"] == 2
+    assert chair["damaged_count"] == 1
+
+
+def test_missing_pre_inventory_returns_400():
     client = app.test_client()
     resp = client.post(
         "/ml/analyze-damage",
         data={"image": (_fake_image(), "test.jpg")},
         content_type="multipart/form-data",
     )
-    data = resp.get_json()
-    sofa = next(i for i in data["items"] if i["name"] == "leather sofa")
-    assert sofa["damage_grade"] == "salvageable"
-    assert sofa["vit_confidence"] == 0.91
-    assert sofa["vit_scores"] == {"intact": 0.03, "salvageable": 0.91, "destroyed": 0.06}
+    assert resp.status_code == 400
+
+
+def test_missing_image_returns_400():
+    client = app.test_client()
+    resp = client.post(
+        "/ml/analyze-damage",
+        data={"pre_inventory": json.dumps(FAKE_PRE)},
+        content_type="multipart/form-data",
+    )
+    assert resp.status_code == 400

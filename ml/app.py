@@ -1,12 +1,12 @@
+import json
 import os
 import tempfile
 
 from flask import Flask, jsonify, request
 
 from analyzer import analyze_room_photo
-from classifier.predict import predict_damage
-from damage_analyzer import analyze_damage_photo
 from loss_report import generate_loss_report
+from yolo_detector import detect_furniture
 
 app = Flask(__name__)
 
@@ -43,29 +43,59 @@ def analyze_photo():
 
 @app.route("/ml/analyze-damage", methods=["POST"])
 def analyze_damage():
-    """Post-disaster photo → per-item damage assessment. Gemini detects items;
-    ViT classifies damage grade for each item with a bounding box."""
+    """Post-disaster photo + pre-disaster inventory → per-item salvageable/damaged counts.
+
+    Form fields:
+      image         — post-disaster image file
+      pre_inventory — JSON string from /ml/analyze-photo
+    """
     if "image" not in request.files:
         return jsonify({"error": "No image file provided"}), 400
+    if "pre_inventory" not in request.form:
+        return jsonify({"error": "pre_inventory JSON required"}), 400
+
+    try:
+        pre_inventory = json.loads(request.form["pre_inventory"])
+    except json.JSONDecodeError:
+        return jsonify({"error": "pre_inventory must be valid JSON"}), 400
 
     tmp_path = _save_upload(request.files["image"])
     try:
-        result = analyze_damage_photo(tmp_path)
-        damage_dict = result.model_dump()
+        items = pre_inventory.get("items", [])
+        labels = list({item["yolo_label"] for item in items})
 
-        for item in damage_dict["items"]:
-            bbox = item.get("bounding_box")
-            if bbox:
-                vit = predict_damage(tmp_path, bounding_box=bbox)
-                item["damage_grade"] = vit["damage_grade"]
-                item["vit_confidence"] = vit["confidence"]
-                item["vit_scores"] = vit["scores"]
+        detected = detect_furniture(tmp_path, labels)
+
+        label_remaining = {label: detected.get(label, 0) for label in labels}
+        result_items = []
+
+        for item in items:
+            label = item["yolo_label"]
+            pre_count = item.get("count", 1)
+            available = label_remaining.get(label, 0)
+            salvageable = min(available, pre_count)
+            damaged = pre_count - salvageable
+            label_remaining[label] = max(0, available - salvageable)
+
+            if damaged == 0:
+                status = "safe"
+            elif salvageable == 0:
+                status = "damaged"
             else:
-                item["damage_grade"] = "destroyed"
-                item["vit_confidence"] = 0.0
-                item["vit_scores"] = {}
+                status = "partial"
 
-        return jsonify(damage_dict)
+            result_items.append({
+                **item,
+                "pre_count": pre_count,
+                "salvageable_count": salvageable,
+                "damaged_count": damaged,
+                "status": status,
+            })
+
+        return jsonify({
+            "room_type": pre_inventory.get("room_type", "other"),
+            "items": result_items,
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
