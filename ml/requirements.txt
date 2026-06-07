@@ -8,3 +8,6 @@ python-dotenv>=1.0
 # Damage classifier
 torch>=2.0
 transformers>=4.40
+
+# YOLO-World post-disaster detector
+ultralytics>=8.2
