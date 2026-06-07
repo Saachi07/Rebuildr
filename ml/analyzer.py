@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from PIL import Image
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -32,6 +32,9 @@ class PriceRange(BaseModel):
 
 class InventoryItem(BaseModel):
     name: str
+    yolo_label: str = Field(
+        description="Short 1-2 word noun for object detection. Examples: 'chair', 'sofa', 'refrigerator', 'bookshelf'. No adjectives."
+    )
     category: Literal["furniture", "appliance", "electronics", "decor", "clothing", "other"]
     count: int
     condition: Literal["new", "good", "fair", "worn", "damaged"]
