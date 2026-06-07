@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime, timezone
-from typing import Optional
 
 from dotenv import load_dotenv
 from google import genai
@@ -10,12 +9,6 @@ from pydantic import BaseModel
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-LOSS_FACTORS = {
-    "intact": 0.0,
-    "salvageable": 0.6,
-    "destroyed": 1.0,
-}
 
 
 class PriceRange(BaseModel):
@@ -27,12 +20,11 @@ class ItemLoss(BaseModel):
     name: str
     category: str
     pre_disaster_value: PriceRange
-    damage_grade: str
-    vit_confidence: float
-    vit_scores: dict
-    damage_description: str
+    pre_count: int
+    salvageable_count: int
+    damaged_count: int
+    status: str
     estimated_loss: PriceRange
-    bounding_box: Optional[dict] = None
 
 
 class LossReport(BaseModel):
@@ -41,24 +33,7 @@ class LossReport(BaseModel):
     items: list[ItemLoss]
     total_loss_low_cad: int
     total_loss_high_cad: int
-    items_missing_from_after: list[str]
     summary: str
-
-
-def _match_item(before_name: str, after_items: list[dict]) -> Optional[dict]:
-    """Match a before-inventory item to an after-damage item by name similarity."""
-    before_words = set(before_name.lower().split())
-    best_match = None
-    best_score = 0
-
-    for after_item in after_items:
-        after_words = set(after_item["name"].lower().split())
-        overlap = len(before_words & after_words)
-        if overlap > best_score:
-            best_score = overlap
-            best_match = after_item
-
-    return best_match if best_score > 0 else None
 
 
 def _generate_summary(report_data: dict) -> str:
@@ -82,47 +57,34 @@ Loss report data:
 
 
 def generate_loss_report(before_inventory: dict, after_damage: dict) -> LossReport:
-    before_items = before_inventory.get("items", [])
-    after_items = after_damage.get("items", [])
-    room_type = before_inventory.get("room_type", after_damage.get("room_type", "other"))
+    items = after_damage.get("items", [])
+    room_type = after_damage.get("room_type", before_inventory.get("room_type", "other"))
     generated_at = datetime.now(timezone.utc).isoformat()
 
     item_losses = []
-    missing_names = []
+    for item in items:
+        price = item.get("canadian_retail_estimate_cad", {})
+        pre_count = item.get("pre_count", item.get("count", 1))
+        price_low = price.get("low", 0)
+        price_high = price.get("high", 0)
+        total_low = price_low * pre_count
+        total_high = price_high * pre_count
+        damaged_count = item.get("damaged_count", 0)
+        loss_fraction = damaged_count / pre_count if pre_count > 0 else 0
 
-    for before_item in before_items:
-        match = _match_item(before_item["name"], after_items)
-        price = before_item.get("canadian_retail_estimate_cad", {})
-        low = price.get("low", 0) * before_item.get("count", 1)
-        high = price.get("high", 0) * before_item.get("count", 1)
-
-        if match:
-            grade = match.get("damage_grade", "destroyed")
-            factor = LOSS_FACTORS.get(grade, 1.0)
-            item_losses.append(ItemLoss(
-                name=before_item["name"],
-                category=before_item.get("category", "other"),
-                pre_disaster_value=PriceRange(low=low, high=high),
-                damage_grade=grade,
-                vit_confidence=match.get("vit_confidence", 0.0),
-                vit_scores=match.get("vit_scores", {}),
-                damage_description=match.get("damage_description", ""),
-                estimated_loss=PriceRange(low=int(low * factor), high=int(high * factor)),
-                bounding_box=match.get("bounding_box"),
-            ))
-        else:
-            missing_names.append(before_item["name"])
-            item_losses.append(ItemLoss(
-                name=before_item["name"],
-                category=before_item.get("category", "other"),
-                pre_disaster_value=PriceRange(low=low, high=high),
-                damage_grade="destroyed",
-                vit_confidence=0.0,
-                vit_scores={},
-                damage_description="Item not found in post-disaster photo — assumed total loss.",
-                estimated_loss=PriceRange(low=low, high=high),
-                bounding_box=None,
-            ))
+        item_losses.append(ItemLoss(
+            name=item["name"],
+            category=item.get("category", "other"),
+            pre_disaster_value=PriceRange(low=total_low, high=total_high),
+            pre_count=pre_count,
+            salvageable_count=item.get("salvageable_count", 0),
+            damaged_count=damaged_count,
+            status=item.get("status", "damaged"),
+            estimated_loss=PriceRange(
+                low=round(total_low * loss_fraction),
+                high=round(total_high * loss_fraction),
+            ),
+        ))
 
     total_low = sum(i.estimated_loss.low for i in item_losses)
     total_high = sum(i.estimated_loss.high for i in item_losses)
@@ -141,7 +103,6 @@ def generate_loss_report(before_inventory: dict, after_damage: dict) -> LossRepo
         items=item_losses,
         total_loss_low_cad=total_low,
         total_loss_high_cad=total_high,
-        items_missing_from_after=missing_names,
         summary=summary,
     )
 
