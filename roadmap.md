@@ -3,13 +3,13 @@
 
 ## Team Roles
 
-| Role | Who | Focus |
-|---|---|---|
-| **FS-1** (Full-Stack Dev 1) | Person A | Backend API, Supabase, database |
-| **FS-2** (Full-Stack Dev 2) | Person B | Frontend (React/Next.js), UI integration |
-| **ML-1** (ML/Research Lead) | Person C | Image classification pipeline (Phase I models) |
-| **ML-2** (ML/Research 2) | Person D | Document processing + LLM tasks (Phase II/III) |
-| **WC** (Wildcard) | Person E | Data collection, UI/UX design, demo prep, testing |
+| Who | Focus |
+|---|---|
+| Person A | Backend API, Supabase, database |
+| Person B | Frontend (React/Next.js), UI integration |
+| Person C | Image classification pipeline (Phase I models) |
+| Person D | Document processing + LLM tasks (Phase II/III) |
+| Person E | Data collection, UI/UX design, demo prep, testing |
 
 ---
 
@@ -63,20 +63,20 @@ These are all real features from instructions.md that we are **explicitly not bu
 
 ## What to Research (Before/During Week 1)
 
-### ML-1 (Image Pipeline)
+### Person C (Image Pipeline)
 - [ ] **Gemini 2.0 Flash API** — sign up, get free API key, test with room photos. Verify the free tier limits (≈15 req/min, ≈1M tokens/day). Test the reference JSON prompt from instructions.md with 5–10 real room photos.
 - [ ] **Instructor library** (Python) — test schema enforcement with Pydantic to prevent JSON drift from Gemini.
 - [ ] **Canadian retail price ranges** — what's a reasonable lookup table look like? Check Canadian Tire, IKEA Canada, Best Buy Canada for ballpark ranges per furniture/appliance category. This becomes the "clamp" for hallucinated prices.
 - [ ] **Pre/post disaster photo comparison** — simplest approach: CLIP embeddings of matched rooms, cosine similarity to detect changes. NOT full segmentation. Research whether Gemini can do "compare these two images and list what's damaged" in one call (likely yes).
 
-### ML-2 (Documents + LLM)
+### Person D (Documents + LLM)
 - [ ] **Alberta DRP application forms** — find the actual forms online (alberta.ca). What does the application look like? What fields matter?
 - [ ] **IBC claim standards** — what format do Canadian insurance claims follow? Find sample documents.
 - [ ] **Gemini Flash for text tasks** — test document simplification. Feed it a sample insurance policy paragraph → get simplified output. Test to-do list generation from a legal document.
 - [ ] **PyMuPDF / pdfplumber** — test PDF text extraction on real insurance documents (find samples online or create mock ones).
 - [ ] **Recovery plan combinations** — draft the ~20–25 plan matrix from instructions.md. What questions map to what programs? This is a decision tree, not a model.
 
-### WC (Data + UI)
+### Person E (Data + UI)
 - [ ] **Sample room photos** — collect 20–30 photos of furnished rooms (kitchens, bedrooms, living rooms, bathrooms). Use royalty-free sources (Unsplash, Pexels) or photograph your own spaces.
 - [ ] **Sample "post-disaster" photos** — harder to find ethically. Look for Creative Commons disaster damage photos. Or: take the pre-disaster photos and describe hypothetical damage for the AI to work with.
 - [ ] **Mock insurance documents** — create 3–4 fake but realistic insurance policy excerpts and claim forms for testing Phase II.
@@ -112,7 +112,7 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 1:** Backend API is functional. Frontend has basic screens. Gemini Flash is identifying objects in photos and returning JSON. Document extraction works on sample PDFs.
 
-## FS-1 (Backend)
+## Person A (Backend)
 
 **Days 1–2: Finish the recovery cases CRUD**
 - Complete Tasks 5–10 from the backend progress doc (repository layer, service layer, routes, tests)
@@ -137,7 +137,7 @@ If something isn't working, here are fallback options:
 - `GET /cases/<id>/photos` — list photos for a case
 - Wire up: photo upload → call ML endpoint → save returned items to inventory
 
-## FS-2 (Frontend)
+## Person B (Frontend)
 
 **Days 1–2: Project setup + Dashboard + Case creation**
 - Initialize React (or Next.js) project with Tailwind CSS
@@ -153,7 +153,7 @@ If something isn't working, here are fallback options:
 - User can edit any field, add items manually, delete items
 - Running total of estimated value at the bottom
 
-## ML-1 (Image Pipeline)
+## Person C (Image Pipeline)
 
 **Days 1–2: Gemini Flash integration**
 - Set up Gemini API access (Google AI Studio, free tier)
@@ -169,10 +169,10 @@ If something isn't working, here are fallback options:
 
 **Day 5: Create a Flask endpoint for the image pipeline**
 - `POST /ml/analyze-photo` — accepts image, returns structured inventory JSON
-- This is what FS-1's photo upload endpoint will call
+- This is what  Person A's photo upload endpoint will call
 - Deploy locally, test end-to-end with frontend
 
-## ML-2 (Documents + LLM)
+## Person D (Documents + LLM)
 
 **Days 1–3: Document text extraction pipeline**
 - Build extraction function: PDF → text using PyMuPDF (for native PDFs) and PaddleOCR (for scanned docs)
@@ -192,7 +192,7 @@ If something isn't working, here are fallback options:
 - Each plan = a list of to-do items with links to the right Alberta programs
 - Output: JSON structure that the frontend can render as a checklist
 
-## WC (Data + UI + Testing)
+## Person E (Data + UI + Testing)
 
 **Days 1–2: Data collection**
 - Gather 30 room photos (varied rooms, quality levels)
@@ -202,11 +202,11 @@ If something isn't working, here are fallback options:
 **Days 3–4: UI wireframes → basic CSS**
 - Finalize wireframes for 5 screens
 - Pick a color scheme, create basic component styles
-- Help FS-2 with Tailwind config and component styling
+- Help Person B with Tailwind config and component styling
 
 **Day 5: Testing + bug reporting**
-- Test every endpoint FS-1 built (use Postman or similar)
-- Test ML-1's photo analysis with all 30 sample photos
+- Test every endpoint  Person A built (use Postman or similar)
+- Test  Person C's photo analysis with all 30 sample photos
 - Document what works, what breaks, accuracy issues
 - Create a shared bug/issue tracker (GitHub Issues)
 
@@ -216,11 +216,11 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 2:** All three phases work end-to-end in the app. User can go from creating a case → uploading photos → seeing inventory → uploading documents → getting simplified summaries → answering intake questions → seeing a personalized recovery plan.
 
-## FS-1 (Backend)
+## Person A (Backend)
 
 **Days 1–2: Document endpoints**
 - New table: `case_documents` (case_id FK, filename, storage_url, original_text, simplified_text, key_deadlines JSON, created_at)
-- `POST /cases/<id>/documents` — upload doc, extract text (call ML-2's pipeline), store results
+- `POST /cases/<id>/documents` — upload doc, extract text (call  Person D's pipeline), store results
 - `GET /cases/<id>/documents` — list docs with summaries
 
 **Days 3–4: Recovery plan endpoints**
@@ -232,9 +232,9 @@ If something isn't working, here are fallback options:
 **Day 5: Loss summary endpoint**
 - `POST /cases/<id>/loss-report` — aggregate inventory items, calculate total estimated loss range, generate a summary
 - `GET /cases/<id>/loss-report` — return the report (later: PDF export)
-- Wire up pre/post photo comparison if ML-1 has it ready, otherwise just aggregate the inventory
+- Wire up pre/post photo comparison if  Person C has it ready, otherwise just aggregate the inventory
 
-## FS-2 (Frontend)
+## Person B (Frontend)
 
 **Days 1–2: Document Center page**
 - Upload component for PDFs/images
@@ -254,7 +254,7 @@ If something isn't working, here are fallback options:
 - Status indicators on dashboard
 - Basic responsive design (mobile-friendly)
 
-## ML-1 (Image Pipeline)
+## Person C (Image Pipeline)
 
 **Days 1–3: Post-disaster photo analysis + comparison**
 - Adapt the Gemini prompt for post-disaster photos: "Identify damaged items, severity of damage, items that appear destroyed vs. salvageable"
@@ -266,16 +266,16 @@ If something isn't working, here are fallback options:
 - Test with poor lighting, cluttered rooms, unusual angles
 - Add retry logic for Gemini failures
 - Handle: "no items detected", blurry photos, non-room photos
-- Improve price accuracy based on WC's testing feedback from Week 1
+- Improve price accuracy based onPerson E's testing feedback from Week 1
 - Document model limitations honestly
 
-## ML-2 (Documents + LLM)
+## Person D (Documents + LLM)
 
 **Days 1–2: Improve document pipeline**
 - Handle multi-page documents
 - Extract structured data: deadlines, coverage amounts, policy numbers, contact info
 - Format output as actionable items, not just summaries
-- Test with WC's mock documents + any real samples found
+- Test with Person E's mock documents + any real samples found
 
 **Days 3–4: To-do list generation (Task 3)**
 - Build the LLM prompt: given user's intake answers + extracted document info → generate a personalized, prioritized to-do list
@@ -284,11 +284,11 @@ If something isn't working, here are fallback options:
 - Validate output structure with Pydantic
 
 **Day 5: Integrate into backend**
-- Make sure ML-2's pipelines are callable from FS-1's endpoints
+- Make sure  Person D's pipelines are callable from  Person A's endpoints
 - End-to-end test: upload a real-ish insurance PDF → see simplified summary + tasks appear in the recovery plan
 - Fix integration bugs
 
-## WC (Data + UI + Testing)
+## Person E (Data + UI + Testing)
 
 **Days 1–2: Demo scenario creation**
 - Build "Sarah's story" from instructions.md as a complete test scenario:
@@ -300,7 +300,7 @@ If something isn't working, here are fallback options:
 - This becomes THE demo walkthrough
 
 **Days 3–4: UI polish + UX improvements**
-- Work with FS-2 on visual polish: loading states, error messages, empty states
+- Work with Person B on visual polish: loading states, error messages, empty states
 - Write copy for the intake questions (clear, empathetic language)
 - Write recovery plan task descriptions (actionable, linked to real Alberta resources)
 - Test the full flow as a user — document friction points
@@ -323,7 +323,7 @@ If something isn't working, here are fallback options:
 
 **Goal by end of Week 3:** A polished, demonstrable MVP. Someone can watch a 5-minute demo and understand exactly what Rebuildr does and why it matters. All rough edges smoothed for the happy path.
 
-## FS-1 (Backend)
+## Person A
 
 **Days 1–2: Loss report generation**
 - Combine pre/post inventory data into a structured loss report
@@ -332,7 +332,7 @@ If something isn't working, here are fallback options:
 - The generated PDF should look like something you'd actually submit to an insurance company
 
 **Days 3–4: Bug fixes + stability**
-- Fix every bug from WC's testing
+- Fix every bug from Person E's testing
 - Add input validation everywhere (don't let bad data crash the API)
 - Add proper error messages (user-friendly, not stack traces)
 - Performance: make sure photo analysis doesn't timeout (add async processing or loading indicators)
@@ -343,7 +343,7 @@ If something isn't working, here are fallback options:
 - Test all endpoints from the deployed URL
 - If deployment is painful: have a clean local setup script so the demo runs from a laptop reliably
 
-## FS-2 (Frontend)
+## Person B
 
 **Days 1–2: Loss report page + PDF download**
 - Display the loss report: side-by-side pre/post photos, item table with damage status, total loss estimate
@@ -363,7 +363,7 @@ If something isn't working, here are fallback options:
 - Run through Sarah's story 3 times end-to-end
 - Fix any last visual bugs
 
-## ML-1 (Image Pipeline)
+## Person C
 
 **Days 1–2: Final accuracy improvements**
 - Tune prompts based on Week 2 accuracy audit
@@ -372,12 +372,12 @@ If something isn't working, here are fallback options:
 - Final edge case handling
 
 **Days 3–5: Support demo prep + documentation**
-- Help WC prepare before/after photo pairs that showcase the AI well (cherry-pick good examples)
+- Help Person E prepare before/after photo pairs that showcase the AI well (cherry-pick good examples)
 - Write a short "how the AI works" explanation for the demo presentation
 - Document the pipeline: what model, what prompt, what post-processing, known limitations
 - Be available for bug fixes
 
-## ML-2 (Documents + LLM)
+## Person D
 
 **Days 1–2: Final pipeline tuning**
 - Improve document simplification quality based on Week 2 feedback
@@ -385,12 +385,12 @@ If something isn't working, here are fallback options:
 - Add 2–3 more plan variations if time allows
 
 **Days 3–5: Support demo prep + documentation**
-- Help WC create compelling mock documents for the demo
+- Help Person E create compelling mock documents for the demo
 - Write "how document processing works" explanation
 - Document the pipeline and limitations
 - Be available for integration bug fixes
 
-## WC (Wildcard)
+## Person E
 
 **Days 1–2: Demo script + presentation**
 - Write a 5-minute demo script based on Sarah's story
@@ -416,14 +416,14 @@ If something isn't working, here are fallback options:
 
 | What | Where to Look | Who |
 |---|---|---|
-| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes | WC |
-| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives | WC |
-| Alberta DRP application form | alberta.ca/disaster-recovery-programs | ML-2 + WC |
-| Sample insurance policy (Canadian) | IBC website, or create realistic mock | ML-2 + WC |
-| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet | ML-1 + WC |
-| Alberta Emergency Alert info | emergencyalert.alberta.ca | WC (reference only, no integration) |
-| Indigenous Services Canada disaster aid info | sac-isc.gc.ca | WC (for plan content) |
-| 211 Alberta resource info | ab.211.ca | WC (for plan content) |
+| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes |Person E |
+| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives |Person E |
+| Alberta DRP application form | alberta.ca/disaster-recovery-programs |  Person D +Person E |
+| Sample insurance policy (Canadian) | IBC website, or create realistic mock |  Person D +Person E |
+| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet |  Person C +Person E |
+| Alberta Emergency Alert info | emergencyalert.alberta.ca |Person E (reference only, no integration) |
+| Indigenous Services Canada disaster aid info | sac-isc.gc.ca |Person E (for plan content) |
+| 211 Alberta resource info | ab.211.ca |Person E (for plan content) |
 
 ---
 
