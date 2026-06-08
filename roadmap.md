@@ -202,7 +202,7 @@ If something isn't working, here are fallback options:
 **Days 3–4: UI wireframes → basic CSS**
 - Finalize wireframes for 5 screens
 - Pick a color scheme, create basic component styles
-- Help  Person B with Tailwind config and component styling
+- Help Person B with Tailwind config and component styling
 
 **Day 5: Testing + bug reporting**
 - Test every endpoint  Person A built (use Postman or similar)
