@@ -1,29 +1,25 @@
-from flask import Blueprint, jsonify
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
+"""Health probe — verifies the app is up and that Supabase is reachable."""
 
-from ..extensions import db
+from __future__ import annotations
+
+from flask import Blueprint, current_app, jsonify
+
+from ..extensions import anon_client
 
 bp = Blueprint("health", __name__)
 
 
 @bp.get("/health")
 def health():
-    db_status = "ok"
-    db_error: str | None = None
-    try:
-        db.session.execute(text("SELECT 1"))
-    except SQLAlchemyError as exc:
-        db_status = "error"
-        db_error = str(exc.__class__.__name__)
-
-    payload = {
-        "status": "ok" if db_status == "ok" else "degraded",
-        "db": db_status,
-        "db_dialect": db.engine.dialect.name,
-    }
-    if db_error:
-        payload["db_error"] = db_error
-
-    http_status = 200 if db_status == "ok" else 503
-    return jsonify(payload), http_status
+    payload: dict = {"status": "ok", "supabase": "unconfigured"}
+    if current_app.config.get("SUPABASE_URL") and current_app.config.get("SUPABASE_ANON_KEY"):
+        try:
+            anon_client().table("resources").select("id").limit(1).execute()
+            payload["supabase"] = "ok"
+        except Exception as exc:
+            payload["supabase"] = "error"
+            payload["supabase_error"] = exc.__class__.__name__
+            payload["supabase_message"] = str(exc)
+            payload["status"] = "degraded"
+    status_code = 200 if payload["status"] == "ok" else 503
+    return jsonify(payload), status_code
