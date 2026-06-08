@@ -1,0 +1,25 @@
+# Render blueprint — connect this repo in the Render dashboard and it'll
+# pick up this file automatically. The four Supabase env vars and
+# FLASK_SECRET_KEY are marked sync:false so they're set in the dashboard,
+# not committed.
+services:
+  - type: web
+    name: rebuildr-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --chdir . "app:create_app()" --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.5
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: FLASK_SECRET_KEY
+        sync: false
