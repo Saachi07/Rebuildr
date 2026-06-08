@@ -10,7 +10,7 @@ def _get_model() -> YOLOWorld:
     return _model
 
 
-def detect_furniture(image_path: str, labels: list, conf: float = 0.25) -> dict:
+def detect_furniture(image_path: str, labels: list, conf: float = 0.40) -> dict:
     """Detect items in image by text prompt. Returns {label: detected_count}."""
     if not labels:
         return {}

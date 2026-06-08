@@ -1,5 +1,6 @@
 # AI tooling
 .claude/
+.github/
 docs/
 
 # Python
@@ -12,10 +13,17 @@ dist/
 build/
 .venv/
 venv/
+outputs/
 
 # ML artifacts
 ml/checkpoints/
 ml/outputs/
+ml/tests/
+ml/.env.example
+*.pt
+
+# Test images
+photo*.jpeg
 
 # Testing
 .pytest_cache/
