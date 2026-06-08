@@ -32,18 +32,18 @@ export default function CaseHub() {
           <h3>Inventory</h3>
           <p>Log damaged items room-by-room.</p>
         </Link>
-        <div className="tile" style={{ opacity: 0.6, cursor: "not-allowed" }}>
+        <Link to={`/cases/${c.id}/documents`} className="tile">
           <h3>Documents</h3>
-          <p>Upload policy & claims (coming next).</p>
-        </div>
+          <p>Upload policy & claims, or reuse from your library.</p>
+        </Link>
         <Link to={`/cases/${c.id}/recommendations`} className="tile">
           <h3>Recovery Plan</h3>
           <p>Generate a plan from whatever you have so far.</p>
         </Link>
-        <div className="tile" style={{ opacity: 0.6, cursor: "not-allowed" }}>
+        <Link to="/emergency" className="tile">
           <h3>Emergency Contacts</h3>
-          <p>FEMA, insurance, local aid (coming next).</p>
-        </div>
+          <p>FEMA, Red Cross, crisis hotlines — quick dial.</p>
+        </Link>
       </div>
     </div>
   );

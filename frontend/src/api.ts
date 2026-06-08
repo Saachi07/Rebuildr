@@ -49,6 +49,34 @@ export type Item = {
   description?: string;
 };
 
+export type UserDocument = {
+  id: string;
+  name: string;
+  doc_type?: string;
+  mime_type?: string;
+  size_bytes?: number;
+  uploaded_at?: string;
+  url?: string;
+};
+
+export type CaseDocument = UserDocument & { attached_at?: string };
+
+export type ScannedItem = {
+  name: string;
+  category: string;
+  count: number;
+  condition: string;
+  visible_brand?: string;
+  approximate_size: string;
+  canadian_retail_estimate_cad: { low: number; high: number };
+};
+
+export type RoomScan = {
+  room_type: string;
+  items: ScannedItem[];
+  notes: string;
+};
+
 export type Recommendation = {
   resource: {
     id: string;
@@ -81,4 +109,41 @@ export const api = {
     request<{ case_id: string; groups: RecGroups }>(
       `/cases/${caseId}/recommendations?top_k=${topK}`
     ),
+
+  listMyDocuments: () => request<{ documents: UserDocument[] }>("/documents"),
+  listCaseDocuments: (caseId: string) =>
+    request<{ documents: CaseDocument[] }>(`/cases/${caseId}/documents`),
+  attachDocumentToCase: (caseId: string, documentId: string) =>
+    request<{ document: CaseDocument }>(`/cases/${caseId}/documents`, {
+      method: "POST",
+      body: JSON.stringify({ document_id: documentId }),
+    }),
+  detachDocumentFromCase: (caseId: string, documentId: string) =>
+    request<{ ok: true }>(`/cases/${caseId}/documents/${documentId}`, {
+      method: "DELETE",
+    }),
+  uploadDocument: async (file: File, doc_type?: string): Promise<{ document: UserDocument }> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    if (doc_type) fd.append("doc_type", doc_type);
+    const res = await fetch(`${BASE}/documents`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: fd,
+    });
+    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    return res.json();
+  },
+
+  analyzeRoomPhoto: async (file: File): Promise<RoomScan> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    const res = await fetch(`${BASE}/ml/analyze-photo`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: fd,
+    });
+    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    return res.json();
+  },
 };

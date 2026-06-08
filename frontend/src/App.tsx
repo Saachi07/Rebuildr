@@ -7,6 +7,8 @@ import NewCase from "./pages/NewCase";
 import CaseHub from "./pages/CaseHub";
 import Inventory from "./pages/Inventory";
 import Recommendations from "./pages/Recommendations";
+import Emergency from "./pages/Emergency";
+import Documents from "./pages/Documents";
 
 function Nav() {
   const { user, signOut } = useAuth();
@@ -46,11 +48,13 @@ export default function App() {
       <Nav />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/emergency" element={<Emergency />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
         <Route path="/cases/new" element={<Private><NewCase /></Private>} />
         <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />
         <Route path="/cases/:id/inventory" element={<Private><Inventory /></Private>} />
+        <Route path="/cases/:id/documents" element={<Private><Documents /></Private>} />
         <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

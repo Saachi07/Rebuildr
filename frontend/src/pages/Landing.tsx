@@ -14,7 +14,7 @@ export default function Landing() {
           resources to tap.
         </p>
         <div className="cta-row">
-          <Link to={start}><button className="urgent">I need help now</button></Link>
+          <Link to="/emergency"><button className="urgent">I need help now</button></Link>
           <Link to={start}><button>Start recovery planning</button></Link>
         </div>
       </div>
