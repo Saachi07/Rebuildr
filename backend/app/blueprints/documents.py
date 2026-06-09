@@ -1,12 +1,17 @@
-"""User document library + per-case attachment.
+"""User document library.
 
 Documents (insurance policies, claims, IDs, deeds, receipts) live in a
-per-user library. A single document can be attached to many cases via the
-``case_documents`` join — so a user re-using the same insurance policy
-across two disasters doesn't re-upload it.
+per-user library. They are no longer attached to cases — the library
+stands on its own.
 
 Blob storage goes to a private Supabase ``documents`` bucket via the
-service role; clients get short-lived signed URLs at read time.
+service role; clients get short-lived signed URLs on demand via
+``GET /documents/<id>/url`` (not eagerly per-row at list time — that was
+the dominant page-load cost).
+
+Save is cheap: upload only stores the blob + a row. Classification +
+extraction runs separately via ``POST /documents/<id>/analyze`` so the
+user can choose to skip analysis or re-run it later.
 
 PDFs only.
 """
@@ -14,19 +19,20 @@ PDFs only.
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 
 from ..auth import require_auth
 from ..extensions import service_client, user_client
+from ..services.gemini_documents import analyze_document
 
-bp = Blueprint("documents", __name__)
+bp = Blueprint("documents", __name__, url_prefix="/documents")
 
 BUCKET = "documents"
 SIGNED_URL_TTL = 60 * 10  # 10 minutes
 ALLOWED_MIME = {"application/pdf"}
-ALLOWED_DOC_TYPES = {"insurance_policy", "claim", "id", "deed", "receipt", "other"}
 
 
 def _signed_url(storage_path: str) -> str | None:
@@ -38,32 +44,32 @@ def _signed_url(storage_path: str) -> str | None:
         return None
 
 
-def _serialize(row: dict[str, Any], include_url: bool = True) -> dict[str, Any]:
-    out = {
+def _serialize(row: dict[str, Any]) -> dict[str, Any]:
+    return {
         "id": row["id"],
         "name": row["name"],
         "doc_type": row.get("doc_type"),
         "mime_type": row.get("mime_type"),
         "size_bytes": row.get("size_bytes"),
         "uploaded_at": row.get("uploaded_at"),
+        "analyzed_at": row.get("analyzed_at"),
+        "gemini_analysis": row.get("gemini_analysis"),
     }
-    if include_url and row.get("storage_path"):
-        out["url"] = _signed_url(row["storage_path"])
-    if "attached_at" in row:
-        out["attached_at"] = row["attached_at"]
-    return out
 
 
 # ---------------------------------------------------------------------------
-# User library
+# Library
 # ---------------------------------------------------------------------------
-@bp.get("/documents")
+@bp.get("")
 @require_auth
 def list_my_documents():
+    """List the caller's documents. Does NOT generate signed URLs — clients
+    call /documents/<id>/url only when actually opening a file. Cuts the
+    list latency from O(n) storage roundtrips to one DB query."""
     sb = user_client(g.access_token)
     res = (
         sb.table("user_documents")
-        .select("*")
+        .select("id, name, doc_type, mime_type, size_bytes, uploaded_at, analyzed_at, gemini_analysis")
         .is_("deleted_at", "null")
         .order("uploaded_at", desc=True)
         .execute()
@@ -71,9 +77,10 @@ def list_my_documents():
     return jsonify({"documents": [_serialize(r) for r in (res.data or [])]})
 
 
-@bp.post("/documents")
+@bp.post("")
 @require_auth
 def upload_document():
+    """Save a PDF. Does not run Gemini — call /documents/<id>/analyze for that."""
     if "file" not in request.files:
         return jsonify({"error": "file is required"}), 400
     f = request.files["file"]
@@ -83,10 +90,6 @@ def upload_document():
     mime = (f.mimetype or "").lower()
     if mime not in ALLOWED_MIME and not f.filename.lower().endswith(".pdf"):
         return jsonify({"error": "only PDF files are supported"}), 415
-
-    doc_type = (request.form.get("doc_type") or "other").lower()
-    if doc_type not in ALLOWED_DOC_TYPES:
-        doc_type = "other"
 
     blob = f.read()
     size_bytes = len(blob)
@@ -104,7 +107,6 @@ def upload_document():
     row = {
         "user_id": g.user_id,
         "name": f.filename,
-        "doc_type": doc_type,
         "mime_type": "application/pdf",
         "size_bytes": size_bytes,
         "storage_path": storage_path,
@@ -112,7 +114,6 @@ def upload_document():
     sb = user_client(g.access_token)
     res = sb.table("user_documents").insert(row).execute()
     if not res.data:
-        # Roll back the storage upload so we don't orphan the blob.
         try:
             svc.storage.from_(BUCKET).remove([storage_path])
         except Exception:
@@ -121,7 +122,7 @@ def upload_document():
     return jsonify({"document": _serialize(res.data[0])}), 201
 
 
-@bp.delete("/documents/<document_id>")
+@bp.delete("/<document_id>")
 @require_auth
 def delete_document(document_id: str):
     sb = user_client(g.access_token)
@@ -146,65 +147,70 @@ def delete_document(document_id: str):
     return jsonify({"ok": True})
 
 
-# ---------------------------------------------------------------------------
-# Per-case attachments
-# ---------------------------------------------------------------------------
-@bp.get("/cases/<case_id>/documents")
+@bp.get("/<document_id>/url")
 @require_auth
-def list_case_documents(case_id: str):
+def document_url(document_id: str):
+    """Issue a short-lived signed URL for one document. Called on click,
+    not on list — keeps the list endpoint snappy."""
     sb = user_client(g.access_token)
     res = (
-        sb.table("case_documents")
-        .select("attached_at, user_documents!inner(*)")
-        .eq("case_id", case_id)
+        sb.table("user_documents")
+        .select("storage_path")
+        .eq("id", document_id)
+        .maybe_single()
         .execute()
     )
-    out: list[dict[str, Any]] = []
-    for row in res.data or []:
-        doc = row.get("user_documents") or {}
-        if doc.get("deleted_at"):
-            continue
-        out.append(_serialize({**doc, "attached_at": row.get("attached_at")}))
-    return jsonify({"documents": out})
+    if not res.data:
+        return jsonify({"error": "not found"}), 404
+    url = _signed_url(res.data["storage_path"])
+    if not url:
+        return jsonify({"error": "could not sign url"}), 500
+    return jsonify({"url": url, "ttl_seconds": SIGNED_URL_TTL})
 
 
-@bp.post("/cases/<case_id>/documents")
+@bp.post("/<document_id>/analyze")
 @require_auth
-def attach_document(case_id: str):
-    data = request.get_json(silent=True) or {}
-    document_id = data.get("document_id")
-    if not document_id:
-        return jsonify({"error": "document_id is required"}), 400
+def analyze_document_endpoint(document_id: str):
+    """Run Gemini classification + field extraction on a saved document.
+    Persists the result so re-renders are free."""
+    api_key = current_app.config.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
 
     sb = user_client(g.access_token)
-    sb.table("case_documents").upsert(
-        {"case_id": case_id, "document_id": document_id},
-        on_conflict="case_id,document_id",
-    ).execute()
-
     fetched = (
         sb.table("user_documents")
-        .select("*")
+        .select("storage_path")
         .eq("id", document_id)
         .maybe_single()
         .execute()
     )
     if not fetched.data:
-        return jsonify({"error": "document not found"}), 404
-    return jsonify({"document": _serialize(fetched.data)}), 201
+        return jsonify({"error": "not found"}), 404
 
+    try:
+        svc = service_client()
+        blob = svc.storage.from_(BUCKET).download(fetched.data["storage_path"])
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": f"could not load document: {exc}"}), 500
 
-@bp.delete("/cases/<case_id>/documents/<document_id>")
-@require_auth
-def detach_document(case_id: str, document_id: str):
-    sb = user_client(g.access_token)
-    res = (
-        sb.table("case_documents")
-        .delete()
-        .eq("case_id", case_id)
-        .eq("document_id", document_id)
+    try:
+        result = analyze_document(blob, api_key)
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": str(exc)}), 500
+
+    analysis = result.model_dump()
+    update = {
+        "doc_type": analysis["doc_type"],
+        "gemini_analysis": analysis,
+        "analyzed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    updated = (
+        sb.table("user_documents")
+        .update(update)
+        .eq("id", document_id)
         .execute()
     )
-    if not res.data:
-        return jsonify({"error": "not found"}), 404
-    return jsonify({"ok": True})
+    if not updated.data:
+        return jsonify({"error": "failed to persist analysis"}), 500
+    return jsonify({"document": _serialize(updated.data[0])})
