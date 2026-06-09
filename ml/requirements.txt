@@ -1,0 +1,13 @@
+# Gemini pipeline
+flask>=3.0
+google-genai>=1.0
+pillow>=10.0
+pydantic>=2.0
+python-dotenv>=1.0
+
+# Damage classifier
+torch>=2.0
+transformers>=4.40
+
+# YOLO-World post-disaster detector
+ultralytics>=8.2
