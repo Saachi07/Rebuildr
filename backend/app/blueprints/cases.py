@@ -22,8 +22,6 @@ WRITABLE = {
     "region",
     "location",
     "incident_date",
-    "insurance_provider",
-    "insurance_policy_number",
     "status",
     "intake_answers",
 }
