@@ -11,8 +11,6 @@ export default function NewCase() {
     disaster_type: "wildfire",
     location: "",
     incident_date: "",
-    insurance_provider: "",
-    insurance_policy_number: "",
   });
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,12 +51,6 @@ export default function NewCase() {
 
           <label>Incident date</label>
           <input type="date" value={form.incident_date} onChange={(e) => update("incident_date", e.target.value)} />
-
-          <label>Insurance provider (optional)</label>
-          <input value={form.insurance_provider} onChange={(e) => update("insurance_provider", e.target.value)} />
-
-          <label>Insurance policy # (optional)</label>
-          <input value={form.insurance_policy_number} onChange={(e) => update("insurance_policy_number", e.target.value)} />
 
           {err && <div className="error">{err}</div>}
           <div style={{ marginTop: 16 }}>

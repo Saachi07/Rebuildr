@@ -1,4 +1,4 @@
-import { Link, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -9,6 +9,11 @@ import Inventory from "./pages/Inventory";
 import Recommendations from "./pages/Recommendations";
 import Emergency from "./pages/Emergency";
 import Documents from "./pages/Documents";
+import NotFound from "./pages/NotFound";
+import Terms from "./pages/legal/Terms";
+import Privacy from "./pages/legal/Privacy";
+import { TermsGate } from "./components/TermsGate";
+import { Spinner } from "./components/Skeleton";
 
 function Nav() {
   const { user, signOut } = useAuth();
@@ -20,6 +25,7 @@ function Nav() {
         {user ? (
           <>
             <Link to="/dashboard">Dashboard</Link>
+            <Link to="/documents">Documents</Link>
             <span className="muted" style={{ marginLeft: 12 }}>{user.email}</span>
             <button
               className="secondary"
@@ -35,29 +41,44 @@ function Nav() {
   );
 }
 
+function ActionBar() {
+  const { user } = useAuth();
+  const loc = useLocation();
+  if (!user) return null;
+  if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
+  return (
+    <div className="actionbar">
+      <Link to="/cases/new"><button>+ Create case</button></Link>
+    </div>
+  );
+}
+
 function Private({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="container">Loading…</div>;
+  if (loading) return <div className="container"><Spinner /></div>;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 export default function App() {
   return (
-    <>
+    <TermsGate>
       <Nav />
+      <ActionBar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/emergency" element={<Emergency />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/legal/terms" element={<Terms />} />
+        <Route path="/legal/privacy" element={<Privacy />} />
         <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
+        <Route path="/documents" element={<Private><Documents /></Private>} />
         <Route path="/cases/new" element={<Private><NewCase /></Private>} />
         <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />
         <Route path="/cases/:id/inventory" element={<Private><Inventory /></Private>} />
-        <Route path="/cases/:id/documents" element={<Private><Documents /></Private>} />
         <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </TermsGate>
   );
 }

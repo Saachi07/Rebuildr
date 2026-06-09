@@ -254,18 +254,44 @@ export default function Inventory() {
 
       <h3>Logged items ({items.length})</h3>
       {items.length === 0 && <p className="muted">No items yet.</p>}
-      <div className="grid grid-2">
-        {items.map((it) => (
-          <div key={it.id} className="card">
-            <strong>{it.name}</strong>
-            <p className="muted" style={{ margin: "4px 0 0", fontSize: 13 }}>
-              {it.category} · {it.damage_type} · {it.damage_severity}
-              {it.estimated_value ? ` · $${it.estimated_value}` : ""}
-            </p>
-            {it.description && <p style={{ marginTop: 6, fontSize: 13 }}>{it.description}</p>}
-          </div>
-        ))}
-      </div>
+      {items.length > 0 && (
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Damaged?</th>
+              <th>Severity</th>
+              <th>Est. price</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((it) => (
+              <tr key={it.id}>
+                <td>
+                  <strong>{it.name}</strong>
+                  {it.category && <span className="muted" style={{ fontSize: 12 }}> · {it.category}</span>}
+                  {it.description && <div className="muted" style={{ fontSize: 12 }}>{it.description}</div>}
+                </td>
+                <td>{it.damage_type ?? <span className="muted">—</span>}</td>
+                <td>{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
+                <td>{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
+                <td className="actions muted" style={{ fontSize: 12 }}>—</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {items.length > 0 && (
+        <div className="row" style={{ marginTop: 24 }}>
+          <span className="spacer" />
+          <Link to="/documents"><button className="secondary">Next: Documents →</button></Link>
+          <Link to={`/cases/${id}/recommendations`} style={{ marginLeft: 8 }}>
+            <button>Next: Recommendations →</button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

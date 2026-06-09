@@ -83,3 +83,62 @@ label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 6px
 .rec-group h2 { margin: 24px 0 12px; font-size: 18px; }
 .rec-card { display: flex; gap: 12px; align-items: flex-start; }
 .rec-card .score { color: var(--muted); font-size: 12px; }
+
+.actionbar {
+  display: flex; justify-content: flex-end;
+  padding: 10px 24px; border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.tbl { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.tbl th, .tbl td { padding: 10px 14px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border); }
+.tbl th { background: var(--panel-2); color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl td.actions { text-align: right; }
+.tbl td.actions button { padding: 6px 10px; font-size: 12px; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.modal {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 28px; max-width: 520px; width: 100%;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--panel-2) 0%, var(--panel) 50%, var(--panel-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.spinner {
+  width: 28px; height: 28px; border: 3px solid var(--panel-2);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 24px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.notice {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; font-size: 13px;
+}
+.notice strong { color: var(--text); }
+.notice .muted { display: block; margin-top: 4px; font-size: 12px; }
+
+.legal { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+.legal h1 { font-size: 28px; }
+.legal h2 { font-size: 18px; margin-top: 24px; }
+.legal p, .legal li { color: var(--text); line-height: 1.6; font-size: 14px; }
+
+.not-found { text-align: center; padding: 80px 20px; }
+.not-found h1 { font-size: 64px; margin: 0; color: var(--accent); }
+.not-found p { color: var(--muted); margin: 12px 0 24px; }
+
+.check-row { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0; font-size: 13px; }
+.check-row input[type="checkbox"] { width: auto; margin-top: 3px; }
+.check-row label { margin: 0; color: var(--text); }
+.check-row a { color: var(--accent); text-decoration: underline; }
+

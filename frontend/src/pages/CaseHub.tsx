@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, Case } from "../api";
+import { Spinner } from "../components/Skeleton";
 
 export default function CaseHub() {
   const { id } = useParams();
@@ -13,7 +14,7 @@ export default function CaseHub() {
   }, [id]);
 
   if (err) return <div className="container"><div className="error">{err}</div></div>;
-  if (!c) return <div className="container">Loading…</div>;
+  if (!c) return <div className="container"><Spinner /></div>;
 
   return (
     <div className="container">
@@ -31,10 +32,6 @@ export default function CaseHub() {
         <Link to={`/cases/${c.id}/inventory`} className="tile">
           <h3>Inventory</h3>
           <p>Log damaged items room-by-room.</p>
-        </Link>
-        <Link to={`/cases/${c.id}/documents`} className="tile">
-          <h3>Documents</h3>
-          <p>Upload policy & claims, or reuse from your library.</p>
         </Link>
         <Link to={`/cases/${c.id}/recommendations`} className="tile">
           <h3>Recovery Plan</h3>

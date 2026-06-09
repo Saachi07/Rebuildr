@@ -1,43 +1,36 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { api, CaseDocument, UserDocument } from "../api";
-
-const DOC_TYPES = ["insurance_policy", "claim", "id", "deed", "receipt", "other"];
+import { Link } from "react-router-dom";
+import { api, GeminiAnalysis, UserDocument } from "../api";
+import { Spinner } from "../components/Skeleton";
 
 export default function Documents() {
-  const { id } = useParams();
-  const [caseDocs, setCaseDocs] = useState<CaseDocument[]>([]);
-  const [library, setLibrary] = useState<UserDocument[]>([]);
+  const [docs, setDocs] = useState<UserDocument[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [docType, setDocType] = useState("insurance_policy");
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [justSaved, setJustSaved] = useState<UserDocument | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [opening, setOpening] = useState<string | null>(null);
 
   function load() {
-    if (!id) return;
-    Promise.all([api.listCaseDocuments(id), api.listMyDocuments()])
-      .then(([c, l]) => {
-        setCaseDocs(c.documents);
-        setLibrary(l.documents);
-      })
-      .catch((e) => setErr(String(e)));
+    api.listMyDocuments().then((r) => setDocs(r.documents)).catch((e) => setErr(String(e)));
   }
 
-  useEffect(load, [id]);
+  useEffect(load, []);
 
-  async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !id) return;
+  async function save() {
+    if (!file) return;
     if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
       setErr("Only PDF files are supported.");
       return;
     }
-    setErr(null);
     setBusy(true);
+    setErr(null);
+    setJustSaved(null);
     try {
-      const { document } = await api.uploadDocument(file, docType);
-      await api.attachDocumentToCase(id, document.id);
+      const { document } = await api.uploadDocument(file);
+      setJustSaved(document);
+      setFile(null);
       load();
     } catch (e: any) {
       setErr(e.message ?? String(e));
@@ -46,119 +39,155 @@ export default function Documents() {
     }
   }
 
-  async function attachExisting(docId: string) {
-    if (!id) return;
-    setBusy(true);
+  async function analyze() {
+    if (!justSaved) return;
+    setAnalyzing(true);
     setErr(null);
     try {
-      await api.attachDocumentToCase(id, docId);
-      setShowLibrary(false);
+      const { document } = await api.analyzeDocument(justSaved.id);
+      setJustSaved(document);
       load();
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
-      setBusy(false);
+      setAnalyzing(false);
     }
   }
 
-  async function detach(docId: string) {
-    if (!id) return;
-    setBusy(true);
-    setErr(null);
+  async function openDoc(id: string) {
+    setOpening(id);
     try {
-      await api.detachDocumentFromCase(id, docId);
-      load();
+      const { url } = await api.getDocumentUrl(id);
+      window.open(url, "_blank", "noreferrer");
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
-      setBusy(false);
+      setOpening(null);
     }
   }
 
-  const attachedIds = new Set(caseDocs.map((d) => d.id));
-  const unattached = library.filter((d) => !attachedIds.has(d.id));
+  async function remove(id: string) {
+    if (!confirm("Delete this document?")) return;
+    try {
+      await api.deleteDocument(id);
+      load();
+    } catch (e: any) {
+      setErr(e.message ?? String(e));
+    }
+  }
 
   return (
     <div className="container">
       <div className="row">
         <h1>Documents</h1>
         <span className="spacer" />
-        <Link to={`/cases/${id}`}><button className="secondary">← Back</button></Link>
+        <Link to="/dashboard"><button className="secondary">← Dashboard</button></Link>
       </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Upload a document</h3>
-        <div className="grid grid-2">
-          <div>
-            <label>Document type</label>
-            <select value={docType} onChange={(e) => setDocType(e.target.value)}>
-              {DOC_TYPES.map((d) => <option key={d}>{d}</option>)}
-            </select>
-          </div>
-          <div>
-            <label>File (PDF only)</label>
-            <input type="file" accept="application/pdf,.pdf" onChange={onUpload} disabled={busy} />
-            <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-              Only PDF files are supported.
-            </p>
-          </div>
+        <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
+          Save it first, then run analysis to extract a summary and key fields.
+        </p>
+        <input
+          type="file"
+          accept="application/pdf,.pdf"
+          onChange={(e) => { setFile(e.target.files?.[0] ?? null); setJustSaved(null); }}
+          disabled={busy || analyzing}
+        />
+        <div className="row" style={{ marginTop: 12 }}>
+          <button onClick={save} disabled={!file || busy || analyzing}>
+            {busy ? "Saving…" : "Save"}
+          </button>
+          <button
+            className="secondary"
+            onClick={analyze}
+            disabled={!justSaved || analyzing}
+          >
+            {analyzing ? "Analyzing…" : "Analyze"}
+          </button>
         </div>
         {err && <div className="error">{err}</div>}
 
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
-          <button
-            className="secondary"
-            onClick={() => setShowLibrary((s) => !s)}
-            disabled={busy}
-          >
-            {showLibrary ? "Hide" : "Reuse from your library"} ({unattached.length})
-          </button>
-          <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-            Already uploaded a document for another case? Attach it here instead of re-uploading.
-          </p>
-          {showLibrary && (
-            <div className="grid grid-2" style={{ marginTop: 12 }}>
-              {unattached.length === 0 && (
-                <p className="muted">Nothing to reuse yet — your uploaded documents will show up here.</p>
-              )}
-              {unattached.map((d) => (
-                <div key={d.id} className="card" style={{ margin: 0 }}>
-                  <strong>{d.name}</strong>
-                  <p className="muted" style={{ margin: "4px 0 8px", fontSize: 12 }}>
-                    {d.doc_type ?? "—"}
-                    {d.uploaded_at ? ` · ${new Date(d.uploaded_at).toLocaleDateString()}` : ""}
-                  </p>
-                  <button onClick={() => attachExisting(d.id)} disabled={busy}>Attach to this case</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <h3>Attached to this case ({caseDocs.length})</h3>
-      {caseDocs.length === 0 && <p className="muted">No documents attached yet.</p>}
-      <div className="grid grid-2">
-        {caseDocs.map((d) => (
-          <div key={d.id} className="card">
-            <strong>{d.name}</strong>
-            <p className="muted" style={{ margin: "4px 0 8px", fontSize: 12 }}>
-              {d.doc_type ?? "—"}
-              {d.uploaded_at ? ` · ${new Date(d.uploaded_at).toLocaleDateString()}` : ""}
-            </p>
+        {justSaved && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
             <div className="row">
-              {d.url && (
-                <a href={d.url} target="_blank" rel="noreferrer">
-                  <button className="secondary">Open</button>
-                </a>
-              )}
-              <button className="secondary" onClick={() => detach(d.id)} disabled={busy}>
-                Detach
-              </button>
+              <strong>{justSaved.name}</strong>
+              {justSaved.doc_type && <span className="badge">{justSaved.doc_type}</span>}
+            </div>
+            {justSaved.gemini_analysis && (
+              <AnalysisView analysis={justSaved.gemini_analysis} />
+            )}
+            <div className="row" style={{ marginTop: 12 }}>
+              <span className="spacer" />
+              <Link to="/dashboard"><button>Next →</button></Link>
             </div>
           </div>
-        ))}
+        )}
       </div>
+
+      <h3>Your documents ({docs?.length ?? 0})</h3>
+      {docs === null && !err && <Spinner />}
+      {docs && docs.length === 0 && (
+        <p className="muted">No documents uploaded yet.</p>
+      )}
+      {docs && docs.length > 0 && (
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Uploaded</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {docs.map((d) => (
+              <tr key={d.id}>
+                <td>{d.name}</td>
+                <td>{d.doc_type ? <span className="badge">{d.doc_type}</span> : <span className="muted">—</span>}</td>
+                <td className="muted">{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : "—"}</td>
+                <td className="actions">
+                  <button
+                    className="secondary"
+                    onClick={() => openDoc(d.id)}
+                    disabled={opening === d.id}
+                  >
+                    {opening === d.id ? "Opening…" : "Open"}
+                  </button>{" "}
+                  <button className="secondary" onClick={() => remove(d.id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function AnalysisView({ analysis }: { analysis: GeminiAnalysis }) {
+  const entries = Object.entries(analysis.key_fields ?? {});
+  return (
+    <div style={{ marginTop: 12 }}>
+      {analysis.summary && (
+        <p style={{ marginTop: 0, fontSize: 14 }}>{analysis.summary}</p>
+      )}
+      {entries.length > 0 && (
+        <table className="tbl" style={{ marginTop: 12 }}>
+          <thead>
+            <tr><th>Field</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            {entries.map(([k, v]) => (
+              <tr key={k}>
+                <td>{k}</td>
+                <td>{typeof v === "string" || typeof v === "number" ? String(v) : JSON.stringify(v)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

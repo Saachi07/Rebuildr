@@ -29,8 +29,6 @@ export type Case = {
   region?: string | null;
   location?: string | null;
   incident_date?: string | null;
-  insurance_provider?: string | null;
-  insurance_policy_number?: string | null;
   status?: string | null;
   intake_answers?: Record<string, unknown> | null;
   derived_tags?: string[] | null;
@@ -49,6 +47,12 @@ export type Item = {
   description?: string;
 };
 
+export type GeminiAnalysis = {
+  summary?: string;
+  key_fields?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
 export type UserDocument = {
   id: string;
   name: string;
@@ -56,10 +60,8 @@ export type UserDocument = {
   mime_type?: string;
   size_bytes?: number;
   uploaded_at?: string;
-  url?: string;
+  gemini_analysis?: GeminiAnalysis | null;
 };
-
-export type CaseDocument = UserDocument & { attached_at?: string };
 
 export type ScannedItem = {
   name: string;
@@ -93,6 +95,18 @@ export type Recommendation = {
 
 export type RecGroups = Record<string, Recommendation[]>;
 
+export type Terms = {
+  version: string;
+  privacy_url?: string;
+  terms_url?: string;
+  encryption_notice?: string;
+};
+
+export type TermsStatus = {
+  accepted: boolean;
+  version?: string;
+};
+
 export const api = {
   listCases: () => request<{ cases: Case[] }>("/cases"),
   getCase: (id: string) => request<{ case: Case }>(`/cases/${id}`),
@@ -111,21 +125,15 @@ export const api = {
     ),
 
   listMyDocuments: () => request<{ documents: UserDocument[] }>("/documents"),
-  listCaseDocuments: (caseId: string) =>
-    request<{ documents: CaseDocument[] }>(`/cases/${caseId}/documents`),
-  attachDocumentToCase: (caseId: string, documentId: string) =>
-    request<{ document: CaseDocument }>(`/cases/${caseId}/documents`, {
-      method: "POST",
-      body: JSON.stringify({ document_id: documentId }),
-    }),
-  detachDocumentFromCase: (caseId: string, documentId: string) =>
-    request<{ ok: true }>(`/cases/${caseId}/documents/${documentId}`, {
-      method: "DELETE",
-    }),
-  uploadDocument: async (file: File, doc_type?: string): Promise<{ document: UserDocument }> => {
+  getDocumentUrl: (id: string) =>
+    request<{ url: string; ttl_seconds: number }>(`/documents/${id}/url`),
+  analyzeDocument: (id: string) =>
+    request<{ document: UserDocument }>(`/documents/${id}/analyze`, { method: "POST" }),
+  deleteDocument: (id: string) =>
+    request<{ ok: true }>(`/documents/${id}`, { method: "DELETE" }),
+  uploadDocument: async (file: File): Promise<{ document: UserDocument }> => {
     const fd = new FormData();
     fd.append("file", file);
-    if (doc_type) fd.append("doc_type", doc_type);
     const res = await fetch(`${BASE}/documents`, {
       method: "POST",
       headers: await authHeaders(),
@@ -146,4 +154,12 @@ export const api = {
     if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
     return res.json();
   },
+
+  getTerms: () => request<Terms>("/terms"),
+  getTermsStatus: () => request<TermsStatus>("/terms/status"),
+  acceptTerms: (version: string) =>
+    request<{ ok: true }>("/terms/accept", {
+      method: "POST",
+      body: JSON.stringify({ version }),
+    }),
 };
