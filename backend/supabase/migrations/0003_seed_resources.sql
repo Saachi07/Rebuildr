@@ -101,6 +101,33 @@ values
      'https://canada.ca/en/employment-social-development/services/sin.html', '1-800-622-6232',
      '*', '{*}', '{1}', '{missing_id}', '{}', null, null, null),
 
+     ('ab-student-aid-disaster', 'financial',
+    'Alberta Student Aid — Natural Disaster Information for Students',
+    'Disaster-related repayment relief and borrower support for Alberta and Canada student loans when studies or finances are disrupted by a natural disaster.',
+    'https://studentaid.alberta.ca/resources/natural-disaster-information-for-students/',
+    '1-855-606-2096',
+    'AB', '{wildfire,flood,tornado,*}', '{4,5}', '{student_borrower}', '{}', null, null, null),
+
+    ('nslsc-rap', 'financial',
+    'National Student Loans Service Centre — Repayment Assistance Plan',
+    'Student loan repayment relief that can reduce or suspend monthly payments for borrowers facing financial hardship.',
+    'https://www.canada.ca/en/services/benefits/education/student-aid/grants-loans.html',
+    '1-888-815-4514',
+    '*', '{*}', '{4,5}', '{student_borrower}', '{}', null, null, null),
+
+    ('indspire-emergency-fund', 'financial',
+    'Indspire — Student Emergency Funding',
+    'Emergency grants for Indigenous students across Canada facing unexpected financial hardship, displacement, or crisis.',
+    'https://www.indspire.ca',
+    '1-800-449-8018',
+    '*', '{*}', '{4,7,10,11}', '{indigenous_student}', '{}', null, null, null),
+
+    ('paa-disaster-response-network', 'health',
+    'Psychologists’ Association of Alberta — Disaster Response Network',
+    'Volunteer psychologist support and short-term crisis intervention for people impacted by wildfire, evacuation, or other disasters.',
+    'https://psychologistsassociation.ab.ca/disaster-response-network/', null,
+    'AB', '{wildfire,flood,tornado,*}', '{2,3}', '{}', '{}', null, null, null),
+
     ('habitat-ab', 'community',
      'Habitat for Humanity — Alberta chapters',
      'Long-term rebuild support and ReStore discounts for materials. Eligibility varies by chapter — worth a call.',
@@ -147,7 +174,7 @@ values
     'Alberta Seniors Benefit',
     'Financial assistance and support programs for eligible Alberta seniors experiencing financial hardship.',
     'https://www.alberta.ca/alberta-seniors-benefit', null,
-    'AB', '{*}', '{4,7,10}', '{senior}', '{}', null, null, null)
+    'AB', '{*}', '{4,7,10}', '{senior}', '{}', null, null, null),
 
     ('legal-aid-alberta', 'legal',
     'Legal Aid Alberta',
@@ -178,6 +205,7 @@ values
     'Information on emergency pet sheltering, boarding, and animal welfare resources during evacuations and disaster-related displacement.',
     'https://albertaspca.org', '1-800-232-7722',
     'AB', '{wildfire,flood,tornado,*}', '{0,7}', '{has_pets}', '{}', null, null, null),
+    
     
     
 on conflict (id) do update set
