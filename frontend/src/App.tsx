@@ -140,7 +140,6 @@ function Nav() {
         {user ? (
           <>
             <Link to="/dashboard">Dashboard</Link>
-            <Link to="/documents">Documents</Link>
             <NotificationsButton />
             <ProfileMenu />
           </>

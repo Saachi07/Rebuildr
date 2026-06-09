@@ -13,14 +13,46 @@ export default function Dashboard() {
     api.getTerms().then(setTerms).catch(() => {});
   }, []);
 
+  const latestCase = cases && cases.length > 0 ? cases[0] : null;
+  const inventoryHref = latestCase ? `/cases/${latestCase.id}/inventory` : "/cases/new";
+  const recommendationsHref = latestCase ? `/cases/${latestCase.id}/recommendations` : "/cases/new";
+
   return (
     <div className="container">
-      <div className="row">
-        <h1>My cases</h1>
-        <span className="spacer" />
-        <Link to="/documents"><button className="secondary">View saved documents</button></Link>
-      </div>
+      <h1>Dashboard</h1>
       {err && <div className="error">{err}</div>}
+
+      <div className="grid grid-2 dashboard-tiles">
+        <Link to="/documents" className="card tile big-tile">
+          <h2>Documents</h2>
+          <p>View, upload, and manage your saved insurance, ID, and policy documents.</p>
+        </Link>
+
+        <Link to={inventoryHref} className="card tile big-tile">
+          <h2>Inventory</h2>
+          <p>
+            {latestCase
+              ? `Log and review damaged items for ${latestCase.case_name}.`
+              : "Create a case first, then log damaged items room by room."}
+          </p>
+        </Link>
+
+        <Link to="/emergency" className="card tile big-tile">
+          <h2>Emergency Contacts</h2>
+          <p>Local emergency lines, insurance hotlines, and disaster recovery services.</p>
+        </Link>
+
+        <Link to={recommendationsHref} className="card tile big-tile">
+          <h2>Recommendation Plan</h2>
+          <p>
+            {latestCase
+              ? `Personalized recovery steps and next actions for ${latestCase.case_name}.`
+              : "Create a case to generate a personalized recovery plan."}
+          </p>
+        </Link>
+      </div>
+
+      <h2 style={{ marginTop: 40 }}>My cases</h2>
       {cases === null && !err && <SkeletonList rows={2} />}
       {cases && cases.length === 0 && (
         <div className="card">
