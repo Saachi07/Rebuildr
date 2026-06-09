@@ -14,11 +14,15 @@ def create_app(config_class: type = Config) -> Flask:
     from .blueprints.cases import bp as cases_bp
     from .blueprints.items import bp as items_bp
     from .blueprints.recommendations import bp as recs_bp
+    from .blueprints.documents import bp as documents_bp
+    from .blueprints.ml import bp as ml_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(cases_bp)
     app.register_blueprint(items_bp)
     app.register_blueprint(recs_bp)
+    app.register_blueprint(documents_bp)
+    app.register_blueprint(ml_bp)
 
     return app
