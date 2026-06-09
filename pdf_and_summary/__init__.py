@@ -5,6 +5,7 @@ from .extractor import extract_text_from_pdf
 from .models import Deadline, DocumentSummary, ExtractionResult, FlaggedIssue
 from .ocr import OCREngine, OCRError, PaddleOCREngine
 from .pipeline import process_pdf
+from .redactor import RedactionMap, Redactor
 from .summarizer import GeminiSummarizer, summarize_document
 
 __all__ = [
@@ -16,6 +17,8 @@ __all__ = [
     "OCREngine",
     "OCRError",
     "PaddleOCREngine",
+    "RedactionMap",
+    "Redactor",
     "extract_text_from_pdf",
     "load_env_file",
     "process_pdf",

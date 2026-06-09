@@ -27,6 +27,37 @@ _ACTION_WORDS = frozenset(
 _IMPORTANT_LABELS = frozenset({"DATE", "MONEY", "PERCENT", "ORG", "LAW", "EVENT", "CARDINAL"})
 _DISABLED_PIPES = frozenset({"tagger", "attribute_ruler", "lemmatizer"})
 
+_MARKDOWN_TABLE_SEP_RE = re.compile(r"^[ \t]*\|[-:| \t]+\|.*$", re.MULTILINE)
+_MARKDOWN_CELL_RE = re.compile(r"\|([^|\n]*)")
+_MARKDOWN_HEADER_RE = re.compile(r"^#{1,6}[ \t]+", re.MULTILINE)
+_BARE_NUMBER_RE = re.compile(r"^\d{3,5}$")
+_ORG_NOISE_TOKENS = frozenset({
+    "wood frame", "forced air", "copper & pex", "copper /",
+    "wiring copper", "plumbing copper", "asphalt shingle", "owner-occupied",
+})
+_DATE_SENTENCE_MAX_CHARS = 300
+
+
+def _strip_markdown_for_nlp(text: str) -> str:
+    """Strip markdown tables and headers so spaCy sees plain token streams."""
+    text = _MARKDOWN_TABLE_SEP_RE.sub("", text)
+    text = _MARKDOWN_CELL_RE.sub(lambda m: " " + m.group(1).strip(), text)
+    text = text.replace("|", " ")
+    text = _MARKDOWN_HEADER_RE.sub("", text)
+    text = re.sub(r"[^\S\n]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def _is_date_noise(val: str) -> bool:
+    """Return True for bare numbers that spaCy mislabels as dates (e.g. address numbers)."""
+    return bool(_BARE_NUMBER_RE.match(val.strip()))
+
+
+def _is_org_noise(val: str) -> bool:
+    """Return True for construction/material terms mislabeled as organizations."""
+    return val.strip().casefold() in _ORG_NOISE_TOKENS
+
 
 def _term_pattern(terms: frozenset[str]) -> re.Pattern[str]:
     alternatives = (
@@ -74,6 +105,7 @@ class SpaCyNLPEngine:
 
     def analyze(self, text: str, top_n: int = 15) -> NLPAnalysis:
         """Extract entities and rank important sentences from all document text."""
+        text = _strip_markdown_for_nlp(text)
         nlp = self._get_nlp()
         max_chars = min(self.max_chunk_chars, nlp.max_length - 1)
         if max_chars < 1:
@@ -97,16 +129,27 @@ class SpaCyNLPEngine:
                 normalized = val.casefold()
 
                 if ent.label_ == "DATE" and len(val) > 3:
-                    key = (normalized, sentence.casefold())
+                    if _is_date_noise(val):
+                        continue
+                    # Dedup on first 100 chars of sentence to avoid storing near-identical blocks
+                    sent_key = sentence[:100].casefold()
+                    key = (normalized, sent_key)
                     if key not in seen_dates:
                         seen_dates.add(key)
                         dates.append(val)
-                        date_sentences.append(sentence)
+                        display = (
+                            sentence
+                            if len(sentence) <= _DATE_SENTENCE_MAX_CHARS
+                            else sentence[:_DATE_SENTENCE_MAX_CHARS].rsplit(" ", 1)[0] + "…"
+                        )
+                        date_sentences.append(display)
                 elif ent.label_ == "MONEY":
                     _append_unique(money, seen_entities, ent.label_, normalized, val)
                 elif ent.label_ == "PERCENT":
                     _append_unique(percentages, seen_entities, ent.label_, normalized, val)
                 elif ent.label_ == "ORG" and len(val) > 2:
+                    if _is_org_noise(val):
+                        continue
                     _append_unique(organizations, seen_entities, ent.label_, normalized, val)
 
         return NLPAnalysis(
@@ -209,14 +252,7 @@ def _sentence_for(ent: Any) -> str:
 
 def _rank_sentences(docs: list[Any], top_n: int) -> list[str]:
     scored: list[tuple[float, int, str]] = []
-    position = 0
-    total_positions: list[int] = []
-    for doc in docs:
-        for _ in doc.sents:
-            total_positions.append(position)
-            position += 1
-    total = max(len(total_positions), 1)
-
+    total = max(sum(1 for doc in docs for _ in doc.sents), 1)
     position = 0
     for doc in docs:
         for sent in doc.sents:
@@ -228,8 +264,7 @@ def _rank_sentences(docs: list[Any], top_n: int) -> list[str]:
             score += 1.0 if contains_deadline_term(text) else 0.0
             score += 1.0 if contains_coverage_term(text) else 0.0
             score += 1.0 if contains_action_term(text) else 0.0
-            # Small position bonus: sentences in the first third of the document
-            # often contain policy tables and key terms.
+            # Bonus for sentences in the first third — policy tables and key terms tend to appear early.
             if position / total < 0.33:
                 score += 0.5
             if score > 0:

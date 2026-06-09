@@ -32,15 +32,21 @@ def main() -> None:
         help="Disable PaddleOCR fallback for pages without selectable text",
     )
     parser.add_argument(
-        "--markitdown",
-        action="store_true",
-        help="Use MarkItDown to convert native PDF pages to structured Markdown "
-        "(requires: pip install markitdown[pdf])",
-    )
-    parser.add_argument(
         "--no-nlp",
         action="store_true",
         help="Skip spaCy NLP entity extraction",
+    )
+    parser.add_argument(
+        "--redact-pii",
+        action="store_true",
+        help="Replace personal identifiers (names, address, policy number, etc.) "
+        "with placeholders before sending text to Gemini",
+    )
+    parser.add_argument(
+        "--no-rehydrate",
+        action="store_true",
+        help="Keep placeholders in the output instead of restoring original values "
+        "(use for logs or safer backend storage; only applies with --redact-pii)",
     )
     parser.add_argument(
         "--env-file",
@@ -55,7 +61,6 @@ def main() -> None:
                 "extraction": extract_text_from_pdf(
                     args.pdf,
                     use_ocr=not args.no_ocr,
-                    use_markitdown=args.markitdown,
                 ).to_dict()
             }
         else:
@@ -74,7 +79,8 @@ def main() -> None:
                 prefer_gemini=not args.local,
                 use_ocr=not args.no_ocr,
                 use_nlp=not args.no_nlp,
-                use_markitdown=args.markitdown,
+                redact_pii=args.redact_pii,
+                rehydrate=not args.no_rehydrate,
             )
         print(json.dumps(result, indent=2))
     except DocumentProcessingError as exc:
