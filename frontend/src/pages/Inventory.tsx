@@ -46,6 +46,7 @@ export default function Inventory() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [scanBusy, setScanBusy] = useState(false);
   const [scanErr, setScanErr] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"none" | "category" | "status" | "price">("none");
 
   function load() {
     if (!id) return;
@@ -252,33 +253,59 @@ export default function Inventory() {
         </form>
       </div>
 
-      <h3>Logged items ({items.length})</h3>
+      <div className="row" style={{ marginTop: 8 }}>
+        <h3 style={{ margin: 0 }}>Logged items ({items.length})</h3>
+        <span className="spacer" />
+        {items.length > 0 && (
+          <>
+            <label style={{ margin: 0 }}>Sort by</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              style={{ width: "auto" }}
+            >
+              <option value="none">Default</option>
+              <option value="category">Category</option>
+              <option value="status">Status (damaged first)</option>
+              <option value="price">Price (high → low)</option>
+            </select>
+          </>
+        )}
+      </div>
       {items.length === 0 && <p className="muted">No items yet.</p>}
       {items.length > 0 && (
         <table className="tbl">
           <thead>
             <tr>
               <th>Item</th>
-              <th>Damaged?</th>
+              <th>Category</th>
+              <th>Status</th>
               <th>Severity</th>
               <th>Est. price</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {items.map((it) => (
-              <tr key={it.id}>
-                <td>
-                  <strong>{it.name}</strong>
-                  {it.category && <span className="muted" style={{ fontSize: 12 }}> · {it.category}</span>}
-                  {it.description && <div className="muted" style={{ fontSize: 12 }}>{it.description}</div>}
-                </td>
-                <td>{it.damage_type ?? <span className="muted">—</span>}</td>
-                <td>{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
-                <td>{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
-                <td className="actions muted" style={{ fontSize: 12 }}>—</td>
-              </tr>
-            ))}
+            {sortItems(items, sortBy).map((it) => {
+              const status = itemStatus(it);
+              return (
+                <tr key={it.id}>
+                  <td>
+                    <strong>{it.name}</strong>
+                    {it.description && <div className="muted" style={{ fontSize: 12 }}>{it.description}</div>}
+                  </td>
+                  <td>{it.category ?? <span className="muted">—</span>}</td>
+                  <td>
+                    {status === "damaged" && <span className="status-damaged">Damaged</span>}
+                    {status === "salvageable" && <span className="status-salvageable">Salvageable</span>}
+                    {status === "unknown" && <span className="muted">—</span>}
+                  </td>
+                  <td>{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
+                  <td>{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
+                  <td className="actions muted" style={{ fontSize: 12 }}>—</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -294,6 +321,28 @@ export default function Inventory() {
       )}
     </div>
   );
+}
+
+type ItemStatus = "damaged" | "salvageable" | "unknown";
+
+function itemStatus(it: Item): ItemStatus {
+  if (!it.damage_severity && !it.damage_type) return "unknown";
+  if (it.damage_severity === "severe" || it.damage_severity === "destroyed") return "damaged";
+  return "salvageable";
+}
+
+function sortItems(items: Item[], by: "none" | "category" | "status" | "price"): Item[] {
+  if (by === "none") return items;
+  const copy = [...items];
+  if (by === "category") {
+    copy.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? ""));
+  } else if (by === "status") {
+    const rank: Record<ItemStatus, number> = { damaged: 0, salvageable: 1, unknown: 2 };
+    copy.sort((a, b) => rank[itemStatus(a)] - rank[itemStatus(b)]);
+  } else if (by === "price") {
+    copy.sort((a, b) => (b.estimated_value ?? 0) - (a.estimated_value ?? 0));
+  }
+  return copy;
 }
 
 function mapCategory(geminiCategory: string): string {
