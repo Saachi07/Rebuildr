@@ -6,7 +6,7 @@ _model = None
 def _get_model() -> YOLOWorld:
     global _model
     if _model is None:
-        _model = YOLOWorld("yolov8s-worldv2.pt")
+        _model = YOLOWorld("yolov8m-worldv2.pt")
     return _model
 
 
