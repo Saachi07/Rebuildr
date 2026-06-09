@@ -29,15 +29,28 @@ PROMPT = """You are classifying a personal disaster-recovery document.
 
 Read the PDF and return:
 - doc_type: one of insurance_policy, claim, id, deed, receipt, invoice,
-  estimate, correspondence, other. Pick the closest match.
+  estimate, correspondence, other.
 - title: a short human-readable title for the document.
 - summary: 1-3 sentences on what this document is and why it matters.
 - key_fields: any structured fields you can lift verbatim — policy number,
   claim number, effective dates, parties, amounts. Omit fields you cannot
   find; do not guess.
 
-Be conservative. If you cannot tell, use doc_type=other and say so in the
-summary."""
+Classification rules:
+- Use the listed types ONLY for documents directly related to disaster
+  recovery, insurance, or property/identity: policies, claims, government
+  IDs, property deeds, repair receipts/invoices/estimates, and
+  correspondence about a disaster or claim.
+- Use doc_type=other for anything that is NOT a disaster-recovery document —
+  including school or academic transcripts, medical records unrelated to a
+  disaster claim, employment records, tax returns (unless proving property
+  loss), financial statements, legal documents unrelated to property or
+  insurance, and any document whose primary purpose has nothing to do with
+  insuring, claiming, or recovering from a disaster.
+- Do NOT force-fit an irrelevant document into the nearest category. When
+  in doubt, use other.
+- When using other, begin the summary with "This does not appear to be a
+  disaster-recovery document." and briefly describe what it actually is."""
 
 
 class KeyField(BaseModel):

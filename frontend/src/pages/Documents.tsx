@@ -115,6 +115,20 @@ export default function Documents() {
               <strong>{justSaved.name}</strong>
               {justSaved.doc_type && <span className="badge">{justSaved.doc_type}</span>}
             </div>
+            {justSaved.doc_type === "other" && (
+              <div style={{
+                marginTop: 12,
+                padding: "10px 14px",
+                background: "var(--warning-bg, #fffbeb)",
+                border: "1px solid var(--warning-border, #f59e0b)",
+                borderRadius: 6,
+                fontSize: 13,
+                color: "var(--warning-text, #92400e)",
+              }}>
+                This doesn't look like an insurance or disaster-recovery document.
+                It's saved but won't be used in task recommendations.
+              </div>
+            )}
             {justSaved.gemini_analysis && (
               <AnalysisView analysis={justSaved.gemini_analysis} />
             )}
