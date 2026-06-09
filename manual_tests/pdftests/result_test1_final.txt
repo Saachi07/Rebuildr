@@ -1,0 +1,148 @@
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | Fax: 1-800-555-0193 | [EMAIL_1]\nAugust 29, 2024\n[PERSON_1]\nc/o [ADDRESS_1]\nEdmonton, AB T6R 2K1\nRE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT OFFER\nPolicy No: [POLICY_NUMBER_1] | Claim No: CLM-2024-9341 | Loss Date: July 18, 2024\nDear [PERSON_1],\nThank you for your patience during our review of the above-referenced claim. We have completed our initial\nassessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from\nthe wildfire event of July 18, 2024. This letter sets out our current settlement position and the basis for our\ndetermination.\nSUMMARY OF CLAIM ASSESSMENT\nCoverage\nAmount Claimed\nAmount Approved Reason for Adjustment\nCoverage A\n(Dwelling)\n$195,000\n$162,400\nDepreciation applied to non-structural\nelements per policy ACV clause\nCoverage B\n(Other Structures)\n$48,000\n$48,000\nApproved in full\nCoverage C\n(Personal Property)\n$80,000\n$51,200\nItems without proof of ownership\nor receipts reduced to ACV estimate;\nsome luxury items exceed policy sub-limits\nCoverage D\n(Additional Living)\n$4,200\n$4,200\nApproved in full to date\nTOTAL\n$327,200\n$265,800\nNet of $2,500 deductible per occurrence\nITEMS NOT COVERED UNDER THIS CLAIM\nDetached Shed (approx. 120 sq ft) ($6,500 claimed): Not listed as a covered structure on your policy schedule.\nOnly the primary dwelling and the detached garage (Coverage B) are listed.\nLandscaping and Trees ($3,200 claimed): Damage to trees, shrubs, and landscaping caused by wildfire is\nexcluded under Section IV(c) of your policy.\n\n--- Page 2 (native) ---\nHome-Based Business Equipment ($8,400 claimed): Business property is excluded from personal property\ncoverage. A separate commercial inland marine endorsement would be required.\nYOUR OPTIONS AND NEXT STEPS\nYou have the following options with respect to this settlement offer:\nOption 1: Accept the settlement. Sign and return the enclosed Release of All Claims form. Payment of\n$265,800 CAD will be issued within 10 business days of receipt.\nOption 2: Submit additional documentation. If you believe the claim reduction for personal property is\nincorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership\nwithin 30 days of this letter (by September 28, 2024). We will re-evaluate items with sufficient documentation.\nOption 3: Request an independent appraisal. Under Section XI of your policy, either party may demand an\nindependent appraisal of the loss. Each party selects a competent appraiser; the two appraisers select an umpire.\nThe cost of the appraisal is shared equally.\nOption 4: File a complaint. If you disagree with our determination, you may contact the Alberta Insurance\nCouncil (AIC) at 1-800-731-4241 or file a complaint with the General Insurance OmbudService (GIO) at\n1-877-225-0446.\nRESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024. If we do\nnot hear from you by this date, we will follow up by registered mail. Ongoing Additional Living Expenses\n(Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the\npolicy maximum of $97,000 CAD.\nWe recognize this has been an extraordinarily difficult time, and we are committed to resolving your claim fairly\nand efficiently. Your dedicated claims adjuster, [PERSON_2], can be reached directly at [PHONE_1] or\n[EMAIL_2].\nSincerely,\n[PERSON_2]\nSenior Claims Adjuster, Property Division\nAlberta Shield Insurance Co.\nEnclosures: Release of All Claims Form | Proof of Loss Checklist | Appraisal Process Guide | GIO Information Sheet",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 3749,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "August 29, 2024",
+      "July 18, 2024",
+      "July 18, 2024",
+      "10 business days",
+      "30 days",
+      "September 28, 2024",
+      "no later than September 28, 2024",
+      "monthly"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT\u2026",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT\u2026",
+      "We have completed our initial assessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from the wildfire event of July 18, 2024.",
+      "Payment of $265,800 CAD will be issued within 10 business days of receipt.",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "RESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024.",
+      "Ongoing Additional Living Expenses (Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the policy maximum of $97,000 CAD."
+    ],
+    "money": [
+      "195,000",
+      "162,400",
+      "48,000",
+      "80,000",
+      "51,200",
+      "4,200",
+      "327,200",
+      "265,800",
+      "2,500",
+      "6,500",
+      "3,200",
+      "8,400",
+      "$97,000 CAD"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Alberta Shield Insurance Co.",
+      "Edmonton",
+      "Edmonton, AB T6R",
+      "Rural Route 4",
+      "ACV",
+      "Landscaping and Trees",
+      "Home-Based Business Equipment",
+      "Release of All",
+      "CAD",
+      "the Alberta Insurance Council"
+    ],
+    "top_sentences": [
+      "SUMMARY OF CLAIM ASSESSMENT Coverage Amount Claimed Amount Approved Reason for Adjustment Coverage A (Dwelling) $195,000 $162,400 Depreciation applied to non-structural elements per policy ACV clause Coverage B (Other Structures) $48,000 $48,000 Approved in full Coverage C (Personal Property) $80,000 $51,200 Items without proof of ownership or receipts reduced to ACV estimate; some luxury items exceed policy sub-limits Coverage D (Additional Living) $4,200 $4,200 Approved in full to date TOTAL $327,200 $265,800 Net of $2,500 deductible per occurrence ITEMS NOT COVERED UNDER THIS CLAIM Detached Shed (approx.",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT OFFER Policy No: [POLICY_NUMBER_1] Claim No: CLM-2024-9341 Loss Date: July 18, 2024",
+      "If you disagree with our determination, you may contact the Alberta Insurance Council (AIC) at 1-800-731-4241 or file a complaint with the General Insurance OmbudService (GIO) at 1-877-225-0446.",
+      "Ongoing Additional Living Expenses (Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the policy maximum of $97,000 CAD.",
+      "We have completed our initial assessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from the wildfire event of July 18, 2024.",
+      "Landscaping and Trees ($3,200 claimed): Damage to trees, shrubs, and landscaping caused by wildfire is excluded under Section IV(c) of your policy.",
+      "Payment of $265,800 CAD will be issued within 10 business days of receipt.",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "--- Page 2 (native) --- Home-Based Business Equipment ($8,400 claimed): Business property is excluded from personal property coverage.",
+      "Your dedicated claims adjuster, [PERSON_2], can be reached directly at [PHONE_1] or [EMAIL_2].",
+      "120 sq ft) ($6,500 claimed): Not listed as a covered structure on your policy schedule.",
+      "RESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024.",
+      "Sign and return the enclosed Release of All Claims form.",
+      "Option 2: Submit additional documentation.",
+      "Each party selects a competent appraiser; the two appraisers select an umpire."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 7,
+    "categories": {
+      "EMAIL": 2,
+      "PERSON": 2,
+      "ADDRESS": 1,
+      "POLICY_NUMBER": 1,
+      "PHONE": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This letter is a partial settlement offer from Alberta Shield Insurance Co. for your claim related to the July 18, 2024 wildfire. They have assessed the damage to your property and are offering $265,800 CAD after your $2,500 deductible. Some items were not fully covered due to depreciation, lack of proof of ownership, exceeding policy limits, or being excluded from your policy (like a detached shed, landscaping, and home-based business equipment). You have options to accept the offer, submit more documents for personal property, request an independent appraisal, or file a complaint. You need to respond by September 28, 2024. Your Additional Living Expenses will continue to be reimbursed monthly up to $97,000 CAD if you submit receipts.",
+    "flagged_issues": [
+      {
+        "issue_type": "MISSING",
+        "message": "Proof of ownership or receipts for some personal property items are missing, leading to a reduced payout."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Receive payment after accepting settlement",
+        "date": "within 10 business days of receipt"
+      },
+      {
+        "task": "Submit additional documentation for personal property",
+        "date": "within 30 days of this letter (by September 28, 2024)"
+      },
+      {
+        "task": "Respond to the settlement offer",
+        "date": "no later than September 28, 2024"
+      },
+      {
+        "task": "Submit receipts for ongoing Additional Living Expenses",
+        "date": "monthly"
+      }
+    ],
+    "coverage_limits": [
+      "Coverage A (Dwelling) up to $162,400",
+      "Coverage B (Other Structures) up to $48,000",
+      "Coverage C (Personal Property) up to $51,200",
+      "Coverage D (Additional Living Expenses) up to $4,200 to date",
+      "Total settlement offer of $265,800 CAD (after deductible)",
+      "Maximum Additional Living Expenses (Coverage D) up to $97,000 CAD"
+    ],
+    "required_actions": [
+      "Sign and return the enclosed Release of All Claims form",
+      "Submit additional documentation",
+      "Request an independent appraisal",
+      "File a complaint",
+      "Respond to this settlement offer",
+      "Submit receipts for ongoing Additional Living Expenses"
+    ],
+    "warnings": [
+      "Depreciation was applied to non-structural elements based on your policy's Actual Cash Value (ACV) clause.",
+      "Your claim for personal property was reduced because some items lacked proof of ownership or receipts, and were estimated at Actual Cash Value (ACV).",
+      "Some luxury personal property items exceed your policy's sub-limits.",
+      "Your detached shed is not covered because it is not listed as a covered structure on your policy schedule.",
+      "Damage to trees, shrubs, and landscaping caused by wildfire is excluded under Section IV(c) of your policy.",
+      "Home-based business equipment is excluded from personal property coverage.",
+      "A $2,500 deductible applies per occurrence.",
+      "If you request an independent appraisal, the cost will be shared equally between you and the insurer."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}

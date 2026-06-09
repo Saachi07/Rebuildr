@@ -1,0 +1,890 @@
+#from result7.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii /Users/vidhi/Downloads/insurance.pdf
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nHOME INSURANCE POLICY\nCERTIFICATE OF INSURANCE\nPrairies Shield Insurance Group\nPolicy Number\n[POLICY_NUMBER_1]\nPolicy Type\nHomeowners \u2014 Comprehensive (IBC Form 2100 AB)\nNamed Insured\n[PERSON_1] [PERSON_2]\n[ADDRESS_1]\nPolicy Period\nJune 1, 2024 to June 1, 2025 (12:01 a.m. MST)\nPremium (Annual)\n$1,648.00 (taxes included)\nBroker / Agent\nClearwater Insurance Brokers Ltd. \u2014 [BROKER_REF_1]\nUnderwriter\nPrairies Shield Insurance Group, Edmonton, Alberta\nINSURED PREMISES\nProperty Address\n[ADDRESS_1]\nLegal Description\n[LEGAL_DESCRIPTION_1]\nOccupancy\nOwner-Occupied \u2014 Primary Residence\nConstruction Year\n1994\nConstruction Type\nWood Frame \u2014 Brick Veneer Exterior\nTotal Living Area\n1,842 sq. ft. (above grade)\nHeating\nForced Air \u2014 Natural Gas (furnace replaced 2019)\nRoof Type / Age\nAsphalt Shingle \u2014 Replaced 2018\nWiring\nCopper / 200A breaker panel\nPlumbing\nCopper & PEX\nCOVERAGES AND LIMITS\nCoverage\nLimit of Insurance\nAnnual Premium\nSection I \u2014 Dwelling Building (Replacement Cost)\n$620,000\n$812.00\nSection I \u2014 Detached Private Structures (10% of \nDwelling)\n$62,000\n$48.00\nSection I \u2014 Personal Property (Replacement Cost)\n$180,000\n$296.00\nSection I \u2014 Additional Living Expenses (20% of \nDwelling)\n$124,000\n$94.00\nSection II \u2014 Personal Liability\n$2,000,000\n$178.00\nSection II \u2014 Voluntary Medical Payments\n$10,000\nIncluded\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 1\n\n--- Page 2 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nSection II \u2014 Voluntary Property Damage\n$5,000\nIncluded\nSewer Backup & Overland Water Endorsement\n$100,000\n$148.00\nEarthquake Endorsement\n$620,000\n$72.00\nTOTAL ANNUAL PREMIUM (before tax)\n$1,648.00\nDEDUCTIBLES\nPeril\nDeductible\nAll Perils (standard)\n$1,000\nSewer Backup\n$2,500\nOverland Water / Flood\n$2,500\nEarthquake\n5% of Coverage Amount (min. $5,000)\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 2\n\n--- Page 3 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nSECTION I \u2014 PROPERTY COVERAGES\nA. Dwelling Building\nWe insure the dwelling building and attached structures described in this policy against sudden and \naccidental direct physical loss or damage, subject to the exclusions set out herein. Coverage is provided on a \nReplacement Cost basis as defined in the Alberta Residential Home Insurance Standard (IBC Form 2100 \nAB).\nCovered perils include, but are not limited to:\n\u2022\nFire, lightning, explosion\n\u2022\nWindstorm and hail (excluding damage to fences and trees)\n\u2022\nTheft and attempted theft\n\u2022\nVandalism and malicious acts\n\u2022\nAccidental discharge or overflow of water or steam from plumbing, heating, or air conditioning systems\n\u2022\nFalling objects (excluding damage caused by ice, snow, or sleet to outdoor property)\n\u2022\nWeight of ice, snow, or sleet\n\u2022\nFreezing of plumbing systems (subject to heat maintenance condition)\n\u2022\nSmoke damage (sudden and accidental)\n\u2022\nRiot or civil commotion\nB. Detached Private Structures\nWe insure other structures on the insured premises separated from the dwelling by clear space or connected \nonly by a fence, utility line, or similar connection. Coverage is 10% of the Dwelling Building limit, or $62,000.\nC. Personal Property\nWe insure the personal property owned or used by an insured person anywhere in the world against the perils \nlisted under Section A above, on a Replacement Cost basis. The following special limits apply within the \noverall Personal Property limit:\nCategory\nSpecial Limit\nCash, currency, and gift cards\n$500\nJewellery, watches, and furs\n$6,000 (any one article $2,000)\nSecurities, deeds, and manuscripts\n$1,500\nSilverware and goldware\n$10,000\nFirearms and accessories\n$5,000\nBusiness property on premises\n$5,000\nElectronic data and software\n$5,000\nWatercraft (incl. motors and trailers)\n$1,500\nD. Additional Living Expenses\nIf a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living \nexpenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of \n$124,000.\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 3\n\n--- Page 4 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nSECTION I \u2014 EXCLUSIONS (Selected)\nThis policy does not insure loss or damage caused by or resulting from:\n\u2022\nFlood, unless the Overland Water Endorsement is attached\n\u2022\nSewer or drain backup, unless the Sewer Backup Endorsement is attached\n\u2022\nEarthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached\n\u2022\nGradual deterioration, wear and tear, rust, or inherent defect\n\u2022\nInsects, vermin, rodents, or birds\n\u2022\nWar, civil war, or nuclear hazard\n\u2022\nIntentional or criminal acts of the insured\n\u2022\nVacancy exceeding 30 consecutive days without prior written approval\n\u2022\nMechanical or electrical breakdown\n\u2022\nPollution or contamination, including mould resulting from a pre-existing condition\nSECTION II \u2014 LIABILITY COVERAGES\nWe pay on behalf of an insured person all sums that the insured person becomes legally obligated to pay as \ncompensatory damages because of:\n\u2022\nBodily injury or property damage arising out of an occurrence covered by this policy\n\u2022\nPersonal injury (libel, slander, false arrest) occurring in the course of personal activities\nOur obligation to pay damages on your behalf applies up to the limit of $2,000,000 per occurrence. Defence \ncosts are in addition to this limit.\nSECTION II \u2014 EXCLUSIONS (Selected)\n\u2022\nBodily injury to any insured person\n\u2022\nProperty damage to property owned, occupied, or in the care of an insured\n\u2022\nLiability arising from the operation of a motorized vehicle, aircraft, or watercraft over 8 metres\n\u2022\nBusiness pursuits unless specifically endorsed\n\u2022\nTransmission of a communicable disease\n\u2022\nSexual abuse, molestation, or corporal punishment\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 4\n\n--- Page 5 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nOPTIONAL ENDORSEMENTS ATTACHED\nEndorsement\nForm No.\nAdded Premium\nSewer Backup & Overland Water Protection\nIBC AB-SEW-2022\n$148.00\nEarthquake (Vancouver Seismic Rating N/A \u2014 AB rate \napplies)\nIBC AB-EQ-2022\n$72.00\nIdentity Theft Expense Reimbursement ($25,000)\nPSI-IDT-001\nIncluded\nService Line Coverage \u2014 Underground Utilities ($10,000)\nPSI-SLC-002\nIncluded\nMORTGAGE / LOSS PAYEE\nFirst Mortgagee\nTD Canada Trust ([LOAN_NUMBER_1])\nMortgagee Address\nPO Box 1, TD Centre, Toronto, ON M5K 1A2\nMortgagee Interest\nFirst mortgage on [ADDRESS_1]\nGENERAL CONDITIONS\nPremium Payment\nThe annual premium of $1,648.00 is due and payable on the policy effective date. Monthly payment plans are \navailable through the broker. A returned cheque or NSF fee of $35.00 may apply. Failure to pay the premium \nmay result in cancellation of this policy with 10 days' notice in accordance with the Insurance Act (Alberta).\nCancellation\nYou may cancel this policy at any time by providing written notice to Prairies Shield Insurance Group or your \nbroker. We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days \nfor any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3. Return premiums will be \ncalculated on a pro-rata basis for company-initiated cancellations and on a short-rate basis for policyholder-\ninitiated cancellations.\nCoinsurance / Underinsurance\nIf the insured value of the dwelling is less than 100% of full replacement cost at the time of loss, the amount \npayable shall be reduced proportionally. We recommend an annual review of dwelling limits with your broker \nor an independent appraisal every three years.\nSubrogation\nIn the event we pay a claim under this policy, we shall be subrogated to all rights of recovery of the insured \nagainst any party responsible for the loss. You agree to assist and cooperate with us in any subrogation \nproceedings.\nDuties After a Loss\nIn the event of a loss or damage, you must:\n\u2022\nGive prompt notice to us or your broker \u2014 contact our 24-hour claims line at 1-800-555-0199\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 5\n\n--- Page 6 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\n\u2022\nProtect the property from further damage (reasonable emergency expenses are covered)\n\u2022\nPrepare an inventory of damaged or destroyed property with receipts, photos, or other documentation\n\u2022\nSubmit a Proof of Loss within 90 days of the loss unless we grant an extension in writing\n\u2022\nCooperate fully with our investigation, including examination under oath if required\nDispute Resolution and Appraisal\nIf you and we fail to agree on the amount of loss, either party may demand an appraisal in writing. Each party \nselects a competent and impartial appraiser within 20 days. The two appraisers select an umpire; if they \ncannot agree, either may request a judge of the Court of King's Bench of Alberta to appoint one. The decision \nof any two shall be binding on the amount of loss only.\nApplicable Law\nThis policy is governed by and construed in accordance with the laws of the Province of Alberta, including the \nInsurance Act, RSA 2000, c. I-3, and its regulations. All coverage terms conform to Alberta Superintendent of \nInsurance requirements. Any disputes shall be submitted to the courts of the Province of Alberta.\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 6\n\n--- Page 7 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. [POLICY_NUMBER_1]\nIMPORTANT NOTICES\nAlberta Insurance Council (AIC) \u2014 Consumer Information\nIf you have a complaint about this policy or your broker, you may contact the Alberta Insurance Council at 1-\n800-461-6290 or visit aic.ab.ca. If your complaint is not resolved, you may also contact the General Insurance \nOmbudService (GIO) at 1-877-225-0446 or giocanada.org.\nThis policy is issued pursuant to and in accordance with the Insurance Act, RSA 2000, c. I-3, and all \nendorsements, riders, and schedules attached hereto form part of this contract. Please read this entire policy \ncarefully and retain it in a safe place.\nSIGNATURES\nAuthorized Representative, Prairies Shield Insurance Group\nDate Issued: June 1, 2024\nBroker / Agent, Clearwater Insurance Brokers Ltd.\n[LICENCE_NUMBER_1]\nPrairies Shield Insurance Group | Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB T5J 3S4\nTel: 1-800-555-0192 | Claims 24/7: 1-800-555-0199 | www.prairieshield.ca\nMember: Insurance Bureau of Canada | Registered with Alberta Superintendent of Insurance\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 7",
+    "page_count": 7,
+    "pages_with_text": 7,
+    "character_count": 10799,
+    "native_text_pages": 7,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "June 1, 2024 to June 1, 2025",
+      "Annual",
+      "up to 24 months",
+      "30 consecutive days",
+      "annual",
+      "Monthly",
+      "10 days'",
+      "10 days",
+      "30 days",
+      "every three years",
+      "90 days",
+      "20 days",
+      "June 1, 2024 Broker / Agent"
+    ],
+    "date_sentences": [
+      "T6B 1C3 Policy Period June 1, 2024 to June 1, 2025 (12:01 a.m. MST) Premium (Annual) $1,648.00 (taxes included)",
+      "T6B 1C3 Policy Period June 1, 2024 to June 1, 2025 (12:01 a.m. MST) Premium (Annual) $1,648.00 (taxes included)",
+      "motors and trailers) $1,500 D. Additional Living Expenses If a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living expenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of $124,000.",
+      "This policy does not insure loss or damage caused by or resulting from: \u2022 Flood, unless the Overland Water Endorsement is attached \u2022 Sewer or drain backup, unless the Sewer Backup Endorsement is attached \u2022 Earthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached \u2022 Gradual\u2026",
+      "Mortgagee Address PO Box 1, TD Centre, Toronto, ON M5K 1A2 Mortgagee Interest First mortgage on [ADDRESS_1] GENERAL CONDITIONS Premium Payment The annual premium of $1,648.00 is due and payable on the policy effective date.",
+      "Monthly payment plans are available through the broker.",
+      "Failure to pay the premium may result in cancellation of this policy with 10 days' notice in accordance with the Insurance Act (Alberta).",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "We recommend an annual review of dwelling limits with your broker or an independent appraisal every three years.",
+      "[POLICY_NUMBER_1] \u2022 Protect the property from further damage (reasonable emergency expenses are covered) \u2022 Prepare an inventory of damaged or destroyed property with receipts, photos, or other documentation \u2022 Submit a Proof of Loss within 90 days of the loss unless we grant an extension in writing \u2022\u2026",
+      "Each party selects a competent and impartial appraiser within 20 days.",
+      "SIGNATURES Authorized Representative, Prairies Shield Insurance Group Date Issued: June 1, 2024 Broker / Agent, Clearwater Insurance Brokers Ltd. [LICENCE_NUMBER_1] Prairies Shield Insurance Group Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB"
+    ],
+    "money": [
+      "1,648.00",
+      "620,000",
+      "812.00",
+      "62,000",
+      "48.00",
+      "180,000",
+      "296.00",
+      "124,000",
+      "94.00",
+      "2,000,000",
+      "178.00",
+      "10,000",
+      "5,000",
+      "100,000",
+      "148.00",
+      "72.00",
+      "1,000",
+      "2,500",
+      "500",
+      "6,000"
+    ],
+    "percentages": [
+      "10%",
+      "20%",
+      "5%",
+      "less than 100%"
+    ],
+    "organizations": [
+      "ALBERTA HOME INSURANCE",
+      "Prairies Shield Insurance Group",
+      "Edmonton",
+      "Clearwater Insurance Brokers Ltd.",
+      "Underwriter Prairies Shield Insurance Group",
+      "PREMISES Property Address",
+      "Construction Type Wood Frame",
+      "Sewer Backup & Overland Water Endorsement",
+      "Sewer Backup",
+      "Overland Water / Flood"
+    ],
+    "top_sentences": [
+      "[POLICY_NUMBER_1] Section II \u2014 Voluntary Property Damage $5,000 Included Sewer Backup & Overland Water Endorsement $100,000 $148.00 Earthquake Endorsement $620,000 $72.00 TOTAL ANNUAL PREMIUM (before tax) $1,648.00 DEDUCTIBLES Peril Deductible All Perils (standard) $1,000 Sewer Backup $2,500 Overland Water / Flood $2,500 Earthquake 5% of Coverage Amount (min. $5,000) Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 2 --- Page 3 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "Replaced 2018 Wiring Copper / 200A breaker panel Plumbing Copper & PEX COVERAGES AND LIMITS Coverage Limit of Insurance Annual Premium Section I \u2014 Dwelling Building (Replacement Cost) $620,000 $812.00 Section I \u2014 Detached Private Structures (10% of Dwelling) $62,000 $48.00 Section I \u2014 Personal Property (Replacement Cost) $180,000 $296.00 Section I \u2014 Additional Living Expenses (20% of Dwelling) $124,000 $94.00 Section II \u2014 Personal Liability $2,000,000 $178.00 Section II \u2014 Voluntary Medical Payments $10,000 Included Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 1 --- Page 2 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "[POLICY_NUMBER_1] OPTIONAL ENDORSEMENTS ATTACHED Endorsement Form No. Added Premium Sewer Backup & Overland Water Protection IBC AB-SEW-2022 $148.00 Earthquake (Vancouver Seismic Rating N/A \u2014 AB rate applies) IBC AB-EQ-2022 $72.00 Identity Theft Expense Reimbursement ($25,000) PSI-IDT-001 Included Service Line Coverage \u2014 Underground Utilities ($10,000) PSI-SLC-002 Included MORTGAGE / LOSS PAYEE First Mortgagee TD Canada Trust ([LOAN_NUMBER_1])",
+      "The following special limits apply within the overall Personal Property limit: Category Special Limit Cash, currency, and gift cards $500 Jewellery, watches, and furs $6,000 (any one article $2,000) Securities, deeds, and manuscripts $1,500 Silverware and goldware $10,000 Firearms and accessories $5,000 Business property on premises $5,000 Electronic data and software $5,000 Watercraft (incl.",
+      "Mortgagee Address PO Box 1, TD Centre, Toronto, ON M5K 1A2 Mortgagee Interest First mortgage on [ADDRESS_1] GENERAL CONDITIONS Premium Payment The annual premium of $1,648.00 is due and payable on the policy effective date.",
+      "SIGNATURES Authorized Representative, Prairies Shield Insurance Group Date Issued: June 1, 2024 Broker / Agent, Clearwater Insurance Brokers Ltd. [LICENCE_NUMBER_1] Prairies Shield Insurance Group Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB",
+      "T6B 1C3 Legal Description [LEGAL_DESCRIPTION_1] Occupancy Owner-Occupied \u2014 Primary Residence Construction Year 1994 Construction Type Wood Frame \u2014 Brick Veneer Exterior Total Living Area 1,842 sq. ft. (above grade) Heating Forced Air \u2014 Natural Gas (furnace replaced 2019) Roof Type / Age Asphalt Shingle \u2014",
+      "This policy does not insure loss or damage caused by or resulting from: \u2022 Flood, unless the Overland Water Endorsement is attached \u2022 Sewer or drain backup, unless the Sewer Backup Endorsement is attached \u2022 Earthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached \u2022 Gradual deterioration, wear and tear, rust, or inherent defect \u2022 Insects, vermin, rodents, or birds \u2022 War, civil war, or nuclear hazard \u2022 Intentional or criminal acts of the insured \u2022 Vacancy exceeding 30 consecutive days without prior written approval \u2022 Mechanical or electrical breakdown \u2022 Pollution or contamination, including mould resulting from a pre-existing condition SECTION II \u2014 LIABILITY COVERAGES We pay on behalf of an insured person all sums that the insured person becomes legally obligated to pay as compensatory damages because of: \u2022 Bodily injury or property damage arising out of an occurrence covered by this policy \u2022 Personal injury (libel, slander, false arrest) occurring in the course of personal activities Our obligation to pay damages on your behalf applies up to the limit of $2,000,000 per occurrence.",
+      "#AB-03291 Underwriter Prairies Shield Insurance Group, Edmonton, Alberta INSURED PREMISES Property Address 4817 \u2013 52 Avenue NW, Edmonton, AB",
+      "Duties After a Loss In the event of a loss or damage, you must: \u2022 Give prompt notice to us or your broker \u2014 contact our 24-hour claims line at 1-800-555-0199 Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 5 --- Page 6 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "T5J 3S4 Tel: 1-800-555-0192 Claims 24/7: 1-800-555-0199 www.prairieshield.ca Member: Insurance Bureau of Canada Registered with Alberta Superintendent of Insurance Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 7",
+      "motors and trailers) $1,500 D. Additional Living Expenses If a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living expenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of $124,000.",
+      "Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 3 --- Page 4 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 6 --- Page 7 (native) --- ALBERTA HOME INSURANCE POLICY Policy No."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 8,
+    "categories": {
+      "POLICY_NUMBER": 1,
+      "PERSON": 2,
+      "ADDRESS": 1,
+      "BROKER_REF": 1,
+      "LEGAL_DESCRIPTION": 1,
+      "LOAN_NUMBER": 1,
+      "LICENCE_NUMBER": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This is your home insurance policy for 4817 \u2013 52 Avenue NW, Edmonton, AB T6B 1C3 from June 1, 2024, to June 1, 2025. It covers your main home, other structures on your property, and your personal belongings against many risks like fire, theft, and water damage. It also includes coverage for legal responsibility if you accidentally cause harm to others or their property. There are specific limits for different types of property and events, and certain deductibles apply. You have extra coverage for sewer backup, overland water, earthquake, identity theft, and damage to underground service lines. Be aware of important exclusions, such as damage from long-term wear and tear, and conditions like needing to maintain heat to prevent pipes from freezing. If your home is empty for more than 30 days without approval, your coverage might be affected.",
+    "flagged_issues": [
+      {
+        "issue_type": "ACTION_REQUIRED",
+        "message": "Your policy may not cover losses if your home is vacant for more than 30 consecutive days without prior written approval."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "If the insured value of your dwelling is less than 100% of its full replacement cost at the time of a loss, the amount you are paid for a claim may be reduced proportionally."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "The deductible for earthquake damage is a percentage (5%) of the coverage amount, with a minimum of $5,000."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Policy period",
+        "date": "June 1, 2024 to June 1, 2025"
+      },
+      {
+        "task": "Maintain normal standard of living after a covered loss",
+        "date": "up to 24 months"
+      },
+      {
+        "task": "Vacancy without prior written approval voids or limits coverage",
+        "date": "exceeding 30 consecutive days"
+      },
+      {
+        "task": "Annual premium payment",
+        "date": "Annual"
+      },
+      {
+        "task": "Monthly payment plans available",
+        "date": "Monthly"
+      },
+      {
+        "task": "Notice for policy cancellation due to non-payment",
+        "date": "10 days'"
+      },
+      {
+        "task": "Notice for policy cancellation by insurer for non-payment",
+        "date": "10 days"
+      },
+      {
+        "task": "Notice for policy cancellation by insurer for any other reason",
+        "date": "30 days"
+      },
+      {
+        "task": "Recommended annual review of dwelling limits",
+        "date": "annual"
+      },
+      {
+        "task": "Recommended independent appraisal of dwelling limits",
+        "date": "every three years"
+      },
+      {
+        "task": "Submit Proof of Loss after a loss",
+        "date": "within 90 days of the loss"
+      },
+      {
+        "task": "Select appraiser if there's a dispute on loss amount",
+        "date": "within 20 days"
+      },
+      {
+        "task": "Policy issue date",
+        "date": "June 1, 2024"
+      }
+    ],
+    "coverage_limits": [
+      "Dwelling Building (Replacement Cost): $620,000",
+      "Detached Private Structures (10% of Dwelling): $62,000",
+      "Personal Property (Replacement Cost): $180,000",
+      "Additional Living Expenses (20% of Dwelling): $124,000",
+      "Personal Liability: $2,000,000",
+      "Voluntary Medical Payments: $10,000",
+      "Voluntary Property Damage: $5,000",
+      "Sewer Backup & Overland Water Endorsement: $100,000",
+      "Earthquake Endorsement: $620,000",
+      "Cash, currency, and gift cards (special limit within Personal Property): $500",
+      "Jewellery, watches, and furs (special limit within Personal Property): $6,000 (any one article $2,000)",
+      "Securities, deeds, and manuscripts (special limit within Personal Property): $1,500",
+      "Silverware and goldware (special limit within Personal Property): $10,000",
+      "Firearms and accessories (special limit within Personal Property): $5,000",
+      "Business property on premises (special limit within Personal Property): $5,000",
+      "Electronic data and software (special limit within Personal Property): $5,000",
+      "Watercraft (incl. motors and trailers) (special limit within Personal Property): $1,500",
+      "Identity Theft Expense Reimbursement: $25,000",
+      "Service Line Coverage \u2014 Underground Utilities: $10,000"
+    ],
+    "required_actions": [
+      "Give prompt notice to us or your broker after a loss.",
+      "Protect the property from further damage after a loss.",
+      "Prepare an inventory of damaged or destroyed property with receipts, photos, or other documentation after a loss.",
+      "Submit a Proof of Loss within 90 days of the loss unless an extension is granted in writing.",
+      "Cooperate fully with our investigation, including examination under oath if required.",
+      "Assist and cooperate with us in any subrogation proceedings.",
+      "Read this entire policy carefully.",
+      "Retain this policy in a safe place."
+    ],
+    "warnings": [
+      "Your standard deductible for all perils is $1,000.",
+      "Your deductible for sewer backup is $2,500.",
+      "Your deductible for overland water/flood is $2,500.",
+      "Your deductible for earthquake is 5% of the coverage amount, with a minimum of $5,000.",
+      "Coverage for windstorm and hail excludes damage to fences and trees.",
+      "Coverage for falling objects excludes damage caused by ice, snow, or sleet to outdoor property.",
+      "Freezing of plumbing systems is covered only if heat is maintained in the building.",
+      "This policy does not cover loss or damage from gradual deterioration, wear and tear, rust, or inherent defect.",
+      "This policy does not cover loss or damage from insects, vermin, rodents, or birds.",
+      "This policy does not cover loss or damage from war, civil war, or nuclear hazard.",
+      "This policy does not cover loss or damage from intentional or criminal acts of the insured.",
+      "This policy does not cover loss or damage from mechanical or electrical breakdown.",
+      "This policy does not cover loss or damage from pollution or contamination, including mould resulting from a pre-existing condition.",
+      "Liability coverage excludes bodily injury to any insured person.",
+      "Liability coverage excludes property damage to property owned, occupied, or in the care of an insured.",
+      "Liability coverage excludes liability arising from the operation of a motorized vehicle, aircraft, or watercraft over 8 metres.",
+      "Liability coverage excludes business pursuits unless specifically endorsed.",
+      "Liability coverage excludes transmission of a communicable disease.",
+      "Liability coverage excludes sexual abuse, molestation, or corporal punishment.",
+      "If the insured value of the dwelling is less than 100% of full replacement cost at the time of loss, the amount payable shall be reduced proportionally."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+
+#from test1.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii '04_claim_adjustment_letter(1).pdf'
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | Fax: 1-800-555-0193 | [EMAIL_1]\nAugust 29, 2024\n[PERSON_1]\nc/o [ADDRESS_1]\nEdmonton, AB T6R 2K1\nRE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT OFFER\nPolicy No: [POLICY_NUMBER_1] | Claim No: CLM-2024-9341 | Loss Date: July 18, 2024\nDear [PERSON_1],\nThank you for your patience during our review of the above-referenced claim. We have completed our initial\nassessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from\nthe wildfire event of July 18, 2024. This letter sets out our current settlement position and the basis for our\ndetermination.\nSUMMARY OF CLAIM ASSESSMENT\nCoverage\nAmount Claimed\nAmount Approved Reason for Adjustment\nCoverage A\n(Dwelling)\n$195,000\n$162,400\nDepreciation applied to non-structural\nelements per policy ACV clause\nCoverage B\n(Other Structures)\n$48,000\n$48,000\nApproved in full\nCoverage C\n(Personal Property)\n$80,000\n$51,200\nItems without proof of ownership\nor receipts reduced to ACV estimate;\nsome luxury items exceed policy sub-limits\nCoverage D\n(Additional Living)\n$4,200\n$4,200\nApproved in full to date\nTOTAL\n$327,200\n$265,800\nNet of $2,500 deductible per occurrence\nITEMS NOT COVERED UNDER THIS CLAIM\nDetached Shed (approx. 120 sq ft) ($6,500 claimed): Not listed as a covered structure on your policy schedule.\nOnly the primary dwelling and the detached garage (Coverage B) are listed.\nLandscaping and Trees ($3,200 claimed): Damage to trees, shrubs, and landscaping caused by wildfire is\nexcluded under Section IV(c) of your policy.\n\n--- Page 2 (native) ---\nHome-Based Business Equipment ($8,400 claimed): Business property is excluded from personal property\ncoverage. A separate commercial inland marine endorsement would be required.\nYOUR OPTIONS AND NEXT STEPS\nYou have the following options with respect to this settlement offer:\nOption 1: Accept the settlement. Sign and return the enclosed Release of All Claims form. Payment of\n$265,800 CAD will be issued within 10 business days of receipt.\nOption 2: Submit additional documentation. If you believe the claim reduction for personal property is\nincorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership\nwithin 30 days of this letter (by September 28, 2024). We will re-evaluate items with sufficient documentation.\nOption 3: Request an independent appraisal. Under Section XI of your policy, either party may demand an\nindependent appraisal of the loss. Each party selects a competent appraiser; the two appraisers select an umpire.\nThe cost of the appraisal is shared equally.\nOption 4: File a complaint. If you disagree with our determination, you may contact the Alberta Insurance\nCouncil (AIC) at 1-800-731-4241 or file a complaint with the General Insurance OmbudService (GIO) at\n1-877-225-0446.\nRESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024. If we do\nnot hear from you by this date, we will follow up by registered mail. Ongoing Additional Living Expenses\n(Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the\npolicy maximum of $97,000 CAD.\nWe recognize this has been an extraordinarily difficult time, and we are committed to resolving your claim fairly\nand efficiently. Your dedicated claims adjuster, [PERSON_2], can be reached directly at [PHONE_1] or\n[EMAIL_2].\nSincerely,\n[PERSON_2]\nSenior Claims Adjuster, Property Division\nAlberta Shield Insurance Co.\nEnclosures: Release of All Claims Form | Proof of Loss Checklist | Appraisal Process Guide | GIO Information Sheet",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 3749,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "August 29, 2024",
+      "July 18, 2024",
+      "July 18, 2024",
+      "10 business days",
+      "30 days",
+      "September 28, 2024",
+      "no later than September 28, 2024",
+      "monthly"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT\u2026",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT\u2026",
+      "We have completed our initial assessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from the wildfire event of July 18, 2024.",
+      "Payment of $265,800 CAD will be issued within 10 business days of receipt.",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "RESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024.",
+      "Ongoing Additional Living Expenses (Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the policy maximum of $97,000 CAD."
+    ],
+    "money": [
+      "195,000",
+      "162,400",
+      "48,000",
+      "80,000",
+      "51,200",
+      "4,200",
+      "327,200",
+      "265,800",
+      "2,500",
+      "6,500",
+      "3,200",
+      "8,400",
+      "$97,000 CAD"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Alberta Shield Insurance Co.",
+      "Edmonton",
+      "Edmonton, AB T6R",
+      "Rural Route 4",
+      "ACV",
+      "Landscaping and Trees",
+      "Home-Based Business Equipment",
+      "Release of All",
+      "CAD",
+      "the Alberta Insurance Council"
+    ],
+    "top_sentences": [
+      "SUMMARY OF CLAIM ASSESSMENT Coverage Amount Claimed Amount Approved Reason for Adjustment Coverage A (Dwelling) $195,000 $162,400 Depreciation applied to non-structural elements per policy ACV clause Coverage B (Other Structures) $48,000 $48,000 Approved in full Coverage C (Personal Property) $80,000 $51,200 Items without proof of ownership or receipts reduced to ACV estimate; some luxury items exceed policy sub-limits Coverage D (Additional Living) $4,200 $4,200 Approved in full to date TOTAL $327,200 $265,800 Net of $2,500 deductible per occurrence ITEMS NOT COVERED UNDER THIS CLAIM Detached Shed (approx.",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 Fax: 1-800-555-0193 [EMAIL_1] August 29, 2024 [PERSON_1] c/o [ADDRESS_1] Edmonton, AB T6R 2K1 RE: NOTICE OF CLAIM ADJUSTMENT \u2014 PARTIAL SETTLEMENT OFFER Policy No: [POLICY_NUMBER_1] Claim No: CLM-2024-9341 Loss Date: July 18, 2024",
+      "If you disagree with our determination, you may contact the Alberta Insurance Council (AIC) at 1-800-731-4241 or file a complaint with the General Insurance OmbudService (GIO) at 1-877-225-0446.",
+      "Ongoing Additional Living Expenses (Coverage D) will continue to be reimbursed on a monthly basis upon submission of receipts, up to the policy maximum of $97,000 CAD.",
+      "We have completed our initial assessment of the property damage at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta, resulting from the wildfire event of July 18, 2024.",
+      "Landscaping and Trees ($3,200 claimed): Damage to trees, shrubs, and landscaping caused by wildfire is excluded under Section IV(c) of your policy.",
+      "Payment of $265,800 CAD will be issued within 10 business days of receipt.",
+      "If you believe the claim reduction for personal property is incorrect, you may submit additional receipts, photographs, credit card statements, or other proof of ownership within 30 days of this letter (by September 28, 2024).",
+      "--- Page 2 (native) --- Home-Based Business Equipment ($8,400 claimed): Business property is excluded from personal property coverage.",
+      "Your dedicated claims adjuster, [PERSON_2], can be reached directly at [PHONE_1] or [EMAIL_2].",
+      "120 sq ft) ($6,500 claimed): Not listed as a covered structure on your policy schedule.",
+      "RESPONSE DEADLINE: Please respond to this settlement offer no later than September 28, 2024.",
+      "Sign and return the enclosed Release of All Claims form.",
+      "Option 2: Submit additional documentation.",
+      "Each party selects a competent appraiser; the two appraisers select an umpire."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 7,
+    "categories": {
+      "EMAIL": 2,
+      "PERSON": 2,
+      "ADDRESS": 1,
+      "POLICY_NUMBER": 1,
+      "PHONE": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This letter is a partial settlement offer for your wildfire claim from July 18, 2024, for your property at Rural Route 4, Site 12, Box 3, Lac La Biche County, Alberta. Alberta Shield Insurance Co. has approved a total of $265,800 CAD after applying a $2,500 deductible. This amount includes coverage for your dwelling, other structures, personal property, and additional living expenses. Some items like a detached shed, landscaping, trees, and home-based business equipment are not covered. You have until September 28, 2024, to respond to this offer. You can accept the offer, submit more documents for personal property, request an independent appraisal, or file a complaint.",
+    "flagged_issues": [],
+    "deadlines": [
+      {
+        "task": "Loss Date",
+        "date": "July 18, 2024"
+      },
+      {
+        "task": "Wildfire event date",
+        "date": "July 18, 2024"
+      },
+      {
+        "task": "Payment of $265,800 CAD will be issued",
+        "date": "within 10 business days of receipt of signed Release of All Claims form"
+      },
+      {
+        "task": "Submit additional documentation for personal property",
+        "date": "within 30 days of this letter (by September 28, 2024)"
+      },
+      {
+        "task": "Respond to this settlement offer",
+        "date": "no later than September 28, 2024"
+      },
+      {
+        "task": "Ongoing Additional Living Expenses (Coverage D) will continue to be reimbursed",
+        "date": "monthly"
+      }
+    ],
+    "coverage_limits": [
+      "Dwelling (Coverage A) approved $162,400",
+      "Other Structures (Coverage B) approved $48,000",
+      "Personal Property (Coverage C) approved $51,200",
+      "Additional Living Expenses (Coverage D) approved to date $4,200",
+      "Total approved settlement $265,800",
+      "Policy maximum for Additional Living Expenses (Coverage D) $97,000 CAD"
+    ],
+    "required_actions": [
+      "Sign and return the enclosed Release of All Claims form (if accepting the settlement)",
+      "Submit additional receipts, photographs, credit card statements, or other proof of ownership for personal property",
+      "Respond to this settlement offer",
+      "Request an independent appraisal of the loss",
+      "Contact the Alberta Insurance Council (AIC) at 1-800-731-4241 or file a complaint with the General Insurance OmbudService (GIO) at 1-877-225-0446 (if disagreeing with the determination)",
+      "Submit receipts for ongoing Additional Living Expenses"
+    ],
+    "warnings": [
+      "A $2,500 deductible applies per occurrence.",
+      "Depreciation was applied to non-structural elements for Dwelling coverage based on the policy's Actual Cash Value (ACV) clause.",
+      "Items without proof of ownership or receipts for Personal Property coverage were reduced to an ACV estimate.",
+      "Some luxury items claimed under Personal Property exceed policy sub-limits.",
+      "A detached shed (approx. 120 sq ft) claimed at $6,500 is not covered as it is not listed as a covered structure on your policy schedule; only the primary dwelling and the detached garage (Coverage B) are listed.",
+      "Damage to trees, shrubs, and landscaping claimed at $3,200 caused by wildfire is excluded under Section IV(c) of your policy.",
+      "Home-based business equipment claimed at $8,400 is excluded from personal property coverage. A separate commercial inland marine endorsement would be required for coverage."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+
+# from test2.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii '01_home_insurance_policy.pdf'
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\nHOMEOWNER'S INSURANCE POLICY\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | [EMAIL_1]\nPolicy No: [POLICY_NUMBER_1]\nDate: March 14, 2024\nPOLICYHOLDER INFORMATION\nNamed Insured: [PERSON_1]\nProperty Address: [ADDRESS_1]\nPolicy Period: March 14, 2024 to March 14, 2025\nEffective Date: March 14, 2024 at 12:01 A.M. Standard Time\nSECTION I \u2014 PROPERTY COVERAGES\nCoverage\nLimit of Insurance\nDeductible\nA \u2014 Dwelling (Replacement Cost)\n$485,000 CAD\n$2,500\nB \u2014 Other Structures\n$48,500 CAD (10% of Coverage A)\n$2,500\nC \u2014 Personal Property (Actual Cash Value)\n$145,000 CAD\n$2,500\nD \u2014 Additional Living Expenses\n$97,000 CAD (20% of Coverage A)\nNil\nE \u2014 Personal Liability\n$1,000,000 CAD\nNil\nF \u2014 Medical Payments to Others\n$5,000 CAD per person\nNil\nSECTION II \u2014 PERILS INSURED AGAINST\nYour dwelling and personal property are insured against direct physical loss caused by the following named perils,\nsubject to the exclusions, conditions, and limitations set forth in this policy:\nFire and Lightning: Direct physical damage resulting from fire, lightning, or smoke damage directly caused by a\nhostile fire on or near the insured premises.\nWindstorm and Hail: Physical damage caused by windstorm, cyclone, tornado, or hail. Does not include loss to\nproperty contained in a building caused by rain, snow, sleet, sand, or dust unless the direct force of wind or hail\nfirst damages the roof or walls.\nExplosion: Loss caused by explosion of any kind, including steam boiler explosion, excluding sonic booms.\nWildfire: Direct physical loss caused by wildfire spreading from adjacent land or structures. Coverage applies to\ndwelling and personal property. Evacuation order must be documented by competent authority.\nFlood (Overland Water) \u2014 EXCLUDED: Overland flooding, surface water, waves, tidal water, and water which\nbacks up through sewers or drains IS NOT covered under this policy. Refer to your Overland Water Endorsement\n(if applicable).\n\n--- Page 2 (native) ---\nSECTION III \u2014 EXCLUSIONS AND CONDITIONS\nThis policy does not insure against loss resulting directly or indirectly from any of the following, regardless of any\nother cause or event contributing concurrently or in any sequence to the loss:\n\u2022 Neglect of the insured to use all reasonable means to save and preserve property at and after the time of a loss.\n\u2022 Intentional or fraudulent acts committed by or at the direction of an insured.\n\u2022 Earth movement, including earthquake, landslide, mine subsidence, mudflow, earth sinking, rising, or shifting.\n\u2022 Power failure originating away from the insured premises.\n\u2022 Wear and tear, marring, deterioration, inherent vice, latent defect, or mechanical breakdown.\n\u2022 Pollution or contamination of any kind, including smoke, vapour, soot, fumes, acid, alkali, or toxic chemicals.\nCLAIMS REPORTING OBLIGATIONS\nIn the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within\n30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or\ndestroyed personal property, including quantity, description, actual cash value, and the amount of loss; (4) submit\na Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta\nShield Insurance Co.\nIMPORTANT: Failure to comply with the claims reporting obligations described above may result in denial of your claim.\nIf you have questions about this policy or wish to report a loss, contact our 24-hour claims line at 1-800-555-0192 or visit\nalbertashield.ca/claims.\nThis document is an excerpt of your policy. Please retain all pages for your records. Alberta Shield Insurance Co. is licensed to\nconduct insurance business in the Province of Alberta.",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 3881,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "March 14, 2024",
+      "March 14, 2024 to March 14, 2025",
+      "30 days",
+      "90 days"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address:\u2026",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address:\u2026",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including\u2026",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including\u2026"
+    ],
+    "money": [
+      "485,000",
+      "2,500",
+      "48,500",
+      "145,000",
+      "97,000",
+      "1,000,000",
+      "5,000"
+    ],
+    "percentages": [
+      "10%",
+      "20%"
+    ],
+    "organizations": [
+      "Alberta Shield Insurance Co. HOMEOWNER'S",
+      "Edmonton",
+      "Effective Date",
+      "12:01 A.M. Standard Time SECTION",
+      "CAD",
+      "Flood (Overland Water",
+      "Overland Water Endorsement",
+      "EXCLUSIONS",
+      "CONDITIONS",
+      "\u2022 Earth"
+    ],
+    "top_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address: [ADDRESS_1] Policy Period: March 14, 2024 to March 14, 2025 Effective Date: March 14, 2024 at 12:01 A.M. Standard Time SECTION I \u2014 PROPERTY COVERAGES Coverage Limit of Insurance Deductible A \u2014 Dwelling (Replacement Cost) $485,000 CAD $2,500 B \u2014 Other Structures $48,500 CAD (10% of Coverage A) $2,500 C \u2014 Personal Property (Actual Cash Value) $145,000 CAD $2,500 D \u2014 Additional Living Expenses $97,000 CAD (20% of Coverage A) Nil E \u2014 Personal Liability $1,000,000 CAD Nil F \u2014 Medical Payments to Others $5,000 CAD per person Nil SECTION II \u2014 PERILS INSURED AGAINST Your dwelling and personal property are insured against direct physical loss caused by the following named perils, subject to the exclusions, conditions, and limitations set forth in this policy: Fire and Lightning: Direct physical damage resulting from fire, lightning, or smoke damage directly caused by a hostile fire on or near the insured premises.",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including quantity, description, actual cash value, and the amount of loss; (4) submit a Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta Shield Insurance Co. IMPORTANT: Failure to comply with the claims reporting obligations described above may result in denial of your claim.",
+      "If you have questions about this policy or wish to report a loss, contact our 24-hour claims line at 1-800-555-0192 or visit albertashield.ca/claims.",
+      "--- Page 2 (native) --- SECTION III \u2014 EXCLUSIONS AND CONDITIONS",
+      "\u2022 Power failure originating away from the insured premises. \u2022 Wear and tear, marring, deterioration, inherent vice, latent defect, or mechanical breakdown.",
+      "Evacuation order must be documented by competent authority.",
+      "Flood (Overland Water) \u2014 EXCLUDED:",
+      "Refer to your Overland Water Endorsement (if applicable).",
+      "\u2022 Intentional or fraudulent acts committed by or at the direction of an insured.",
+      "\u2022 Earth movement, including earthquake, landslide, mine subsidence, mudflow, earth sinking, rising, or shifting.",
+      "Alberta Shield Insurance Co. is licensed to conduct insurance business in the Province of Alberta.",
+      "Windstorm and Hail: Physical damage caused by windstorm, cyclone, tornado, or hail.",
+      "Does not include loss to property contained in a building caused by rain, snow, sleet, sand, or dust unless the direct force of wind or hail first damages the roof or walls.",
+      "Explosion: Loss caused by explosion of any kind, including steam boiler explosion, excluding sonic booms.",
+      "Direct physical loss caused by wildfire spreading from adjacent land or structures."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 4,
+    "categories": {
+      "EMAIL": 1,
+      "POLICY_NUMBER": 1,
+      "PERSON": 1,
+      "ADDRESS": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This homeowner's insurance policy from Alberta Shield Insurance Co. covers Sarah M. Johnson's home at Rural Route 4, Site 12, Box 3, Lac La Biche County, AB T0A 2C0. It is active from March 14, 2024, to March 14, 2025. The policy covers your dwelling, other structures, personal property, and additional living expenses for certain events like fire, windstorm, and wildfire. It also includes personal liability and medical payments for others. If you have a loss, you must tell the company within 30 days and submit a Proof of Loss form within 90 days. There are specific things this policy does not cover, such as floods, earthquakes, and normal wear and tear.",
+    "flagged_issues": [
+      {
+        "issue_type": "WARNING",
+        "message": "Failure to follow the claims reporting rules may lead to your claim being denied."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Policy effective date",
+        "date": "March 14, 2024"
+      },
+      {
+        "task": "Policy period",
+        "date": "March 14, 2024 to March 14, 2025"
+      },
+      {
+        "task": "Provide immediate written notice to Alberta Shield Insurance Co.",
+        "date": "within 30 days of the loss event"
+      },
+      {
+        "task": "Submit a Proof of Loss form",
+        "date": "within 90 days of the date of loss"
+      }
+    ],
+    "coverage_limits": [
+      "Dwelling (Replacement Cost) up to $485,000 CAD",
+      "Other Structures up to $48,500 CAD (10% of Coverage A)",
+      "Personal Property (Actual Cash Value) up to $145,000 CAD",
+      "Additional Living Expenses up to $97,000 CAD (20% of Coverage A)",
+      "Personal Liability up to $1,000,000 CAD",
+      "Medical Payments to Others up to $5,000 CAD per person"
+    ],
+    "required_actions": [
+      "Provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event",
+      "Protect the property from further damage",
+      "Prepare an inventory of damaged or destroyed personal property, including quantity, description, actual cash value, and the amount of loss",
+      "Submit a Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta Shield Insurance Co."
+    ],
+    "warnings": [
+      "A deductible of $2,500 applies to Dwelling, Other Structures, and Personal Property coverage.",
+      "This policy does not cover overland flooding, surface water, waves, tidal water, or water that backs up through sewers or drains.",
+      "This policy does not cover loss if you neglect to use all reasonable means to save and preserve property after a loss.",
+      "This policy does not cover intentional or fraudulent acts.",
+      "This policy does not cover earth movement, including earthquake, landslide, mudflow, or earth sinking.",
+      "This policy does not cover power failure that starts away from your property.",
+      "This policy does not cover wear and tear, deterioration, or mechanical breakdown.",
+      "This policy does not cover pollution or contamination of any kind.",
+      "For windstorm and hail damage, loss to property inside a building caused by rain, snow, sleet, sand, or dust is not covered unless wind or hail first damages the roof or walls.",
+      "For wildfire coverage, an evacuation order must be documented by a competent authority."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+
+# from test3.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii '02_insurance_claim_form.pdf'
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\nPROPERTY DAMAGE CLAIM FORM\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | [EMAIL_1]\nPolicy No: [POLICY_NUMBER_1]\nDate: July 22, 2024\nComplete all sections. Incomplete forms will delay processing. Submit to [EMAIL_1] or mail to the address above.\nPART A \u2014 POLICYHOLDER INFORMATION\nFull Name:\n[PERSON_1]\nPolicy Number:\n[POLICY_NUMBER_1]\nProperty Address:\n[ADDRESS_1]\nMailing Address (if different):\nSame as above\nPhone (Daytime):\n[PHONE_1]\nPhone (Evening/Cell):\n[PHONE_2]\nEmail Address:\n[EMAIL_2]\nPART B \u2014 LOSS INFORMATION\nDate of Loss:\nJuly 18, 2024\nTime of Loss (approx.):\nApproximately 3:30 PM\nType of Loss:\nWildfire \u2014 structure and contents damage\nLocation of Loss:\nSame as insured property address\nWas an evacuation order issued?\nYes \u2014 Lac La Biche County Evacuation Order No. LLC-2024-07-17\nWere police or fire services\ncalled?\nYes \u2014 Alberta Wildfire and RCMP responded\nHas temporary accommodation\nbeen arranged?\nYes \u2014 staying with family in Edmonton\nEstimated Date of Return to\nProperty:\nUnknown pending structural assessment\nPART C \u2014 DESCRIPTION OF DAMAGE\nDescribe the damage in detail:\nWildfire spread from adjacent crown land. Exterior structure sustained\nsignificant fire and smoke damage. Roof partially collapsed on north side.\nInterior of main floor affected by smoke, heat, and water from suppression\nefforts. Detached garage destroyed. Personal property throughout home\ndamaged or destroyed.\n\n--- Page 2 (native) ---\nHas any damaged property been\nremoved?\nNo \u2014 awaiting adjuster inspection\nHave any emergency repairs been\nmade?\nNo \u2014 property not yet accessible\nDo you have pre-disaster\nphotos/inventory?\nYes \u2014 digital photos stored in cloud backup\nPART D \u2014 ESTIMATED LOSS SUMMARY\nCategory\nBrief Description\nEst. Value (CAD)\nDwelling \u2014 Structure\nRoof, exterior walls, interior flooring, drywall\n$180,000 \u2013 $220,000\nOther Structures\nDetached garage (approx. 600 sq ft)\n$45,000 \u2013 $55,000\nPersonal Property\nFurniture, appliances, clothing, electronics\n$80,000 \u2013 $110,000\nAdditional Living Expenses\nTemporary accommodation + meals (ongoing)\nTBD\nTOTAL ESTIMATED LOSS\n$305,000 \u2013 $385,000\nPART E \u2014 DECLARATION\nI declare that the information provided in this claim form is true, accurate, and complete to the best of my\nknowledge. I understand that providing false or misleading information may result in denial of my claim and could\nconstitute insurance fraud under the Insurance Act (Alberta). I authorize Alberta Shield Insurance Co. to obtain\nany records necessary to verify this claim.\nSignature of Policyholder:\n_________________________________\nDate:\n_______________\nPrint Name:\n[PERSON_1]\nFOR OFFICE USE ONLY \u2014 Claim received: ___________ | Adjuster assigned: ___________ | File No.: ___________",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 2892,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "July 22, 2024",
+      "555-0198",
+      "July 18, 2024 Time of Loss"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. PROPERTY DAMAGE CLAIM FORM 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: July 22, 2024 Complete all sections.",
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS\u2026",
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS\u2026"
+    ],
+    "money": [
+      "180,000",
+      "220,000",
+      "45,000",
+      "55,000",
+      "80,000",
+      "110,000",
+      "305,000",
+      "385,000"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Alberta Shield Insurance Co.",
+      "Edmonton",
+      "Rural Route 4",
+      "Mailing Address",
+      "Phone",
+      "RCMP",
+      "CAD",
+      "Personal Property Furniture"
+    ],
+    "top_sentences": [
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS INFORMATION Date of Loss: July 18, 2024 Time of Loss (approx.):",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. PROPERTY DAMAGE CLAIM FORM 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: July 22, 2024 Complete all sections.",
+      "600 sq ft) $45,000 \u2013 $55,000 Personal Property Furniture, appliances, clothing, electronics $80,000 \u2013 $110,000 Additional Living Expenses Temporary accommodation + meals (ongoing) TBD TOTAL ESTIMATED LOSS $305,000 \u2013 $385,000 PART E \u2014 DECLARATION I declare that the information provided in this claim form is true, accurate, and complete to the best of my knowledge.",
+      "Value (CAD) Dwelling \u2014 Structure Roof, exterior walls, interior flooring, drywall $180,000 \u2013 $220,000 Other Structures Detached garage (approx.",
+      "Submit to [EMAIL_1] or mail to the address above.",
+      "Yes \u2014 Alberta Wildfire and RCMP responded Has temporary accommodation been arranged?",
+      "I understand that providing false or misleading information may result in denial of my claim and could constitute insurance fraud under the Insurance Act (Alberta).",
+      "I authorize Alberta Shield Insurance Co. to obtain any records necessary to verify this claim.",
+      "Approximately 3:30 PM Type of Loss: Wildfire \u2014 structure and contents damage Location of Loss: Same as insured property address Was an evacuation order issued?",
+      "Interior of main floor affected by smoke, heat, and water from suppression efforts.",
+      "Incomplete forms will delay processing.",
+      "PART A \u2014 POLICYHOLDER INFORMATION Full Name:",
+      "Yes \u2014 Lac La Biche County Evacuation Order No. LLC-2024-07-17 Were police or fire services called?",
+      "Yes \u2014 staying with family in Edmonton Estimated Date of Return to Property:",
+      "Unknown pending structural assessment PART C \u2014 DESCRIPTION OF DAMAGE Describe the damage in detail: Wildfire spread from adjacent crown land."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 7,
+    "categories": {
+      "EMAIL": 2,
+      "POLICY_NUMBER": 1,
+      "PERSON": 1,
+      "ADDRESS": 1,
+      "PHONE": 2
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a property damage claim form for a wildfire that damaged your home at Rural Route 4, Site 12, Box 3, Lac La Biche County, AB T0A 2C0 on July 18, 2024. The wildfire caused significant damage to the exterior structure, including a partially collapsed roof, and affected the interior with smoke, heat, and water. Your detached garage was destroyed, and personal property inside the home was damaged or destroyed. You have pre-disaster photos and inventory stored in a cloud backup. You submitted this form on July 22, 2024.",
+    "flagged_issues": [
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "The estimated value for Additional Living Expenses is not yet determined (TBD)."
+      },
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "The estimated date of return to your property is unknown, pending a structural assessment."
+      },
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "No specific deadline for submitting the claim form or other actions is stated in the document."
+      }
+    ],
+    "deadlines": [],
+    "coverage_limits": [
+      "Estimated dwelling structure damage: $180,000 \u2013 $220,000",
+      "Estimated other structures (detached garage) damage: $45,000 \u2013 $55,000",
+      "Estimated personal property damage: $80,000 \u2013 $110,000",
+      "Total estimated loss: $305,000 \u2013 $385,000"
+    ],
+    "required_actions": [
+      "Complete all sections of the claim form.",
+      "Submit the claim form to [EMAIL_1] or mail it to 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4."
+    ],
+    "warnings": [
+      "Providing false or misleading information may result in your claim being denied and could be considered insurance fraud under the Insurance Act (Alberta)."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+
+# from test4.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii '03_alberta_drp_application.pdf'
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nGovernment of Alberta\nDISASTER RECOVERY PROGRAM\nApplication for Financial Assistance \u2014 Residential Applicant\nAlberta Emergency Management Agency | aema.alberta.ca | 310-4455\nThe Alberta Disaster Recovery Program (DRP) provides financial assistance to eligible Albertans for uninsurable\nlosses resulting from a designated disaster. Complete all sections. Attach supporting documents as indicated.\nApplications must be submitted within 90 days of the disaster designation date.\nSECTION 1 \u2014 DISASTER INFORMATION\nDesignated Disaster: 2024 Lac La Biche Wildfire Complex\nDesignation Date: July 19, 2024\nDRP Reference Number: DRP-AB-2024-LLC-007\nApplication Deadline: October 17, 2024\nSECTION 2 \u2014 APPLICANT INFORMATION\nLast Name:\n[PERSON_1]\nFirst Name:\n[PERSON_2]\nDate of Birth:\nApril 3, 1986\nAlberta Health\nNumber:\n123-456-789\nPermanent Address:\n[ADDRESS_1]\nCurrent Address (if\ndisplaced):\nc/o [ADDRESS_2]\nPhone:\n[PHONE_1]\nEmail:\n[EMAIL_1]\nNumber of persons in\nhousehold:\n1\nOwn or rent?\nOwn\nSECTION 3 \u2014 INSURANCE STATUS\nThe DRP covers uninsurable losses only. If you have property insurance, you must first file a claim with your\ninsurer. DRP assistance may cover the gap between your insured settlement and your actual eligible losses.\nDo you have home insurance? Yes\nInsurance Company: Alberta Shield Insurance Co.\nPolicy Number: [POLICY_NUMBER_1]\nHave you filed a claim with your insurer? Yes \u2014 Claim filed July 22, 2024\nEstimated insurance settlement (if known): Not yet determined \u2014 adjuster inspection pending\n\n--- Page 2 (native) ---\nSECTION 4 \u2014 DAMAGE DESCRIPTION\nDamage Category\nDescription of Damage\nEstimated Cost (CAD) Receipts Attached?\nPrimary Residence\n(Structural)\nWildfire damage to roof, exterior walls,\ninterior flooring, windows, HVAC system\n$195,000\nNo \u2014 pending assessment\nPersonal Property\n(Essential Items)\nClothing, bedding, kitchenware, basic\nfurniture destroyed or smoke-damaged\n$18,500\nPartial\nAdditional Living\nExpenses\nTemporary accommodation, meals,\ntransportation since July 18\n$4,200 (to date)\nYes\nOther Structures\nDetached garage \u2014 total loss\n$48,000\nNo\nSECTION 5 \u2014 REQUIRED SUPPORTING DOCUMENTS\n\u2022 Proof of ownership (title, tax notice, or mortgage statement) \u2014 Attached\n\u2022 Two pieces of government-issued ID \u2014 Attached\n\u2022 Proof of primary residence (utility bill or bank statement) \u2014 Attached\n\u2022 Insurance policy and claim acknowledgement letter \u2014 Attached\n\u2022 Photographs of damage (pre- and post-disaster if available) \u2014 Attached \u2014 14 photos\n\u2022 Receipts or estimates for damaged/destroyed property \u2014 Partial \u2014 additional to follow\n\u2022 Evacuation order documentation \u2014 Attached \u2014 LLC-2024-07-17\nIMPORTANT DEADLINES: This application must be received by Alberta Emergency Management Agency\nno later than October 17, 2024. Incomplete applications will not be processed. If you require an extension,\ncontact AEMA at 310-4455 before the deadline.\nDECLARATION\nI certify that the information provided in this application is true and complete. I understand that providing false\ninformation is an offence under the Emergency Management Act and may result in repayment of any assistance\nreceived.\nSignature: _________________________________ Date: _______________\nPrint Name: [PERSON_3]",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 3310,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "90 days",
+      "July 19, 2024",
+      "October 17, 2024",
+      "April 3, 1986",
+      "July 22, 2024",
+      "July 18"
+    ],
+    "date_sentences": [
+      "Applications must be submitted within 90 days of the disaster designation date.",
+      "SECTION 1 \u2014 DISASTER INFORMATION Designated Disaster: 2024 Lac La Biche Wildfire Complex Designation Date: July 19, 2024 DRP Reference Number: DRP-AB-2024-LLC-007 Application Deadline: October 17, 2024 SECTION 2 \u2014 APPLICANT INFORMATION Last Name:",
+      "SECTION 1 \u2014 DISASTER INFORMATION Designated Disaster: 2024 Lac La Biche Wildfire Complex Designation Date: July 19, 2024 DRP Reference Number: DRP-AB-2024-LLC-007 Application Deadline: October 17, 2024 SECTION 2 \u2014 APPLICANT INFORMATION Last Name:",
+      "[PERSON_1] First Name: [PERSON_2] Date of Birth: April 3, 1986 Alberta Health Number: 123-456-789 Permanent Address: [ADDRESS_1] Current Address (if displaced): c/o [ADDRESS_2] Phone: [PHONE_1]",
+      "Yes \u2014 Claim filed July 22, 2024 Estimated insurance settlement (if known): Not yet determined \u2014 adjuster inspection pending --- Page 2 (native) --- SECTION 4 \u2014 DAMAGE DESCRIPTION Damage Category Description of Damage Estimated Cost (CAD)",
+      "\u2014 pending assessment Personal Property (Essential Items) Clothing, bedding, kitchenware, basic furniture destroyed or smoke-damaged $18,500 Partial Additional Living Expenses Temporary accommodation, meals, transportation since July 18 $4,200 (to date)"
+    ],
+    "money": [
+      "195,000",
+      "18,500",
+      "4,200",
+      "48,000"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Alberta Emergency Management Agency",
+      "The Alberta Disaster Recovery Program",
+      "Alberta Health Number:",
+      "Rural Route 4",
+      "Current Address",
+      "Edmonton",
+      "Alberta Shield Insurance Co.",
+      "CAD",
+      "Personal Property",
+      "\u2022 Insurance"
+    ],
+    "top_sentences": [
+      "[PERSON_1] First Name: [PERSON_2] Date of Birth: April 3, 1986 Alberta Health Number: 123-456-789 Permanent Address: [ADDRESS_1] Current Address (if displaced): c/o [ADDRESS_2] Phone: [PHONE_1]",
+      "Attached \u2014 14 photos \u2022 Receipts or estimates for damaged/destroyed property \u2014 Partial \u2014 additional to follow \u2022 Evacuation order documentation \u2014 Attached \u2014 LLC-2024-07-17 IMPORTANT DEADLINES: This application must be received by Alberta Emergency Management Agency no later than October 17, 2024.",
+      "\u2014 pending assessment Personal Property (Essential Items) Clothing, bedding, kitchenware, basic furniture destroyed or smoke-damaged $18,500 Partial Additional Living Expenses Temporary accommodation, meals, transportation since July 18 $4,200 (to date)",
+      "SECTION 1 \u2014 DISASTER INFORMATION Designated Disaster: 2024 Lac La Biche Wildfire Complex Designation Date: July 19, 2024 DRP Reference Number: DRP-AB-2024-LLC-007 Application Deadline: October 17, 2024 SECTION 2 \u2014 APPLICANT INFORMATION Last Name:",
+      "--- Page 1 (native) --- Government of Alberta DISASTER RECOVERY PROGRAM Application for Financial Assistance \u2014 Residential Applicant Alberta Emergency Management Agency aema.alberta.ca 310-4455 The Alberta Disaster Recovery Program (DRP) provides financial assistance to eligible Albertans for uninsurable losses resulting from a designated disaster.",
+      "If you require an extension, contact AEMA at 310-4455 before the deadline.",
+      "Applications must be submitted within 90 days of the disaster designation date.",
+      "Yes \u2014 Claim filed July 22, 2024 Estimated insurance settlement (if known): Not yet determined \u2014 adjuster inspection pending --- Page 2 (native) --- SECTION 4 \u2014 DAMAGE DESCRIPTION Damage Category Description of Damage Estimated Cost (CAD)",
+      "Yes Insurance Company: Alberta Shield Insurance Co. Policy Number:",
+      "Yes Other Structures Detached garage \u2014 total loss $48,000 No SECTION 5 \u2014 REQUIRED SUPPORTING DOCUMENTS \u2022",
+      "Attached \u2022 Insurance policy and claim acknowledgement letter \u2014 Attached \u2022 Photographs of damage (pre- and post-disaster if available) \u2014",
+      "Email: [EMAIL_1] Number of persons in household: 1 Own or rent?",
+      "If you have property insurance, you must first file a claim with your insurer.",
+      "Receipts Attached? Primary Residence (Structural) Wildfire damage to roof, exterior walls, interior flooring, windows, HVAC system $195,000 No",
+      "Attached \u2022 Two pieces of government-issued ID \u2014 Attached \u2022 Proof of primary residence (utility bill or bank statement) \u2014"
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 8,
+    "categories": {
+      "PERSON": 3,
+      "ADDRESS": 2,
+      "PHONE": 1,
+      "EMAIL": 1,
+      "POLICY_NUMBER": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is an application for the Alberta Disaster Recovery Program (DRP) for Johnson. The DRP helps people in Alberta with losses from the 2024 Lac La Biche Wildfire Complex that their insurance does not cover. Johnson has reported damage to their home, personal items, and detached garage, and has also spent money on temporary living costs. They have already filed a claim with Alberta Shield Insurance Co.",
+    "flagged_issues": [
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "The estimated insurance settlement is not yet determined because an adjuster inspection is pending."
+      },
+      {
+        "issue_type": "MISSING",
+        "message": "Additional receipts or estimates for damaged or destroyed property are still needed."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Submit your application",
+        "date": "within 90 days of the disaster designation date"
+      },
+      {
+        "task": "Submit your application",
+        "date": "October 17, 2024"
+      },
+      {
+        "task": "Contact AEMA for an extension",
+        "date": "before the deadline"
+      }
+    ],
+    "coverage_limits": [
+      "Primary Residence (Structural) damage up to $195,000",
+      "Personal Property (Essential Items) damage up to $18,500",
+      "Additional Living Expenses (to date) up to $4,200",
+      "Other Structures (Detached garage) total loss up to $48,000"
+    ],
+    "required_actions": [
+      "Complete all sections of the application.",
+      "Attach all required supporting documents.",
+      "Contact AEMA at 310-4455 before October 17, 2024, if you need an extension."
+    ],
+    "warnings": [
+      "The Disaster Recovery Program (DRP) only covers losses that are not covered by your insurance.",
+      "You must first file a claim with your property insurer if you have one, as this is a condition for DRP assistance.",
+      "DRP assistance might cover the difference between your insurance payout and your actual eligible losses.",
+      "Incomplete applications will not be processed."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+
+# from test5.txt
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii 'IBC_Proof_of_Loss_Clean_Filled_Sarah_Thompson_v2.pdf'
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nIBC CLAIM FORM NO. 8.GST\nPROOF OF LOSS (Other than Fire)\nThis form is provided to comply with the Insurance Act, where required, and without prejudice to the liability of the Insurer.\nClaim No.\n[POLICY_NUMBER_1]\nInsurer\nTD Insurance\nInsured\n[PERSON_1]\nAddress\n[ADDRESS_1]\nPolicy No.\n[POLICY_NUMBER_2]\nPolicy in force until\nDecember 31, 2026\nLoss or damage by\nOverland flooding and basement water intrusion\nAmount of insurance\n$500,000\nTIME AND ORIGIN\nDate of loss\nJune 15, 2026\nTime\n3:45 PM\nCause\nSevere rainfall caused overland water intrusion into the basement and\ndamaged household contents.\nLOCATION AND OCCUPANCY\nLocation of loss\n[ADDRESS_1]\nOccupancy\nOwner-occupied single-family\nresidence\nTitle and interest\nSole and unconditional ownership. No lien or encumbrance known.\nChanges\nNo changes in use, possession,\nlocation, or exposure since the policy\nwas issued.\nGST registered\nNo\nOther insurance\nNone\nINSURANCE AND LOSS\nItem Involved\nReplacement\nCost\nCash Value\nTotal Loss or\nDamage\nTotal Insurance\nAmount Named This\nPolicy\nClaimed Under This\nPolicy\nContents\n$3,700\n$3,000\n$3,700\n$100,000\n$100,000\n$3,700\nTOTALS\n$3,700\n$3,000\n$3,700\n$100,000\n$100,000\n$3,700\nPayment of this claim to [PERSON_1] is authorized. The loss or damage did not occur through any willful act, neglect, procurement, means, or\nconnivance of the insured or this declarant.\nDeclared at\nEdmonton, Alberta\nDate declared\nJune 20, 2026\nInsured signature\n[PERSON_1]\nCommissioner/Witness\n[PERSON_2]\n\n--- Page 2 (native) ---\nIBC CLAIM FORM NO. 8.GST\nSCHEDULE OF LOSS\nDescription of Property\n(make, model, serial #, quantity)\nWhen and where\npurchased\nApprox. Date\nPurchased\nApprox. Original\nCost\nReplacement or\nRepair Cost\nDepreciation\nAmount Claimed\nSamsung 55-inch Television, Model\nTU7000, quantity 1\nBest Buy, Edmonton\n2023\n$900\n$1,100\n$0\n$1,100\nSectional Sofa, grey fabric, quantity\n1\nIKEA, Edmonton\n2022\n$1,200\n$1,500\n$0\n$1,500\nArea Rug, 8x10 wool, quantity 1\nStructube, Edmonton\n2022\n$400\n$450\n$0\n$450\nCoffee Table, wood, quantity 1\nIKEA, Edmonton\n2021\n$300\n$350\n$0\n$350\nMicrowave Oven, Panasonic,\nquantity 1\nWalmart, Edmonton\n2024\n$250\n$300\n$0\n$300\nTOTALS\n$3,700\n$0\n$3,700\nDEDUCTIBLE\n$1,000\nNET CLAIM\n$2,700\nInsured confirmation\n[PERSON_1]\nDate\nJune 20, 2026\nAPPORTIONMENT OF LOSS\nInsurer\nPolicy No.\nInsures\nPays\nTD Insurance\n[POLICY_NUMBER_2]\n$100,000\n$2,700\nTOTALS\n$100,000\n$2,700",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 2442,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "December 31, 2026",
+      "June 15, 2026",
+      "June 20, 2026",
+      "June 20, 2026"
+    ],
+    "date_sentences": [
+      "Claim No. [POLICY_NUMBER_1] Insurer TD Insurance Insured [PERSON_1] Address [ADDRESS_1] Policy No. [POLICY_NUMBER_2] Policy in force until December 31, 2026 Loss or damage by Overland flooding and basement water intrusion Amount of insurance $500,000 TIME AND ORIGIN Date of\u2026",
+      "Claim No. [POLICY_NUMBER_1] Insurer TD Insurance Insured [PERSON_1] Address [ADDRESS_1] Policy No. [POLICY_NUMBER_2] Policy in force until December 31, 2026 Loss or damage by Overland flooding and basement water intrusion Amount of insurance $500,000 TIME AND ORIGIN Date of\u2026",
+      "Declared at Edmonton, Alberta Date declared June 20, 2026 Insured signature [PERSON_1] Commissioner/Witness [PERSON_2] --- Page 2 (native) --- IBC CLAIM FORM",
+      "Original Cost Replacement or Repair Cost Depreciation Amount Claimed Samsung 55-inch Television, Model TU7000, quantity 1 Best Buy, Edmonton 2023 $900 $1,100 $0 $1,100 Sectional Sofa, grey fabric, quantity 1 IKEA, Edmonton 2022 $1,200 $1,500 $0 $1,500 Area Rug, 8x10 wool, quantity 1 Structube,\u2026"
+    ],
+    "money": [
+      "500,000",
+      "3,700",
+      "3,000",
+      "100,000",
+      "$900 $1,100 $0 $",
+      "1,100",
+      "1,200",
+      "1,500",
+      "400",
+      "450",
+      "300",
+      "350",
+      "250",
+      "1,000",
+      "2,700"
+    ],
+    "percentages": [],
+    "organizations": [
+      "CLM-2026",
+      "Insurer TD Insurance Insured",
+      "Edmonton",
+      "Samsung",
+      "Sectional Sofa",
+      "grey fabric",
+      "IKEA",
+      "Coffee Table",
+      "Panasonic",
+      "DEDUCTIBLE"
+    ],
+    "top_sentences": [
+      "Original Cost Replacement or Repair Cost Depreciation Amount Claimed Samsung 55-inch Television, Model TU7000, quantity 1 Best Buy, Edmonton 2023 $900 $1,100 $0 $1,100 Sectional Sofa, grey fabric, quantity 1 IKEA, Edmonton 2022 $1,200 $1,500 $0 $1,500 Area Rug, 8x10 wool, quantity 1 Structube, Edmonton 2022 $400 $450 $0 $450 Coffee Table, wood, quantity 1 IKEA, Edmonton 2021 $300 $350 $0 $350 Microwave Oven, Panasonic, quantity 1 Walmart, Edmonton 2024 $250 $300 $0 $300 TOTALS $3,700 $0 $3,700 DEDUCTIBLE $1,000 NET CLAIM $2,700 Insured confirmation [PERSON_1] Date June 20, 2026 APPORTIONMENT OF LOSS Insurer Policy No. Insures Pays TD Insurance [POLICY_NUMBER_2] $100,000 $2,700 TOTALS $100,000 $2,700",
+      "GST registered No Other insurance None INSURANCE AND LOSS Item Involved Replacement Cost Cash Value Total Loss or Damage Total Insurance Amount Named This Policy Claimed Under This Policy Contents $3,700 $3,000 $3,700 $100,000 $100,000 $3,700 TOTALS $3,700 $3,000 $3,700 $100,000 $100,000 $3,700 Payment of this claim to [PERSON_1] is authorized.",
+      "Claim No. [POLICY_NUMBER_1] Insurer TD Insurance Insured [PERSON_1] Address [ADDRESS_1] Policy No. [POLICY_NUMBER_2] Policy in force until December 31, 2026 Loss or damage by Overland flooding and basement water intrusion Amount of insurance $500,000 TIME AND ORIGIN Date of loss June 15, 2026 Time 3:45 PM Cause Severe rainfall caused overland water intrusion into the basement and damaged household contents.",
+      "LOCATION AND OCCUPANCY Location of loss [ADDRESS_1] Occupancy Owner-occupied single-family residence Title and interest Sole and unconditional ownership.",
+      "This form is provided to comply with the Insurance Act, where required, and without prejudice to the liability of the Insurer.",
+      "Declared at Edmonton, Alberta Date declared June 20, 2026 Insured signature [PERSON_1] Commissioner/Witness [PERSON_2] --- Page 2 (native) --- IBC CLAIM FORM",
+      "8.GST PROOF OF LOSS (Other than Fire)",
+      "NO. 8.GST SCHEDULE OF LOSS Description of Property (make, model, serial #, quantity)",
+      "Changes No changes in use, possession, location, or exposure since the policy was issued.",
+      "The loss or damage did not occur through any willful act, neglect, procurement, means, or connivance of the insured or this declarant.",
+      "--- Page 1 (native) --- IBC CLAIM FORM NO."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 5,
+    "categories": {
+      "POLICY_NUMBER": 2,
+      "PERSON": 2,
+      "ADDRESS": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a Proof of Loss form for a claim filed by Sarah Thompson with TD Insurance under policy number TD-HM-456789. The policy is active until December 31, 2026. The loss occurred on June 15, 2026, at 123 Maple Crescent, Edmonton, AB T5A 1B2 due to severe rainfall causing overland water intrusion into the basement, damaging household contents. The total loss or damage is $3,700. After a $1,000 deductible, the net claim amount is $2,700.",
+    "flagged_issues": [
+      {
+        "issue_type": "WARNING",
+        "message": "The cause of loss is overland flooding and basement water intrusion. You should verify your policy explicitly includes an Overland Water or water-backup endorsement, as standard home insurance policies commonly exclude these perils."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Policy in force until",
+        "date": "December 31, 2026"
+      }
+    ],
+    "coverage_limits": [
+      "Amount of insurance: $500,000",
+      "Total insurance amount named this policy for contents: $100,000",
+      "Total loss or damage: $3,700",
+      "Net claim: $2,700"
+    ],
+    "required_actions": [],
+    "warnings": [
+      "This form is provided without prejudice to the liability of the Insurer, meaning the insurer has not yet confirmed it accepts the claim or agrees to pay.",
+      "A deductible of $1,000 applies to this claim."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}

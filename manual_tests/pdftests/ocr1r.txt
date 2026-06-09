@@ -1,0 +1,182 @@
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii 'ocr1.pdf'
+Using summary provider: gemini:gemini-2.5-flash
+Connecting to https://paddle-model-ecology.bj.bcebos.com/paddlex/PaddleX3.0/fonts/PingFang-SC-Regular.ttf ...
+Downloading PingFang-SC-Regular.ttf ...
+[==================================================] 100.00%
+Connecting to https://paddle-model-ecology.bj.bcebos.com/paddlex/PaddleX3.0/fonts/simfang.ttf ...
+Downloading simfang.ttf ...
+[==================================================] 100.00%
+/opt/homebrew/lib/python3.11/site-packages/paddle/utils/cpp_extension/extension_utils.py:711: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+Creating model: ('PP-OCRv5_mobile_det', None)
+Using official model (PP-OCRv5_mobile_det), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+Creating model: ('PP-OCRv5_mobile_rec', None)
+Using official model (PP-OCRv5_mobile_rec), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+{
+  "extraction": {
+    "text": "--- Page 1 (ocr) ---\nPRAIRIE MUTUAL INSURANCE\nClaim #: AB-26-04177\nHOMEOWNER PROPERTY LOSS NOTICE\nDoc ID:HLN-001\nSYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM\nPolicy number\nInsured name\nHOP-884-19A\n[PERSON_1]\nDate of loss\nLoss address\n2026-05-17\n128 Sage Valley Rd NW,\nCalgary, AB\nPhone\nReported by\n[PERSON_2], owner\n[PHONE_1]\nCause of Loss\nTheft\nOther\nHail\nWind\n\u25a1 Fire\nWater / Sewer\nDescription of Damage\nHail broke two skylights and dented west-facing siding. Wind lifted shingles over garage. Rain came\nin around bedroom window.\nInitial Damage Checklist\nWindows\n\u25a1Garage door\nRoof shingles\nSiding\nV\nFence\nDetached structures\nInterior ceiling\nPersonal contents\nV\n\u221a\nYes\n\u25a1No\nEmergency Repairs Authorized?\nDate\nSignature\nMay 18 2026\nM Kowalski\nRECEIVED\n\n--- Page 2 (ocr) ---\nPRAIRIE MUTUALINSURANCE\nClaim#:AB-CAT-2609-331\nCATASTROPHE DISASTER CLAIM INTAKE\nDoc ID:CAT-009\nSYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM\nEvent\nSouthem Alberta wildf ire smoke +\nEvacuation order date\n2026-05-31\nember damage\nMandatory evacuation\nPower outage\nBoil water advisory\nRoad closure affected access\nTemporary Contact Information\nCurrent lodging\nRamada Airport South-room 218\nEmail\n[EMAIL_1]\nMobile\n[PHONE_2]\nPreferred contact\nText after 5 pm\nObserved Damage/ Losses\nExterior smoke staining, me lted vinyl trim on south wall, shed roof scorched. Food spoiled in fridge\nduring outage. Family left home with two pets.\nAdvance Payment Request\nAmount requested\n$2,500\nReason\nhotel +food + fuel\nAdjuster triage notes\nCAT queue priority [PERSON_3] smoke cle aning estimate and ALE review. Verify evacuation dates.\n\n--- Page 3 (ocr) ---\nPRAIRIEMUTUALINSURANCE\nClaim#:AB-26-05802\nWATER / SEWER BACKUP CLAIM STATEMENT: wSB-014\nSYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM\nLoss Location and Occupancy\nInsured\nOwen and [PERSON_4]\nAddress\n[ADDRESS_1]\nOccupancy\nOwner occupied\nYear buit\n1987\nSource of Water\nBurst pipe\nSump pump failure\nSewer backup\nAppliance leak\nUnknown\nRooms Affected\nBasement family room\nLaundry room\nMechanical room\nMain floor kitchen\nBathroom\nMitigation Company\nRapidDry Restoration\nStart date\n2026-04-09\nNarrative\nWereturned from weekend away and found 3 inches of water in basement. Sump pump tripped breaker.\nCarpet removed same night.\nSupporting documents submitted\nPlumber invoice\nMitigation invoice\nPhotos\nContents list\nHotel receipt\n\n--- Page 4 (ocr) ---\nClaim #: AB-26-04177\nPRAIRIE MUTUAL INSURANCE\nDoc ID: EST-227\nCONTRACTOR REPAIR ESTIMATE\nSYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM\nEstimate date: 2026-05-22\nVendor: North Ridge Exteriors Ltd.\nEstimator: [PERSON_5]GST #: 77122 6604 RT0001\nQty\nUnit\nTotal\nLine\nDescription\n310\nsq ft\n$775.00\n1\nRemove damaged asphalt shingles- garage slope\n310\nsq ft\n$2,418.00\n2\nSupplylinstall laminated shingles incl. underlay\nIf\n$714.00\n42\n3\nReplace dented aluminum fascia, west elevation\n220\nsq ft\n$1,980.00\nReplace vinyl siding panels, colour match pending\n4\neach\n$1,640.00\n2\n5\nSkylight replacement, tempered glass\nallow\n$620.00\n1\n6\nInterior drywall patch and prime at bedroom window\nSubtotal\n$8,147.00\nGST (5%)\n$407.35\n$8,554.35\nTOTAL\nEstimator notes\nPrice excludes hidden framing damage. Siding match may require fullelevat ion if discontinued. Reinspect\nafter tear-off.\nPENDING REVIEV\n\n--- Page 5 (ocr) ---\nPRAIRIE MUTUAL INSURANCE\nClaim#:AB-CAT-2609-331\nPERSONAL PROPERTY CONTENTS INVENTORY-033\nSYNTHETIC OCR TEST DOCUMENT - NOTA REAL CLAIM\nRoom /Area:[PERSON_6]\nPrepared by: Danielle Rivera\nItem description\nAge\nCondition\nReplacement cost\nNotes\nRefrigerated groceries, spoiled\nna\n1\nn/a\n$286.40\noutage\nChest free zer contents\n3mo\n2\n$412.75\ngood\npartial list\n3\nCoffee maker, smoke odor\n2yr\nfair\n$129.99\nphoto 12\nMicrowave oven\n4yr\ngood\n$249.00\ncleaning failed\n5\nPet food bags \u00d7 3\nnew\ngood\n$97.50\nevac supply\nAdditional notes\nInventory is incomplete. We were not allowed back until June 3 and discarded food before allphotos were\ntaken.\nClaimant signature\nD Rivera\nDate\nJune4 2026\n\n--- Page 6 (ocr) ---\nClaim #: AB-26-05802\nPRAIRIE MUTUAL INSURANCE\nDoc ID: ADJ-118\nADJUSTER FIELD NOTES\nSYNTHETIC OCR TEST DOCUMENT -NOTA REAL CLAIM\nWeather: clear, 8 C\nSite visit: 2026-04-12 09:15\nMet Priya at property. Basement stil has drying equipment running.\nWater line visible at approx. 9 cm on drywall in family room.\nSump pit: pump powered but float jammed. Backup battery absent.\nPhotos 21-38: carpet removal, baseboard swelling, contents stacked in garage.\nCoverage question: endorsement imit appears $2ok. Need confim sewer language.\nAction: request plumber cause report + mitigation moisture map.\nBuilding $14,500 / Contents $2,000 / ALE $0\nReserve recommendation\nRJT\nAdjuster initials\n\n--- Page 7 (ocr) ---\nPRAIRIE MUTUAL INSURANCE\nClaim #: AB-CAT-2609-331\nADDITIONAL LIVING EXPENSE RECEIPT SUMMARY\nSYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM\nClaimant: Danielle Rivera\nPeriod: May 31 -June 04, 2026\nDate\nMerchant\nCategory\nAmount\nPaid by\n2026-05-31\nRamada Airp ort South\nHotel\n$186.90\nVisa\n2026-06-01\nPrainie Fuel Co.\nFuel\n$74.12\nDebit\n2026-06-02\nNorth Bowl Diner\nMeals\n$58.44\nVisa\n2026-06-03\nPetStay Kennels\nPet boarding\n$96.00\nCash\n2026-06-04\nRamada Airport So uth\nHotel\n$186.90\nVisa\nTotal claimed $602.36\nNotes\nOriginal receipts photographed. Hotel invoice has two pages. Pet boarding paid cash because\nterminal was offline.\n\n--- Page 8 (ocr) ---\nPRAIRIE MUTUAL INSURANCE\nSWORN PROOF OF LOSS - PROPERTY CLAIMP: POL-061\nClaim #: AB-26-04177\nSYNTHETIC OCR TEST DOCUMENT -NOTA REAL CLAIM\nThe undersigned states that the information provided in this proof of loss is true and complete to the best of their knowledge and belief. This\nsynthetic document is for OCR testing only.\nAmount claimed - building\n$8,554.35\nAmount claimed - contents\n$0.00\nDeductible\n$1,000.00\nMortgagee / lienholder\nPrairie First Credit Union\nOther insurance\nNone declared\nLoss Payee / Mortgage Clause\nPlease include Prairie First Credit Union on any building se ttlement over deductible.\nDeclaration\nI am the named insured or authorized representative.\nNo repairs beyond emergency protection have been completed.\nSignature of insured\n[PERSON_7] at\nCalgary AB\nDate\nMay 25 2026",
+    "page_count": 8,
+    "pages_with_text": 8,
+    "character_count": 6144,
+    "native_text_pages": 0,
+    "ocr_pages": 8,
+    "ocr_engine": "paddleocr",
+    "warnings": [
+      "OCR was used for 8 page(s). Verify OCR-derived text against the original document."
+    ],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "2026-05-17",
+      "May 18 2026",
+      "2026-05-31",
+      "Year",
+      "2026-04-09",
+      "weekend",
+      "2026-05-22",
+      "77122 6604",
+      "June 3",
+      "2026-04-12",
+      "May 31",
+      "2026-05-31",
+      "2026-06-01",
+      "2026-06-02",
+      "2026-06-03",
+      "2026-06-04",
+      "May 25 2026"
+    ],
+    "date_sentences": [
+      "--- Page 1 (ocr) --- PRAIRIE MUTUAL INSURANCE Claim #: AB-26-04177 HOMEOWNER PROPERTY LOSS NOTICE Doc ID:HLN-001 SYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM Policy number Insured name HOP-884-19A [PERSON_1] Date of loss Loss address 2026-05-17 128 Sage Valley Rd NW, Calgary, AB Phone Reported\u2026",
+      "Initial Damage Checklist Windows \u25a1Garage door Roof shingles Siding V Fence Detached structures Interior ceiling Personal contents V \u221a Yes \u25a1No Emergency Repairs Authorized? Date Signature May 18 2026 M Kowalski RECEIVED --- Page 2 (ocr) --- PRAIRIE MUTUALINSURANCE Claim#:AB-CAT-2609-331 CATASTROPHE\u2026",
+      "Initial Damage Checklist Windows \u25a1Garage door Roof shingles Siding V Fence Detached structures Interior ceiling Personal contents V \u221a Yes \u25a1No Emergency Repairs Authorized? Date Signature May 18 2026 M Kowalski RECEIVED --- Page 2 (ocr) --- PRAIRIE MUTUALINSURANCE Claim#:AB-CAT-2609-331 CATASTROPHE\u2026",
+      "--- Page 3 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_4] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026",
+      "--- Page 3 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_4] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026",
+      "--- Page 3 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_4] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026",
+      "Supporting documents submitted Plumber invoice Mitigation invoice Photos Contents list Hotel receipt --- Page 4 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge\u2026",
+      "Supporting documents submitted Plumber invoice Mitigation invoice Photos Contents list Hotel receipt --- Page 4 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge\u2026",
+      "We were not allowed back until June 3 and discarded food before allphotos were taken.",
+      "Weather: clear, 8 C Site visit: 2026-04-12 09:15 Met Priya at property.",
+      "May 31",
+      "-June 04, 2026 Date Merchant Category Amount Paid by 2026-05-31 Ramada",
+      "Airp ort South Hotel $186.90 Visa 2026-06-01 Prainie Fuel Co. Fuel $74.12 Debit 2026-06-02 North Bowl Diner Meals $58.44 Visa 2026-06-03 PetStay Kennels Pet boarding $96.00 Cash 2026-06-04 Ramada Airport",
+      "Airp ort South Hotel $186.90 Visa 2026-06-01 Prainie Fuel Co. Fuel $74.12 Debit 2026-06-02 North Bowl Diner Meals $58.44 Visa 2026-06-03 PetStay Kennels Pet boarding $96.00 Cash 2026-06-04 Ramada Airport",
+      "Airp ort South Hotel $186.90 Visa 2026-06-01 Prainie Fuel Co. Fuel $74.12 Debit 2026-06-02 North Bowl Diner Meals $58.44 Visa 2026-06-03 PetStay Kennels Pet boarding $96.00 Cash 2026-06-04 Ramada Airport",
+      "Airp ort South Hotel $186.90 Visa 2026-06-01 Prainie Fuel Co. Fuel $74.12 Debit 2026-06-02 North Bowl Diner Meals $58.44 Visa 2026-06-03 PetStay Kennels Pet boarding $96.00 Cash 2026-06-04 Ramada Airport",
+      "Signature of insured [PERSON_1] Signed at Calgary AB Date May 25 2026"
+    ],
+    "money": [
+      "2,500",
+      "775.00",
+      "2,418.00",
+      "714.00",
+      "1,980.00",
+      "1,640.00",
+      "620.00",
+      "8,147.00",
+      "407.35",
+      "8,554.35",
+      "286.40",
+      "412.75",
+      "129.99",
+      "249.00",
+      "97.50",
+      "2ok",
+      "14,500",
+      "186.90",
+      "74.12",
+      "58.44"
+    ],
+    "percentages": [
+      "5%"
+    ],
+    "organizations": [
+      "Insured",
+      "Interior",
+      "Temporary Contact Information Current",
+      "CAT",
+      "ALE",
+      "Red Deer",
+      "Appliance",
+      "Bathroom Mitigation Company RapidDry Restoration Start",
+      "Carpet",
+      "Hotel"
+    ],
+    "top_sentences": [
+      "underlay If $714.00 42 3 Replace dented aluminum fascia, west elevation 220 sq ft $1,980.00 Replace vinyl siding panels, colour match pending 4 each $1,640.00 2 5 Skylight replacement, tempered glass allow $620.00 1 6 Interior drywall patch and prime at bedroom window Subtotal $8,147.00 GST (5%) $407.35 $8,554.35 TOTAL Estimator notes Price excludes hidden framing damage.",
+      "Airp ort South Hotel $186.90 Visa 2026-06-01 Prainie Fuel Co. Fuel $74.12 Debit 2026-06-02 North Bowl Diner Meals $58.44 Visa 2026-06-03 PetStay Kennels Pet boarding $96.00 Cash 2026-06-04 Ramada Airport",
+      "[PERSON_6] Prepared by: Danielle Rivera Item description Age Condition Replacement cost Notes Refrigerated groceries, spoiled na 1 n/a $286.40 outage Chest free zer contents 3mo 2 $412.75 good partial list 3 Coffee maker, smoke odor 2yr fair $129.99 photo 12 Microwave oven 4yr good $249.00 cleaning failed 5 Pet food bags \u00d7 3 new good $97.50 evac supply Additional notes Inventory is incomplete.",
+      "--- Page 3 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_4] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of Water Burst pipe Sump pump failure Sewer backup Appliance leak Unknown Rooms Affected Basement family room Laundry room Mechanical room Main floor kitchen Bathroom Mitigation Company RapidDry Restoration Start date 2026-04-09 Narrative Wereturned from weekend away and found 3 inches of water in basement.",
+      "Supporting documents submitted Plumber invoice Mitigation invoice Photos Contents list Hotel receipt --- Page 4 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge Exteriors Ltd. Estimator: [PERSON_5] GST #: 77122 6604 RT0001 Qty Unit Total Line Description 310 sq ft $775.00 1 Remove damaged asphalt shingles-",
+      "--- Page 1 (ocr) --- PRAIRIE MUTUAL INSURANCE Claim #: AB-26-04177 HOMEOWNER PROPERTY LOSS NOTICE Doc ID:HLN-001 SYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM Policy number Insured name HOP-884-19A [PERSON_1] Date of loss Loss address 2026-05-17 128 Sage Valley Rd NW, Calgary, AB Phone Reported by [PERSON_2], owner [PHONE_1] Cause of Loss Theft Other Hail Wind \u25a1 Fire Water / Sewer Description of Damage Hail broke two skylights and dented west-facing siding.",
+      "Initial Damage Checklist Windows \u25a1Garage door Roof shingles Siding V Fence Detached structures Interior ceiling Personal contents V \u221a Yes \u25a1No Emergency Repairs Authorized? Date Signature May 18 2026 M Kowalski RECEIVED --- Page 2 (ocr) --- PRAIRIE MUTUALINSURANCE Claim#:AB-CAT-2609-331 CATASTROPHE DISASTER CLAIM INTAKE Doc ID:CAT-009 SYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM Event Southem Alberta wildf ire smoke + Evacuation order date 2026-05-31 ember damage Mandatory evacuation Power outage Boil water advisory Road closure affected access Temporary Contact Information Current lodging Ramada Airport South-room 218 Email [EMAIL_1] Mobile [PHONE_2] Preferred contact Text after 5 pm Observed Damage/ Losses Exterior smoke staining, me lted vinyl trim on south wall, shed roof scorched.",
+      "Amount claimed - building $8,554.35 Amount claimed - contents $0.00 Deductible $1,000.00 Mortgagee / lienholder Prairie First Credit Union Other insurance None declared Loss Payee / Mortgage Clause Please include Prairie First Credit Union on any building se ttlement over deductible.",
+      "So uth Hotel $186.90 Visa Total claimed $602.36 Notes Original receipts photographed.",
+      "garage slope 310 sq ft $2,418.00 2 Supplylinstall laminated shingles incl.",
+      "Claimant signature D Rivera Date June4 2026 --- Page 6 (ocr) --- Claim #: AB-26-05802 PRAIRIE MUTUAL INSURANCE Doc ID: ADJ-118 ADJUSTER FIELD NOTES SYNTHETIC OCR TEST DOCUMENT",
+      "-June 04, 2026 Date Merchant Category Amount Paid by 2026-05-31 Ramada",
+      "Signature of insured [PERSON_1] Signed at Calgary AB Date May 25 2026",
+      "Advance Payment Request Amount requested $2,500 Reason hotel +food + fuel Adjuster triage notes CAT queue priority",
+      "Weather: clear, 8 C Site visit: 2026-04-12 09:15 Met Priya at property."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 11,
+    "categories": {
+      "PERSON": 7,
+      "PHONE": 2,
+      "EMAIL": 1,
+      "ADDRESS": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document summarizes three separate insurance claims. For claim AB-26-04177, hail and wind caused damage to skylights, siding, and roof shingles, and rain entered around a bedroom window. Emergency repairs were approved. The estimated repair cost is $8,554.35, and there is a $1,000 deductible. Prairie First Credit Union is a mortgagee and should be included in any building settlement over the deductible. For claim AB-CAT-2609-331, there was damage from wildfire smoke and embers, including smoke staining, melted trim, and a scorched shed roof. Food spoiled due to a power outage during a mandatory evacuation. An advance payment of $2,500 was requested for hotel, food, and fuel. Additional living expenses totaling $602.36 were claimed for the period of May 31 to June 4, 2026. The personal property contents inventory for this claim is incomplete. For claim AB-26-05802, water damage occurred in the basement due to a sump pump failure and sewer backup. The mitigation company started work on April 9, 2026. The adjuster noted that the sump pump float was jammed and a backup battery was missing. The estimated building damage is $14,500, and estimated contents damage is $2,000.",
+    "flagged_issues": [
+      {
+        "issue_type": "MISSING",
+        "message": "The personal property contents inventory for claim AB-CAT-2609-331 is incomplete."
+      },
+      {
+        "issue_type": "ACTION_REQUIRED",
+        "message": "For claim AB-26-05802, the sump pump float is jammed and a backup battery is absent. This physical installation needs attention."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "For claim AB-26-05802, the cause of loss includes sump pump failure and sewer backup. You should verify your policy explicitly includes an Overland Water or water-backup endorsement, as standard home insurance policies commonly exclude these perils."
+      }
+    ],
+    "deadlines": [
+      {
+        "task": "Additional living expense coverage period for claim AB-CAT-2609-331",
+        "date": "May 31 - June 04, 2026"
+      }
+    ],
+    "coverage_limits": [
+      "Advance payment requested for claim AB-CAT-2609-331: $2,500",
+      "Total contractor repair estimate for claim AB-26-04177: $8,554.35",
+      "Estimated building damage for claim AB-26-05802: $14,500",
+      "Estimated contents damage for claim AB-26-05802: $2,000",
+      "Water/Sewer backup endorsement limit appears to be: $20,000",
+      "Total additional living expenses claimed for claim AB-CAT-2609-331: $602.36",
+      "Deductible for claim AB-26-04177: $1,000.00"
+    ],
+    "required_actions": [
+      "Provide a complete personal property contents inventory for claim AB-CAT-2609-331.",
+      "Repair or replace the sump pump float and install a backup battery for claim AB-26-05802.",
+      "Provide a plumber's report on the cause of water damage for claim AB-26-05802.",
+      "Provide a mitigation moisture map for claim AB-26-05802."
+    ],
+    "warnings": [
+      "The repair estimate for claim AB-26-04177 does not include hidden framing damage.",
+      "Matching the siding for claim AB-26-04177 may require replacing the siding on the entire wall if the original color is no longer available.",
+      "Your policy has a $1,000 deductible.",
+      "Prairie First Credit Union must be included on any building settlement over the deductible for claim AB-26-04177.",
+      "For claim AB-26-05802, the adjuster needs to confirm the exact sewer backup coverage language and limit."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % 

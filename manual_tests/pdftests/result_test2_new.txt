@@ -1,0 +1,129 @@
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\nHOMEOWNER'S INSURANCE POLICY\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | [EMAIL_1]\nPolicy No: [POLICY_NUMBER_1]\nDate: March 14, 2024\nPOLICYHOLDER INFORMATION\nNamed Insured: [PERSON_1]\nProperty Address: [ADDRESS_1]\nPolicy Period: March 14, 2024 to March 14, 2025\nEffective Date: March 14, 2024 at 12:01 A.M. Standard Time\nSECTION I \u2014 PROPERTY COVERAGES\nCoverage\nLimit of Insurance\nDeductible\nA \u2014 Dwelling (Replacement Cost)\n$485,000 CAD\n$2,500\nB \u2014 Other Structures\n$48,500 CAD (10% of Coverage A)\n$2,500\nC \u2014 Personal Property (Actual Cash Value)\n$145,000 CAD\n$2,500\nD \u2014 Additional Living Expenses\n$97,000 CAD (20% of Coverage A)\nNil\nE \u2014 Personal Liability\n$1,000,000 CAD\nNil\nF \u2014 Medical Payments to Others\n$5,000 CAD per person\nNil\nSECTION II \u2014 PERILS INSURED AGAINST\nYour dwelling and personal property are insured against direct physical loss caused by the following named perils,\nsubject to the exclusions, conditions, and limitations set forth in this policy:\nFire and Lightning: Direct physical damage resulting from fire, lightning, or smoke damage directly caused by a\nhostile fire on or near the insured premises.\nWindstorm and Hail: Physical damage caused by windstorm, cyclone, tornado, or hail. Does not include loss to\nproperty contained in a building caused by rain, snow, sleet, sand, or dust unless the direct force of wind or hail\nfirst damages the roof or walls.\nExplosion: Loss caused by explosion of any kind, including steam boiler explosion, excluding sonic booms.\nWildfire: Direct physical loss caused by wildfire spreading from adjacent land or structures. Coverage applies to\ndwelling and personal property. Evacuation order must be documented by competent authority.\nFlood (Overland Water) \u2014 EXCLUDED: Overland flooding, surface water, waves, tidal water, and water which\nbacks up through sewers or drains IS NOT covered under this policy. Refer to your Overland Water Endorsement\n(if applicable).\n\n--- Page 2 (native) ---\nSECTION III \u2014 EXCLUSIONS AND CONDITIONS\nThis policy does not insure against loss resulting directly or indirectly from any of the following, regardless of any\nother cause or event contributing concurrently or in any sequence to the loss:\n\u2022 Neglect of the insured to use all reasonable means to save and preserve property at and after the time of a loss.\n\u2022 Intentional or fraudulent acts committed by or at the direction of an insured.\n\u2022 Earth movement, including earthquake, landslide, mine subsidence, mudflow, earth sinking, rising, or shifting.\n\u2022 Power failure originating away from the insured premises.\n\u2022 Wear and tear, marring, deterioration, inherent vice, latent defect, or mechanical breakdown.\n\u2022 Pollution or contamination of any kind, including smoke, vapour, soot, fumes, acid, alkali, or toxic chemicals.\nCLAIMS REPORTING OBLIGATIONS\nIn the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within\n30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or\ndestroyed personal property, including quantity, description, actual cash value, and the amount of loss; (4) submit\na Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta\nShield Insurance Co.\nIMPORTANT: Failure to comply with the claims reporting obligations described above may result in denial of your claim.\nIf you have questions about this policy or wish to report a loss, contact our 24-hour claims line at 1-800-555-0192 or visit\nalbertashield.ca/claims.\nThis document is an excerpt of your policy. Please retain all pages for your records. Alberta Shield Insurance Co. is licensed to\nconduct insurance business in the Province of Alberta.",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 3881,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "March 14, 2024",
+      "March 14, 2024 to March 14, 2025",
+      "30 days",
+      "90 days"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address:\u2026",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address:\u2026",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including\u2026",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including\u2026"
+    ],
+    "money": [
+      "485,000",
+      "2,500",
+      "48,500",
+      "145,000",
+      "97,000",
+      "1,000,000",
+      "5,000"
+    ],
+    "percentages": [
+      "10%",
+      "20%"
+    ],
+    "organizations": [
+      "Alberta Shield Insurance Co. HOMEOWNER'S",
+      "Edmonton",
+      "Effective Date",
+      "12:01 A.M. Standard Time SECTION",
+      "CAD",
+      "Flood (Overland Water",
+      "Overland Water Endorsement",
+      "EXCLUSIONS",
+      "CONDITIONS",
+      "\u2022 Earth"
+    ],
+    "top_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. HOMEOWNER'S INSURANCE POLICY 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: March 14, 2024 POLICYHOLDER INFORMATION Named Insured: [PERSON_1] Property Address: [ADDRESS_1] Policy Period: March 14, 2024 to March 14, 2025 Effective Date: March 14, 2024 at 12:01 A.M. Standard Time SECTION I \u2014 PROPERTY COVERAGES Coverage Limit of Insurance Deductible A \u2014 Dwelling (Replacement Cost) $485,000 CAD $2,500 B \u2014 Other Structures $48,500 CAD (10% of Coverage A) $2,500 C \u2014 Personal Property (Actual Cash Value) $145,000 CAD $2,500 D \u2014 Additional Living Expenses $97,000 CAD (20% of Coverage A) Nil E \u2014 Personal Liability $1,000,000 CAD Nil F \u2014 Medical Payments to Others $5,000 CAD per person Nil SECTION II \u2014 PERILS INSURED AGAINST Your dwelling and personal property are insured against direct physical loss caused by the following named perils, subject to the exclusions, conditions, and limitations set forth in this policy: Fire and Lightning: Direct physical damage resulting from fire, lightning, or smoke damage directly caused by a hostile fire on or near the insured premises.",
+      "CLAIMS REPORTING OBLIGATIONS In the event of a loss, the insured must: (1) provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event; (2) protect the property from further damage; (3) prepare an inventory of damaged or destroyed personal property, including quantity, description, actual cash value, and the amount of loss; (4) submit a Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta Shield Insurance Co. IMPORTANT: Failure to comply with the claims reporting obligations described above may result in denial of your claim.",
+      "If you have questions about this policy or wish to report a loss, contact our 24-hour claims line at 1-800-555-0192 or visit albertashield.ca/claims.",
+      "--- Page 2 (native) --- SECTION III \u2014 EXCLUSIONS AND CONDITIONS",
+      "\u2022 Power failure originating away from the insured premises. \u2022 Wear and tear, marring, deterioration, inherent vice, latent defect, or mechanical breakdown.",
+      "Evacuation order must be documented by competent authority.",
+      "Flood (Overland Water) \u2014 EXCLUDED:",
+      "Refer to your Overland Water Endorsement (if applicable).",
+      "\u2022 Intentional or fraudulent acts committed by or at the direction of an insured.",
+      "\u2022 Earth movement, including earthquake, landslide, mine subsidence, mudflow, earth sinking, rising, or shifting.",
+      "Alberta Shield Insurance Co. is licensed to conduct insurance business in the Province of Alberta.",
+      "Windstorm and Hail: Physical damage caused by windstorm, cyclone, tornado, or hail.",
+      "Does not include loss to property contained in a building caused by rain, snow, sleet, sand, or dust unless the direct force of wind or hail first damages the roof or walls.",
+      "Explosion: Loss caused by explosion of any kind, including steam boiler explosion, excluding sonic booms.",
+      "Direct physical loss caused by wildfire spreading from adjacent land or structures."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 4,
+    "categories": {
+      "EMAIL": 1,
+      "POLICY_NUMBER": 1,
+      "PERSON": 1,
+      "ADDRESS": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This is a homeowner's insurance policy from Alberta Shield Insurance Co. for Sarah M. Johnson at Rural Route 4, Site 12, Box 3, Lac La Biche County, AB T0A 2C0. It covers your home, other structures, personal belongings, and living expenses if you can't stay in your home after a covered loss. It also includes personal liability and medical payments coverage. The policy is active from March 14, 2024, to March 14, 2025.",
+    "flagged_issues": [],
+    "deadlines": [
+      {
+        "task": "Policy Period",
+        "date": "March 14, 2024 to March 14, 2025"
+      },
+      {
+        "task": "Provide immediate written notice to Alberta Shield Insurance Co.",
+        "date": "within 30 days of the loss event"
+      },
+      {
+        "task": "Submit a Proof of Loss form, signed and sworn to",
+        "date": "within 90 days of the date of loss"
+      }
+    ],
+    "coverage_limits": [
+      "Dwelling (Replacement Cost) up to $485,000 CAD",
+      "Other Structures up to $48,500 CAD",
+      "Personal Property (Actual Cash Value) up to $145,000 CAD",
+      "Additional Living Expenses up to $97,000 CAD",
+      "Personal Liability up to $1,000,000 CAD",
+      "Medical Payments to Others up to $5,000 CAD per person"
+    ],
+    "required_actions": [
+      "Provide immediate written notice to Alberta Shield Insurance Co. within 30 days of the loss event",
+      "Protect the property from further damage",
+      "Prepare an inventory of damaged or destroyed personal property, including quantity, description, actual cash value, and the amount of loss",
+      "Submit a Proof of Loss form, signed and sworn to, within 90 days of the date of loss unless extended in writing by Alberta Shield Insurance Co."
+    ],
+    "warnings": [
+      "A deductible of $2,500 applies to Dwelling, Other Structures, and Personal Property coverage.",
+      "This policy does NOT cover overland flooding, surface water, waves, tidal water, or water which backs up through sewers or drains.",
+      "Loss to property inside a building caused by rain, snow, sleet, sand, or dust is NOT covered unless wind or hail first damages the roof or walls.",
+      "For wildfire coverage, an evacuation order must be documented by a competent authority.",
+      "This policy does NOT cover loss resulting from neglect to use all reasonable means to save and preserve property at and after a loss.",
+      "This policy does NOT cover loss resulting from intentional or fraudulent acts by or directed by an insured.",
+      "This policy does NOT cover loss resulting from earth movement, including earthquake, landslide, mudflow, or earth sinking, rising, or shifting.",
+      "This policy does NOT cover loss resulting from power failure originating away from your property.",
+      "This policy does NOT cover loss resulting from wear and tear, deterioration, or mechanical breakdown.",
+      "This policy does NOT cover loss resulting from pollution or contamination of any kind.",
+      "Failure to follow the claims reporting obligations may result in your claim being denied.",
+      "This document is only an excerpt of your full policy. Please keep all pages for your records."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}

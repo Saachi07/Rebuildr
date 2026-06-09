@@ -1,0 +1,186 @@
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli /Users/vidhi/Downloads/insurance.pdf
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nHOME INSURANCE POLICY\nCERTIFICATE OF INSURANCE\nPrairies Shield Insurance Group\nPolicy Number\nAHI-2024-0047821\nPolicy Type\nHomeowners \u2014 Comprehensive (IBC Form 2100 AB)\nNamed Insured\nSarah M. Kowalczyk & James R. Kowalczyk\nMailing Address\n4817 \u2013 52 Avenue NW, Edmonton, AB T6B 1C3\nPolicy Period\nJune 1, 2024 to June 1, 2025 (12:01 a.m. MST)\nPremium (Annual)\n$1,648.00 (taxes included)\nBroker / Agent\nClearwater Insurance Brokers Ltd. \u2014 Br. #AB-03291\nUnderwriter\nPrairies Shield Insurance Group, Edmonton, Alberta\nINSURED PREMISES\nProperty Address\n4817 \u2013 52 Avenue NW, Edmonton, AB T6B 1C3\nLegal Description\nLot 14, Block 22, Plan 7522143, City of Edmonton\nOccupancy\nOwner-Occupied \u2014 Primary Residence\nConstruction Year\n1994\nConstruction Type\nWood Frame \u2014 Brick Veneer Exterior\nTotal Living Area\n1,842 sq. ft. (above grade)\nHeating\nForced Air \u2014 Natural Gas (furnace replaced 2019)\nRoof Type / Age\nAsphalt Shingle \u2014 Replaced 2018\nWiring\nCopper / 200A breaker panel\nPlumbing\nCopper & PEX\nCOVERAGES AND LIMITS\nCoverage\nLimit of Insurance\nAnnual Premium\nSection I \u2014 Dwelling Building (Replacement Cost)\n$620,000\n$812.00\nSection I \u2014 Detached Private Structures (10% of \nDwelling)\n$62,000\n$48.00\nSection I \u2014 Personal Property (Replacement Cost)\n$180,000\n$296.00\nSection I \u2014 Additional Living Expenses (20% of \nDwelling)\n$124,000\n$94.00\nSection II \u2014 Personal Liability\n$2,000,000\n$178.00\nSection II \u2014 Voluntary Medical Payments\n$10,000\nIncluded\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 1\n\n--- Page 2 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nSection II \u2014 Voluntary Property Damage\n$5,000\nIncluded\nSewer Backup & Overland Water Endorsement\n$100,000\n$148.00\nEarthquake Endorsement\n$620,000\n$72.00\nTOTAL ANNUAL PREMIUM (before tax)\n$1,648.00\nDEDUCTIBLES\nPeril\nDeductible\nAll Perils (standard)\n$1,000\nSewer Backup\n$2,500\nOverland Water / Flood\n$2,500\nEarthquake\n5% of Coverage Amount (min. $5,000)\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 2\n\n--- Page 3 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nSECTION I \u2014 PROPERTY COVERAGES\nA. Dwelling Building\nWe insure the dwelling building and attached structures described in this policy against sudden and \naccidental direct physical loss or damage, subject to the exclusions set out herein. Coverage is provided on a \nReplacement Cost basis as defined in the Alberta Residential Home Insurance Standard (IBC Form 2100 \nAB).\nCovered perils include, but are not limited to:\n\u2022\nFire, lightning, explosion\n\u2022\nWindstorm and hail (excluding damage to fences and trees)\n\u2022\nTheft and attempted theft\n\u2022\nVandalism and malicious acts\n\u2022\nAccidental discharge or overflow of water or steam from plumbing, heating, or air conditioning systems\n\u2022\nFalling objects (excluding damage caused by ice, snow, or sleet to outdoor property)\n\u2022\nWeight of ice, snow, or sleet\n\u2022\nFreezing of plumbing systems (subject to heat maintenance condition)\n\u2022\nSmoke damage (sudden and accidental)\n\u2022\nRiot or civil commotion\nB. Detached Private Structures\nWe insure other structures on the insured premises separated from the dwelling by clear space or connected \nonly by a fence, utility line, or similar connection. Coverage is 10% of the Dwelling Building limit, or $62,000.\nC. Personal Property\nWe insure the personal property owned or used by an insured person anywhere in the world against the perils \nlisted under Section A above, on a Replacement Cost basis. The following special limits apply within the \noverall Personal Property limit:\nCategory\nSpecial Limit\nCash, currency, and gift cards\n$500\nJewellery, watches, and furs\n$6,000 (any one article $2,000)\nSecurities, deeds, and manuscripts\n$1,500\nSilverware and goldware\n$10,000\nFirearms and accessories\n$5,000\nBusiness property on premises\n$5,000\nElectronic data and software\n$5,000\nWatercraft (incl. motors and trailers)\n$1,500\nD. Additional Living Expenses\nIf a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living \nexpenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of \n$124,000.\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 3\n\n--- Page 4 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nSECTION I \u2014 EXCLUSIONS (Selected)\nThis policy does not insure loss or damage caused by or resulting from:\n\u2022\nFlood, unless the Overland Water Endorsement is attached\n\u2022\nSewer or drain backup, unless the Sewer Backup Endorsement is attached\n\u2022\nEarthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached\n\u2022\nGradual deterioration, wear and tear, rust, or inherent defect\n\u2022\nInsects, vermin, rodents, or birds\n\u2022\nWar, civil war, or nuclear hazard\n\u2022\nIntentional or criminal acts of the insured\n\u2022\nVacancy exceeding 30 consecutive days without prior written approval\n\u2022\nMechanical or electrical breakdown\n\u2022\nPollution or contamination, including mould resulting from a pre-existing condition\nSECTION II \u2014 LIABILITY COVERAGES\nWe pay on behalf of an insured person all sums that the insured person becomes legally obligated to pay as \ncompensatory damages because of:\n\u2022\nBodily injury or property damage arising out of an occurrence covered by this policy\n\u2022\nPersonal injury (libel, slander, false arrest) occurring in the course of personal activities\nOur obligation to pay damages on your behalf applies up to the limit of $2,000,000 per occurrence. Defence \ncosts are in addition to this limit.\nSECTION II \u2014 EXCLUSIONS (Selected)\n\u2022\nBodily injury to any insured person\n\u2022\nProperty damage to property owned, occupied, or in the care of an insured\n\u2022\nLiability arising from the operation of a motorized vehicle, aircraft, or watercraft over 8 metres\n\u2022\nBusiness pursuits unless specifically endorsed\n\u2022\nTransmission of a communicable disease\n\u2022\nSexual abuse, molestation, or corporal punishment\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 4\n\n--- Page 5 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nOPTIONAL ENDORSEMENTS ATTACHED\nEndorsement\nForm No.\nAdded Premium\nSewer Backup & Overland Water Protection\nIBC AB-SEW-2022\n$148.00\nEarthquake (Vancouver Seismic Rating N/A \u2014 AB rate \napplies)\nIBC AB-EQ-2022\n$72.00\nIdentity Theft Expense Reimbursement ($25,000)\nPSI-IDT-001\nIncluded\nService Line Coverage \u2014 Underground Utilities ($10,000)\nPSI-SLC-002\nIncluded\nMORTGAGE / LOSS PAYEE\nFirst Mortgagee\nTD Canada Trust (Loan #7291-004-488-3)\nMortgagee Address\nPO Box 1, TD Centre, Toronto, ON M5K 1A2\nMortgagee Interest\nFirst mortgage on 4817 \u2013 52 Ave NW, Edmonton, AB\nGENERAL CONDITIONS\nPremium Payment\nThe annual premium of $1,648.00 is due and payable on the policy effective date. Monthly payment plans are \navailable through the broker. A returned cheque or NSF fee of $35.00 may apply. Failure to pay the premium \nmay result in cancellation of this policy with 10 days' notice in accordance with the Insurance Act (Alberta).\nCancellation\nYou may cancel this policy at any time by providing written notice to Prairies Shield Insurance Group or your \nbroker. We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days \nfor any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3. Return premiums will be \ncalculated on a pro-rata basis for company-initiated cancellations and on a short-rate basis for policyholder-\ninitiated cancellations.\nCoinsurance / Underinsurance\nIf the insured value of the dwelling is less than 100% of full replacement cost at the time of loss, the amount \npayable shall be reduced proportionally. We recommend an annual review of dwelling limits with your broker \nor an independent appraisal every three years.\nSubrogation\nIn the event we pay a claim under this policy, we shall be subrogated to all rights of recovery of the insured \nagainst any party responsible for the loss. You agree to assist and cooperate with us in any subrogation \nproceedings.\nDuties After a Loss\nIn the event of a loss or damage, you must:\n\u2022\nGive prompt notice to us or your broker \u2014 contact our 24-hour claims line at 1-800-555-0199\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 5\n\n--- Page 6 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\n\u2022\nProtect the property from further damage (reasonable emergency expenses are covered)\n\u2022\nPrepare an inventory of damaged or destroyed property with receipts, photos, or other documentation\n\u2022\nSubmit a Proof of Loss within 90 days of the loss unless we grant an extension in writing\n\u2022\nCooperate fully with our investigation, including examination under oath if required\nDispute Resolution and Appraisal\nIf you and we fail to agree on the amount of loss, either party may demand an appraisal in writing. Each party \nselects a competent and impartial appraiser within 20 days. The two appraisers select an umpire; if they \ncannot agree, either may request a judge of the Court of King's Bench of Alberta to appoint one. The decision \nof any two shall be binding on the amount of loss only.\nApplicable Law\nThis policy is governed by and construed in accordance with the laws of the Province of Alberta, including the \nInsurance Act, RSA 2000, c. I-3, and its regulations. All coverage terms conform to Alberta Superintendent of \nInsurance requirements. Any disputes shall be submitted to the courts of the Province of Alberta.\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 6\n\n--- Page 7 (native) ---\nALBERTA HOME INSURANCE POLICY\nPolicy No. AHI-2024-0047821\nIMPORTANT NOTICES\nAlberta Insurance Council (AIC) \u2014 Consumer Information\nIf you have a complaint about this policy or your broker, you may contact the Alberta Insurance Council at 1-\n800-461-6290 or visit aic.ab.ca. If your complaint is not resolved, you may also contact the General Insurance \nOmbudService (GIO) at 1-877-225-0446 or giocanada.org.\nThis policy is issued pursuant to and in accordance with the Insurance Act, RSA 2000, c. I-3, and all \nendorsements, riders, and schedules attached hereto form part of this contract. Please read this entire policy \ncarefully and retain it in a safe place.\nSIGNATURES\nAuthorized Representative, Prairies Shield Insurance Group\nDate Issued: June 1, 2024\nBroker / Agent, Clearwater Insurance Brokers Ltd.\nBroker Licence No. AB-03291\nPrairies Shield Insurance Group | Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB T5J 3S4\nTel: 1-800-555-0192 | Claims 24/7: 1-800-555-0199 | www.prairieshield.ca\nMember: Insurance Bureau of Canada | Registered with Alberta Superintendent of Insurance\nPrairies Shield Insurance Group | 1-800-555-0192 | www.prairieshield.ca\nPage 7",
+    "page_count": 7,
+    "pages_with_text": 7,
+    "character_count": 10799,
+    "native_text_pages": 7,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "June 1, 2024 to June 1, 2025",
+      "Annual",
+      "up to 24 months",
+      "30 consecutive days",
+      "annual",
+      "Monthly",
+      "10 days'",
+      "10 days",
+      "30 days",
+      "every three years",
+      "90 days",
+      "20 days",
+      "June 1, 2024 Broker / Agent"
+    ],
+    "date_sentences": [
+      "T6B 1C3 Policy Period June 1, 2024 to June 1, 2025 (12:01 a.m. MST) Premium (Annual) $1,648.00 (taxes included)",
+      "T6B 1C3 Policy Period June 1, 2024 to June 1, 2025 (12:01 a.m. MST) Premium (Annual) $1,648.00 (taxes included)",
+      "motors and trailers) $1,500 D. Additional Living Expenses If a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living expenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of $124,000.",
+      "This policy does not insure loss or damage caused by or resulting from: \u2022 Flood, unless the Overland Water Endorsement is attached \u2022 Sewer or drain backup, unless the Sewer Backup Endorsement is attached \u2022 Earthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached \u2022 Gradual\u2026",
+      "Mortgagee Address PO Box 1, TD Centre, Toronto, ON M5K 1A2 Mortgagee Interest First mortgage on 4817 \u2013 52 Ave NW, Edmonton, AB GENERAL CONDITIONS Premium Payment The annual premium of $1,648.00 is due and payable on the policy effective date.",
+      "Monthly payment plans are available through the broker.",
+      "Failure to pay the premium may result in cancellation of this policy with 10 days' notice in accordance with the Insurance Act (Alberta).",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "We recommend an annual review of dwelling limits with your broker or an independent appraisal every three years.",
+      "AHI-2024-0047821 \u2022 Protect the property from further damage (reasonable emergency expenses are covered) \u2022 Prepare an inventory of damaged or destroyed property with receipts, photos, or other documentation \u2022 Submit a Proof of Loss within 90 days of the loss unless we grant an extension in writing \u2022\u2026",
+      "Each party selects a competent and impartial appraiser within 20 days.",
+      "SIGNATURES Authorized Representative, Prairies Shield Insurance Group Date Issued: June 1, 2024 Broker / Agent, Clearwater Insurance Brokers Ltd. Broker Licence No. AB-03291 Prairies Shield Insurance Group Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB"
+    ],
+    "money": [
+      "1,648.00",
+      "620,000",
+      "812.00",
+      "62,000",
+      "48.00",
+      "180,000",
+      "296.00",
+      "124,000",
+      "94.00",
+      "2,000,000",
+      "178.00",
+      "10,000",
+      "5,000",
+      "100,000",
+      "148.00",
+      "72.00",
+      "1,000",
+      "2,500",
+      "500",
+      "6,000"
+    ],
+    "percentages": [
+      "10%",
+      "20%",
+      "5%",
+      "less than 100%"
+    ],
+    "organizations": [
+      "ALBERTA HOME INSURANCE",
+      "Prairies Shield Insurance Group",
+      "Edmonton",
+      "Clearwater Insurance Brokers Ltd.",
+      "Underwriter Prairies Shield Insurance Group",
+      "PREMISES Property Address",
+      "Construction Type Wood Frame",
+      "Sewer Backup & Overland Water Endorsement",
+      "Sewer Backup",
+      "Overland Water / Flood"
+    ],
+    "top_sentences": [
+      "AHI-2024-0047821 Section II \u2014 Voluntary Property Damage $5,000 Included Sewer Backup & Overland Water Endorsement $100,000 $148.00 Earthquake Endorsement $620,000 $72.00 TOTAL ANNUAL PREMIUM (before tax) $1,648.00 DEDUCTIBLES Peril Deductible All Perils (standard) $1,000 Sewer Backup $2,500 Overland Water / Flood $2,500 Earthquake 5% of Coverage Amount (min. $5,000) Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 2 --- Page 3 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "Replaced 2018 Wiring Copper / 200A breaker panel Plumbing Copper & PEX COVERAGES AND LIMITS Coverage Limit of Insurance Annual Premium Section I \u2014 Dwelling Building (Replacement Cost) $620,000 $812.00 Section I \u2014 Detached Private Structures (10% of Dwelling) $62,000 $48.00 Section I \u2014 Personal Property (Replacement Cost) $180,000 $296.00 Section I \u2014 Additional Living Expenses (20% of Dwelling) $124,000 $94.00 Section II \u2014 Personal Liability $2,000,000 $178.00 Section II \u2014 Voluntary Medical Payments $10,000 Included Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 1 --- Page 2 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "AHI-2024-0047821 OPTIONAL ENDORSEMENTS ATTACHED Endorsement Form No. Added Premium Sewer Backup & Overland Water Protection IBC AB-SEW-2022 $148.00 Earthquake (Vancouver Seismic Rating N/A \u2014 AB rate applies) IBC AB-EQ-2022 $72.00 Identity Theft Expense Reimbursement ($25,000) PSI-IDT-001 Included Service Line Coverage \u2014 Underground Utilities ($10,000) PSI-SLC-002 Included MORTGAGE / LOSS PAYEE First Mortgagee TD Canada Trust (Loan #7291-004-488-3)",
+      "The following special limits apply within the overall Personal Property limit: Category Special Limit Cash, currency, and gift cards $500 Jewellery, watches, and furs $6,000 (any one article $2,000) Securities, deeds, and manuscripts $1,500 Silverware and goldware $10,000 Firearms and accessories $5,000 Business property on premises $5,000 Electronic data and software $5,000 Watercraft (incl.",
+      "Mortgagee Address PO Box 1, TD Centre, Toronto, ON M5K 1A2 Mortgagee Interest First mortgage on 4817 \u2013 52 Ave NW, Edmonton, AB GENERAL CONDITIONS Premium Payment The annual premium of $1,648.00 is due and payable on the policy effective date.",
+      "SIGNATURES Authorized Representative, Prairies Shield Insurance Group Date Issued: June 1, 2024 Broker / Agent, Clearwater Insurance Brokers Ltd. Broker Licence No. AB-03291 Prairies Shield Insurance Group Suite 800, 10180 \u2013 101 Street NW, Edmonton, AB",
+      "T6B 1C3 Legal Description Lot 14, Block 22, Plan 7522143, City of Edmonton Occupancy Owner-Occupied \u2014 Primary Residence Construction Year 1994 Construction Type Wood Frame \u2014 Brick Veneer Exterior Total Living Area 1,842 sq. ft. (above grade) Heating Forced Air \u2014 Natural Gas (furnace replaced 2019) Roof Type / Age Asphalt Shingle \u2014",
+      "This policy does not insure loss or damage caused by or resulting from: \u2022 Flood, unless the Overland Water Endorsement is attached \u2022 Sewer or drain backup, unless the Sewer Backup Endorsement is attached \u2022 Earthquake, landslide, or subsidence, unless the Earthquake Endorsement is attached \u2022 Gradual deterioration, wear and tear, rust, or inherent defect \u2022 Insects, vermin, rodents, or birds \u2022 War, civil war, or nuclear hazard \u2022 Intentional or criminal acts of the insured \u2022 Vacancy exceeding 30 consecutive days without prior written approval \u2022 Mechanical or electrical breakdown \u2022 Pollution or contamination, including mould resulting from a pre-existing condition SECTION II \u2014 LIABILITY COVERAGES We pay on behalf of an insured person all sums that the insured person becomes legally obligated to pay as compensatory damages because of: \u2022 Bodily injury or property damage arising out of an occurrence covered by this policy \u2022 Personal injury (libel, slander, false arrest) occurring in the course of personal activities Our obligation to pay damages on your behalf applies up to the limit of $2,000,000 per occurrence.",
+      "#AB-03291 Underwriter Prairies Shield Insurance Group, Edmonton, Alberta INSURED PREMISES Property Address 4817 \u2013 52 Avenue NW, Edmonton, AB",
+      "Duties After a Loss In the event of a loss or damage, you must: \u2022 Give prompt notice to us or your broker \u2014 contact our 24-hour claims line at 1-800-555-0199 Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 5 --- Page 6 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "We may cancel this policy by providing written notice: 10 days for non-payment of premium; 30 days for any other reason, per Section 533 of the Insurance Act, RSA 2000, c. I-3.",
+      "T5J 3S4 Tel: 1-800-555-0192 Claims 24/7: 1-800-555-0199 www.prairieshield.ca Member: Insurance Bureau of Canada Registered with Alberta Superintendent of Insurance Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 7",
+      "motors and trailers) $1,500 D. Additional Living Expenses If a covered loss makes the insured premises uninhabitable, we pay the reasonable increase in living expenses necessary to maintain your normal standard of living for up to 24 months, to a maximum of $124,000.",
+      "Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 3 --- Page 4 (native) --- ALBERTA HOME INSURANCE POLICY Policy No.",
+      "Prairies Shield Insurance Group 1-800-555-0192 www.prairieshield.ca Page 6 --- Page 7 (native) --- ALBERTA HOME INSURANCE POLICY Policy No."
+    ],
+    "provider": "spacy"
+  },
+  "summary": {
+    "plain_language_summary": "This is a comprehensive home insurance policy for Sarah M. Kowalczyk and James R. Kowalczyk, covering their primary residence at 4817 \u2013 52 Avenue NW, Edmonton, AB. The policy is active from June 1, 2024, to June 1, 2025. It provides coverage for the dwelling, detached structures, personal property, and additional living expenses. It also includes personal liability, voluntary medical payments, and voluntary property damage. The policy has added coverage for sewer backup, overland water, earthquake, identity theft, and service line issues. The total annual premium is $1,648.00. Different deductibles apply depending on the type of loss, including a percentage-based deductible for earthquakes. You have specific duties after a loss, such as giving prompt notice and submitting a Proof of Loss within 90 days. Be aware of clauses regarding property vacancy and coinsurance, which can affect your coverage.",
+    "flagged_issues": [
+      {
+        "issue_type": "ACTION_REQUIRED",
+        "message": "Your policy has a vacancy clause. If your property is unoccupied for more than 30 consecutive days without prior written approval, your coverage may be void or limited."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "Your policy includes a coinsurance clause. If the insured value of your dwelling is less than 100% of its full replacement cost at the time of a loss, the amount you receive for a claim may be reduced proportionally."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "Your policy has a percentage-based deductible for earthquake claims: 5% of the coverage amount, with a minimum of $5,000. This means your deductible amount will vary based on your coverage limit."
+      },
+      {
+        "issue_type": "ACTION_REQUIRED",
+        "message": "You must submit a Proof of Loss within 90 days of the loss."
+      }
+    ],
+    "deadlines": [],
+    "coverage_limits": [
+      "Dwelling Building (Replacement Cost) up to $620,000",
+      "Detached Private Structures up to $62,000",
+      "Personal Property (Replacement Cost) up to $180,000",
+      "Cash, currency, and gift cards up to $500",
+      "Jewellery, watches, and furs up to $6,000 (any one article $2,000)",
+      "Securities, deeds, and manuscripts up to $1,500",
+      "Silverware and goldware up to $10,000",
+      "Firearms and accessories up to $5,000",
+      "Business property on premises up to $5,000",
+      "Electronic data and software up to $5,000",
+      "Watercraft (including motors and trailers) up to $1,500",
+      "Additional Living Expenses up to $124,000 for up to 24 months",
+      "Personal Liability up to $2,000,000 per occurrence",
+      "Voluntary Medical Payments up to $10,000",
+      "Voluntary Property Damage up to $5,000",
+      "Sewer Backup & Overland Water Endorsement up to $100,000",
+      "Earthquake Endorsement up to $620,000",
+      "Identity Theft Expense Reimbursement up to $25,000",
+      "Service Line Coverage \u2014 Underground Utilities up to $10,000"
+    ],
+    "required_actions": [
+      "Pay the annual premium of $1,648.00 on the policy effective date, June 1, 2024.",
+      "Give prompt notice to Prairies Shield Insurance Group or your broker by calling 1-800-555-0199 in the event of a loss or damage.",
+      "Protect the property from further damage after a loss.",
+      "Prepare an inventory of damaged or destroyed property with receipts, photos, or other documentation after a loss.",
+      "Submit a Proof of Loss within 90 days of the loss.",
+      "Cooperate fully with the insurer's investigation, including examination under oath if required.",
+      "Provide written notice to Prairies Shield Insurance Group or your broker if you wish to cancel this policy.",
+      "Assist and cooperate with the insurer in any subrogation proceedings if a claim is paid."
+    ],
+    "warnings": [
+      "This policy does not cover loss or damage caused by gradual deterioration, wear and tear, rust, or inherent defect.",
+      "This policy does not cover loss or damage caused by insects, vermin, rodents, or birds.",
+      "This policy does not cover loss or damage caused by war, civil war, or nuclear hazard.",
+      "This policy does not cover loss or damage caused by intentional or criminal acts of the insured.",
+      "This policy does not cover loss or damage caused by mechanical or electrical breakdown.",
+      "This policy does not cover loss or damage caused by pollution or contamination, including mould resulting from a pre-existing condition.",
+      "Windstorm and hail coverage excludes damage to fences and trees.",
+      "Falling objects coverage excludes damage caused by ice, snow, or sleet to outdoor property.",
+      "Freezing of plumbing systems coverage is subject to a heat maintenance condition.",
+      "Liability coverage excludes bodily injury to any insured person.",
+      "Liability coverage excludes property damage to property owned, occupied, or in the care of an insured.",
+      "Liability coverage excludes liability arising from the operation of a motorized vehicle, aircraft, or watercraft over 8 metres.",
+      "Liability coverage excludes business pursuits unless specifically endorsed.",
+      "Liability coverage excludes transmission of a communicable disease.",
+      "Liability coverage excludes sexual abuse, molestation, or corporal punishment.",
+      "The standard deductible for All Perils is $1,000.",
+      "The deductible for Sewer Backup is $2,500.",
+      "The deductible for Overland Water / Flood is $2,500.",
+      "Monthly payment plans for the premium are available through your broker.",
+      "A returned cheque or NSF fee of $35.00 may apply.",
+      "Failure to pay the premium may result in cancellation of this policy with 10 days' notice.",
+      "The insurer may cancel this policy with 10 days' notice for non-payment of premium, or 30 days' notice for any other reason.",
+      "If you cancel the policy, return premiums will be calculated on a short-rate basis, which may result in a lower refund than a pro-rata calculation.",
+      "It is recommended to review dwelling limits annually with your broker or get an independent appraisal every three years."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % 

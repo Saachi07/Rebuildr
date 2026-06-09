@@ -33,3 +33,11 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+#NLP
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
