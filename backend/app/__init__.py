@@ -14,7 +14,9 @@ def create_app(config_class: type = Config) -> Flask:
     from . import models  # noqa: F401  (register models with SQLAlchemy)
 
     from .blueprints.health import bp as health_bp
+    from .blueprints.recommendations import bp as recommendations_bp
 
     app.register_blueprint(health_bp)
+    app.register_blueprint(recommendations_bp)
 
     return app

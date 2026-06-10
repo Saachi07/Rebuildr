@@ -34,6 +34,19 @@ eligibility_days     optional int — applications must be filed within this
                      many days of the disaster date. None = no window.
 scraped_at           ISO date string if this came from the scraper, else
                      None for hand-curated entries. Drives freshness decay.
+max_benefit_cad      optional int — rough upper bound on the dollar value
+                     this resource can unlock. None for non-monetary
+                     resources (helplines, shelters, document replacement).
+                     Used by the `personalize_more` unlock estimator.
+priority_floor       optional float in [0,1] — lower bound on the final
+                     scorer output for this resource. When non-zero, the
+                     scorer applies max(scorer_total, priority_floor) so
+                     a key resource (e.g. gio-ombud for denial cases)
+                     always surfaces strongly when it passes the filter.
+tags_added           optional list of strings — extra tags this resource
+                     contributes back to the user's tag set if it's
+                     surfaced (reserved for future feedback loops;
+                     unused by the current scorer but stored on the row).
 
 Scraper integration
 -------------------
@@ -67,6 +80,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": 90,
         "scraped_at": None,
+        # DRP structural repair caps run into the hundreds of thousands;
+        # 300k is a conservative-but-meaningful anchor for the unlock math.
+        "max_benefit_cad": 300_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "ei",
@@ -83,6 +101,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # ~55% of insurable earnings up to ~$668/wk × ~45 wks ≈ $30k.
+        # Conservative round-down to $25k.
+        "max_benefit_cad": 25_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "isc-emap",
@@ -99,6 +122,12 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # EMAP funds response + recovery at the community level; per-
+        # household dollar value is highly variable. Conservative $100k
+        # as a rebuild-scale anchor.
+        "max_benefit_cad": 100_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "cra-disaster-relief",
@@ -115,6 +144,12 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # CRA relief is penalty/interest waivers + filing extensions —
+        # dollar value depends entirely on the user's tax debt. Mark null
+        # so it doesn't distort the unlock estimator.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "ab-income-support",
@@ -131,6 +166,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Single adult Core Essentials rate ≈ $820/mo; family-of-three
+        # ≈ $1,800/mo. Annualised ceiling ≈ $20k conservative.
+        "max_benefit_cad": 20_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "aish",
@@ -147,6 +187,12 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Existing AISH ($1,901/mo single adult) just kept flowing; this
+        # is "don't lose what you already get" rather than a new unlock.
+        # Annualised ≈ $23k as a continuation value.
+        "max_benefit_cad": 23_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
 
     # ----- Shelter / immediate safety -----------------------------------
@@ -165,6 +211,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Lodging + immediate needs grants — non-monetary anchor.
+        # Mark null so it doesn't double-count in the unlock estimator.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "211-alberta",
@@ -181,6 +232,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Non-monetary connector service.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "salvation-army-ab",
@@ -197,6 +252,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Mobile feeding + emotional care — non-monetary.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
 
     # ----- Health -------------------------------------------------------
@@ -215,6 +274,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Nurse advice line — non-monetary.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "hope-for-wellness",
@@ -231,6 +294,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Crisis helpline — non-monetary.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "ahs-mental-health",
@@ -247,6 +314,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Mental-health helpline — non-monetary.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
 
     # ----- Insurance ----------------------------------------------------
@@ -265,6 +336,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Advisory service — doesn't pay out, but unlocks understanding
+        # of an existing policy. Mark null.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "gio-ombud",
@@ -281,6 +357,12 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # The mediator doesn't pay — it unlocks an underpaid claim. Null
+        # max_benefit; the priority_floor is what makes denial cases see
+        # it at the top of their list.
+        "max_benefit_cad": None,
+        "priority_floor": 0.85,
+        "tags_added": [],
     },
 
     # ----- Document replacement -----------------------------------------
@@ -299,6 +381,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Fee waivers for replacement docs save tens of dollars per item.
+        # Non-monetary at the rebuild scale we care about — null.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "service-canada-sin",
@@ -315,6 +402,10 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # Same reasoning as Service Alberta — non-rebuild-scale dollar value.
+        "max_benefit_cad": None,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
 
     # ----- Community / rebuild ------------------------------------------
@@ -333,6 +424,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": None,
         "scraped_at": None,
+        # ReStore discounts + chapter-by-chapter rebuild support. Highly
+        # variable; $25k as a midpoint anchor for the unlock estimator.
+        "max_benefit_cad": 25_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
     {
         "id": "samaritans-purse",
@@ -349,6 +445,11 @@ RESOURCES: list[dict] = [
         "insurance_companies": None,
         "eligibility_days": 180,
         "scraped_at": None,
+        # Volunteer labour, not cash. Rough equivalent cost-of-services
+        # for a multi-day mud-out / ash-out crew ≈ $5k. Conservative.
+        "max_benefit_cad": 5_000,
+        "priority_floor": 0.0,
+        "tags_added": [],
     },
 ]
 

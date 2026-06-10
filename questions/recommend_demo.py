@@ -145,8 +145,15 @@ def run():
 
         ctx = dict(sc["context"])
         ctx["intake_answers"] = answers
-        recs = recommender.recommend(dist, ctx)
-        print(render_recommendations(recs))
+        result = recommender.recommend(dist, ctx)
+        print(render_recommendations(result["by_category"]))
+        if result.get("top_pick") is not None:
+            tp = result["top_pick"]
+            print(f"\n  ★ top pick: {tp.resource['title']}  (score {tp.score:.2f})")
+        if result.get("personalize_more"):
+            print("\n  Personalise more:")
+            for hint in result["personalize_more"][:2]:
+                print(f"    • {hint['copy']}")
 
 
 def _scripted_answer(q: dict, full_answers: dict):
