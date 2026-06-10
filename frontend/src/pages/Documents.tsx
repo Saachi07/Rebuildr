@@ -2,15 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, GeminiAnalysis, UserDocument } from "../api";
 import { Spinner } from "../components/Skeleton";
+import { BackButton } from "../components/BackButton";
 
 export default function Documents() {
   const [docs, setDocs] = useState<UserDocument[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [justSaved, setJustSaved] = useState<UserDocument | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
+  const [summaryFor, setSummaryFor] = useState<UserDocument | null>(null);
 
   function load() {
     api.listMyDocuments().then((r) => setDocs(r.documents)).catch((e) => setErr(String(e)));
@@ -18,39 +17,29 @@ export default function Documents() {
 
   useEffect(load, []);
 
-  async function save() {
+  async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
     if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
       setErr("Only PDF files are supported.");
       return;
     }
-    setBusy(true);
+    setUploading(true);
     setErr(null);
-    setJustSaved(null);
     try {
       const { document } = await api.uploadDocument(file);
-      setJustSaved(document);
-      setFile(null);
+      // Auto-analyze. Don't fail the whole upload if analysis fails — the doc is saved.
+      try {
+        await api.analyzeDocument(document.id);
+      } catch (e: any) {
+        setErr(`Saved, but analysis didn't finish: ${e.message ?? e}`);
+      }
       load();
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
-      setBusy(false);
-    }
-  }
-
-  async function analyze() {
-    if (!justSaved) return;
-    setAnalyzing(true);
-    setErr(null);
-    try {
-      const { document } = await api.analyzeDocument(justSaved.id);
-      setJustSaved(document);
-      load();
-    } catch (e: any) {
-      setErr(e.message ?? String(e));
-    } finally {
-      setAnalyzing(false);
+      setUploading(false);
     }
   }
 
@@ -67,7 +56,7 @@ export default function Documents() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Delete this document?")) return;
+    if (!confirm("Delete this document? This can't be undone.")) return;
     try {
       await api.deleteDocument(id);
       load();
@@ -76,74 +65,39 @@ export default function Documents() {
     }
   }
 
+  const latestCaseHref = "/dashboard";
+
   return (
     <div className="container">
-      <div className="row">
-        <h1>Documents</h1>
-        <span className="spacer" />
-        <Link to="/dashboard"><button className="secondary">← Dashboard</button></Link>
+      <BackButton />
+      <div className="row" style={{ marginTop: 16 }}>
+        <h1 style={{ margin: 0 }}>Your documents</h1>
       </div>
+      <p className="warm-note" style={{ marginTop: 8 }}>
+        Upload your insurance policy, claims, ID, deeds — anything you might
+        need to reference. We'll read each one and pull out the important bits.
+      </p>
 
       <div className="card">
-        <h3 style={{ marginTop: 0 }}>Upload a document</h3>
-        <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>
-          Save it first, then run analysis to extract a summary and key fields.
+        <h3 style={{ marginTop: 0 }}>Add a document</h3>
+        <p className="muted-strong" style={{ marginTop: 0, fontSize: 14 }}>
+          Pick a PDF. We'll save it and analyze it automatically — no extra
+          steps. You'll see a Summary button on the document when it's ready.
         </p>
         <input
           type="file"
           accept="application/pdf,.pdf"
-          onChange={(e) => { setFile(e.target.files?.[0] ?? null); setJustSaved(null); }}
-          disabled={busy || analyzing}
+          onChange={onUpload}
+          disabled={uploading}
         />
-        <div className="row" style={{ marginTop: 12 }}>
-          <button onClick={save} disabled={!file || busy || analyzing}>
-            {busy ? "Saving…" : "Save"}
-          </button>
-          <button
-            className="secondary"
-            onClick={analyze}
-            disabled={!justSaved || analyzing}
-          >
-            {analyzing ? "Analyzing…" : "Analyze"}
-          </button>
-        </div>
+        {uploading && <p className="muted-strong" style={{ marginTop: 10 }}>Saving and reading your document…</p>}
         {err && <div className="error">{err}</div>}
-
-        {justSaved && (
-          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
-            <div className="row">
-              <strong>{justSaved.name}</strong>
-              {justSaved.doc_type && <span className="badge">{justSaved.doc_type}</span>}
-            </div>
-            {justSaved.doc_type === "other" && (
-              <div style={{
-                marginTop: 12,
-                padding: "10px 14px",
-                background: "var(--warning-bg, #fffbeb)",
-                border: "1px solid var(--warning-border, #f59e0b)",
-                borderRadius: 6,
-                fontSize: 13,
-                color: "var(--warning-text, #92400e)",
-              }}>
-                This doesn't look like an insurance or disaster-recovery document.
-                It's saved but won't be used in task recommendations.
-              </div>
-            )}
-            {justSaved.gemini_analysis && (
-              <AnalysisView analysis={justSaved.gemini_analysis} />
-            )}
-            <div className="row" style={{ marginTop: 12 }}>
-              <span className="spacer" />
-              <Link to="/dashboard"><button>Next →</button></Link>
-            </div>
-          </div>
-        )}
       </div>
 
-      <h3>Your documents ({docs?.length ?? 0})</h3>
+      <h3>You have {docs?.length ?? 0} document{docs?.length === 1 ? "" : "s"}</h3>
       {docs === null && !err && <Spinner />}
       {docs && docs.length === 0 && (
-        <p className="muted">No documents uploaded yet.</p>
+        <p className="muted-strong">Nothing here yet. Upload one above to get started.</p>
       )}
       {docs && docs.length > 0 && (
         <table className="tbl">
@@ -159,8 +113,8 @@ export default function Documents() {
             {docs.map((d) => (
               <tr key={d.id}>
                 <td>{d.name}</td>
-                <td>{d.doc_type ? <span className="badge">{d.doc_type}</span> : <span className="muted">—</span>}</td>
-                <td className="muted">{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : "—"}</td>
+                <td>{d.doc_type ? <span className="badge">{prettyDocType(d.doc_type)}</span> : <span className="muted">analyzing…</span>}</td>
+                <td className="muted-strong">{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : "—"}</td>
                 <td className="actions">
                   <button
                     className="secondary"
@@ -169,6 +123,14 @@ export default function Documents() {
                   >
                     {opening === d.id ? "Opening…" : "Open"}
                   </button>{" "}
+                  <button
+                    className="secondary"
+                    onClick={() => setSummaryFor(d)}
+                    disabled={!d.gemini_analysis}
+                    title={d.gemini_analysis ? "View the extracted summary" : "Summary not ready yet"}
+                  >
+                    Summary
+                  </button>{" "}
                   <button className="secondary" onClick={() => remove(d.id)}>Delete</button>
                 </td>
               </tr>
@@ -176,6 +138,52 @@ export default function Documents() {
           </tbody>
         </table>
       )}
+
+      <div className="row" style={{ marginTop: 32 }}>
+        <span className="spacer" />
+        <Link to="/dashboard"><button className="secondary">Inventory →</button></Link>
+        <Link to={latestCaseHref} style={{ marginLeft: 8 }}>
+          <button>See your plan →</button>
+        </Link>
+      </div>
+
+      {summaryFor && (
+        <SummaryModal doc={summaryFor} onClose={() => setSummaryFor(null)} />
+      )}
+    </div>
+  );
+}
+
+function prettyDocType(t: string): string {
+  if (!t) return "";
+  return t.replace(/_/g, " ");
+}
+
+function SummaryModal({ doc, onClose }: { doc: UserDocument; onClose: () => void }) {
+  const analysis = doc.gemini_analysis;
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="row">
+          <h2 style={{ margin: 0 }}>{doc.name}</h2>
+          <span className="spacer" />
+          <button className="ghost" onClick={onClose} aria-label="Close">×</button>
+        </div>
+        {doc.doc_type && (
+          <p>
+            <span className="badge">{prettyDocType(doc.doc_type)}</span>
+          </p>
+        )}
+        {!analysis && <p className="muted-strong">No summary yet.</p>}
+        {analysis && <AnalysisView analysis={analysis} />}
+        {doc.doc_type === "other" && (
+          <div className="notice" style={{ marginTop: 12 }}>
+            This doesn't look like an insurance or disaster-recovery
+            document, so we won't use it when generating your plan. It's still
+            safely saved.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -185,7 +193,7 @@ function AnalysisView({ analysis }: { analysis: GeminiAnalysis }) {
   return (
     <div style={{ marginTop: 12 }}>
       {analysis.summary && (
-        <p style={{ marginTop: 0, fontSize: 14 }}>{analysis.summary}</p>
+        <p style={{ marginTop: 0, fontSize: 15, lineHeight: 1.55 }}>{analysis.summary}</p>
       )}
       {entries.length > 0 && (
         <table className="tbl" style={{ marginTop: 12 }}>
@@ -195,7 +203,7 @@ function AnalysisView({ analysis }: { analysis: GeminiAnalysis }) {
           <tbody>
             {entries.map(([k, v]) => (
               <tr key={k}>
-                <td>{k}</td>
+                <td>{k.replace(/_/g, " ")}</td>
                 <td>{typeof v === "string" || typeof v === "number" ? String(v) : JSON.stringify(v)}</td>
               </tr>
             ))}

@@ -23,12 +23,19 @@ def analyze_photo():
     if not blob:
         return jsonify({"error": "empty image"}), 400
 
+    # "pre" = before the disaster (proof of what the user owned).
+    # "post" = after the disaster (showing the damage). Default "post"
+    # because that's the dominant flow.
+    pre_post = (request.form.get("pre_post") or "post").lower()
+    if pre_post not in {"pre", "post"}:
+        pre_post = "post"
+
     api_key = current_app.config.get("GEMINI_API_KEY")
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
 
     try:
-        result = analyze_room_photo(blob, api_key)
+        result = analyze_room_photo(blob, api_key, pre_post=pre_post)
     except Exception as exc:  # noqa: BLE001 — surface error to client
         return jsonify({"error": str(exc)}), 500
     return jsonify(result.model_dump())

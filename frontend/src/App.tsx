@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import Landing from "./pages/Landing";
@@ -11,39 +11,104 @@ import Recommendations from "./pages/Recommendations";
 import Emergency from "./pages/Emergency";
 import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import { TermsGate } from "./components/TermsGate";
 import { Spinner } from "./components/Skeleton";
+import { HelpFooter } from "./components/HelpFooter";
+import { CasePicker } from "./components/CasePicker";
+import { api } from "./api";
 
-const PLACEHOLDER_NOTIFICATIONS = [
-  {
-    id: "n1",
-    title: "Alberta Emergency Alert",
-    body: "Wildfire smoke advisory in effect for your area. Stay indoors if possible.",
-    time: "2h ago",
-    unread: true,
-  },
-  {
-    id: "n2",
-    title: "Missing photos",
-    body: "You added 3 items to your living room — add photos to strengthen your claim.",
-    time: "Yesterday",
-    unread: true,
-  },
-  {
-    id: "n3",
-    title: "Document reminder",
-    body: "Your insurance policy document hasn't been uploaded yet.",
-    time: "2 days ago",
-    unread: false,
-  },
-];
+type DerivedNotif = {
+  id: string;
+  title: string;
+  body: string;
+  to?: string;
+  unread: boolean;
+};
+
+function useDerivedNotifications(): DerivedNotif[] {
+  const { user } = useAuth();
+  const [notifs, setNotifs] = useState<DerivedNotif[]>([]);
+
+  useEffect(() => {
+    if (!user) { setNotifs([]); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [casesRes, docsRes] = await Promise.all([
+          api.listCases(),
+          api.listMyDocuments(),
+        ]);
+        if (cancelled) return;
+        const out: DerivedNotif[] = [];
+        const cases = casesRes.cases;
+        const docs = docsRes.documents;
+
+        const hasPolicy = docs.some((d) => d.doc_type === "insurance_policy" || d.doc_type === "policy");
+        if (!hasPolicy) {
+          out.push({
+            id: "policy-missing",
+            title: "Upload your insurance policy",
+            body: "We use your policy to find deadlines and coverage gaps. It only takes a minute.",
+            to: "/documents",
+            unread: true,
+          });
+        }
+
+        if (cases.length === 0) {
+          out.push({
+            id: "no-case",
+            title: "Start your first case",
+            body: "Tell us what happened so we can build your plan.",
+            to: "/cases/new",
+            unread: true,
+          });
+        } else {
+          const latest = cases[0];
+          // Crude "inventory empty?" check — we don't list items here to keep this cheap.
+          out.push({
+            id: `recs-${latest.id}`,
+            title: "Your recovery plan is ready",
+            body: `Open the latest plan for ${latest.case_name}.`,
+            to: `/cases/${latest.id}/recommendations`,
+            unread: false,
+          });
+        }
+
+        // Surface document deadlines pulled out by Gemini.
+        for (const d of docs) {
+          const fields = (d.gemini_analysis?.key_fields ?? {}) as Record<string, unknown>;
+          const deadline = fields["deadline"] ?? fields["filing_deadline"] ?? fields["due_date"];
+          if (typeof deadline === "string" && deadline.trim()) {
+            out.push({
+              id: `deadline-${d.id}`,
+              title: `Deadline in ${d.name}`,
+              body: String(deadline),
+              to: "/documents",
+              unread: true,
+            });
+          }
+        }
+
+        setNotifs(out);
+      } catch {
+        if (!cancelled) setNotifs([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  return notifs;
+}
 
 function NotificationsButton() {
+  const notifs = useDerivedNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const unreadCount = PLACEHOLDER_NOTIFICATIONS.filter((n) => n.unread).length;
+  const nav = useNavigate();
+  const unreadCount = notifs.filter((n) => n.unread).length;
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -65,12 +130,18 @@ function NotificationsButton() {
       </button>
       {open && (
         <div className="popover">
-          <div className="popover-header">Notifications</div>
-          {PLACEHOLDER_NOTIFICATIONS.map((n) => (
-            <div key={n.id} className={`notif-item${n.unread ? " unread" : ""}`}>
+          <div className="popover-header">What needs attention</div>
+          {notifs.length === 0 && (
+            <div className="notif-empty">You're all caught up.</div>
+          )}
+          {notifs.map((n) => (
+            <div
+              key={n.id}
+              className={`notif-item${n.unread ? " unread" : ""}${n.to ? " actionable" : ""}`}
+              onClick={() => { if (n.to) { setOpen(false); nav(n.to); } }}
+            >
               <div className="notif-title">{n.title}</div>
               <div className="notif-body">{n.body}</div>
-              <div className="notif-time">{n.time}</div>
             </div>
           ))}
         </div>
@@ -113,7 +184,7 @@ function ProfileMenu() {
               <div className="profile-email">{user?.email}</div>
             </div>
           </div>
-          <button className="menu-item" onClick={() => { setOpen(false); nav("/dashboard"); }}>
+          <button className="menu-item" onClick={() => { setOpen(false); nav("/profile"); }}>
             View profile
           </button>
           <button className="menu-item" onClick={() => { setOpen(false); nav("/documents"); }}>
@@ -158,7 +229,9 @@ function ActionBar() {
   if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
   return (
     <div className="actionbar">
-      <Link to="/cases/new"><button>+ Create case</button></Link>
+      <CasePicker />
+      <span className="spacer" />
+      <Link to="/cases/new"><button>+ Start a new case</button></Link>
     </div>
   );
 }
@@ -182,6 +255,7 @@ export default function App() {
         <Route path="/legal/terms" element={<Terms />} />
         <Route path="/legal/privacy" element={<Privacy />} />
         <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
+        <Route path="/profile" element={<Private><Profile /></Private>} />
         <Route path="/documents" element={<Private><Documents /></Private>} />
         <Route path="/cases/new" element={<Private><NewCase /></Private>} />
         <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />
@@ -189,6 +263,7 @@ export default function App() {
         <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <HelpFooter />
     </TermsGate>
   );
 }

@@ -7,30 +7,30 @@ export default function Landing() {
   return (
     <div className="container">
       <div className="hero">
-        <h1>Pick up the pieces. One plan at a time.</h1>
-        <p>
-          Rebuildr turns photos of damage and your insurance docs into a
-          prioritized recovery plan — claims to file, deadlines to hit,
-          resources to tap.
+        <h1>You're not doing this alone.</h1>
+        <p className="warm">
+          Whatever happened, we'll help you piece it back together — one small
+          step at a time. Take what you need from this page; nothing has to
+          happen all at once.
         </p>
         <div className="cta-row">
-          <Link to="/emergency"><button className="urgent">I need help now</button></Link>
-          <Link to={start}><button>Start recovery planning</button></Link>
+          <Link to="/emergency"><button className="urgent big">I need help right now</button></Link>
+          <Link to={start}><button className="big">Start when you're ready</button></Link>
         </div>
       </div>
 
       <div className="grid grid-3">
         <div className="card">
-          <h3>1. Upload</h3>
-          <p className="muted">Photos of damage, your insurance policy, any claims you've already filed.</p>
+          <h3>1. Share what you have</h3>
+          <p className="muted-strong">A few photos, your insurance papers — even just one document is enough to start.</p>
         </div>
         <div className="card">
-          <h3>2. We analyze</h3>
-          <p className="muted">Classify damage room-by-room, parse policy coverage and deadlines, flag the gaps.</p>
+          <h3>2. We sort it for you</h3>
+          <p className="muted-strong">We read your policy, list what you lost, and figure out what's covered.</p>
         </div>
         <div className="card">
           <h3>3. You get a plan</h3>
-          <p className="muted">Prioritized actions, deadlines, claims checklist, resource matches.</p>
+          <p className="muted-strong">A clear next step, the deadlines that matter, and people who can help.</p>
         </div>
       </div>
     </div>

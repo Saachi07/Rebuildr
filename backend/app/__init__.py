@@ -16,20 +16,23 @@ def create_app(config_class: type = Config) -> Flask:
     from .blueprints.health import bp as health_bp
     from .blueprints.auth import bp as auth_bp
     from .blueprints.cases import bp as cases_bp
-    from .blueprints.items import bp as items_bp
+    from .blueprints.items import case_bp as case_items_bp, lib_bp as items_lib_bp
     from .blueprints.recommendations import bp as recs_bp
     from .blueprints.documents import bp as documents_bp
     from .blueprints.ml import bp as ml_bp
     from .blueprints.terms import bp as terms_bp
+    from .blueprints.me import bp as me_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(cases_bp)
-    app.register_blueprint(items_bp)
+    app.register_blueprint(case_items_bp)
+    app.register_blueprint(items_lib_bp)
     app.register_blueprint(recs_bp)
     app.register_blueprint(documents_bp)
     app.register_blueprint(ml_bp)
     app.register_blueprint(terms_bp)
+    app.register_blueprint(me_bp)
 
     # The resources catalog rarely changes; let the browser cache it. Other
     # endpoints stay no-store because they're per-user and mutate often.

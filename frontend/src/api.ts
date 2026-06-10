@@ -45,6 +45,7 @@ export type Item = {
   damage_severity?: string;
   estimated_value?: number;
   description?: string;
+  room?: string;
 };
 
 export type GeminiAnalysis = {
@@ -116,6 +117,24 @@ export type Terms = {
   encryption_notice?: string;
 };
 
+export type Profile = {
+  id?: string;
+  full_name?: string | null;
+  location?: string | null;
+  region?: string | null;
+  language?: string | null;
+};
+
+export type ReadinessCheck = { key: string; done: boolean };
+export type Readiness = {
+  percent: number;
+  completed: number;
+  total: number;
+  checks: ReadinessCheck[];
+};
+
+export type MeResponse = { profile: Profile; readiness: Readiness };
+
 export type TermsStatus = {
   accepted: boolean;
   version?: string;
@@ -158,9 +177,10 @@ export const api = {
     return res.json();
   },
 
-  analyzeRoomPhoto: async (file: File): Promise<RoomScan> => {
+  analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" = "post"): Promise<RoomScan> => {
     const fd = new FormData();
     fd.append("image", file);
+    fd.append("pre_post", prePost);
     const res = await fetch(`${BASE}/ml/analyze-photo`, {
       method: "POST",
       headers: await authHeaders(),
@@ -169,6 +189,20 @@ export const api = {
     if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
     return res.json();
   },
+
+  // /items — user-wide library, independent of any case
+  listMyItems: () => request<{ items: Item[] }>("/items"),
+  createLibraryItem: (body: Partial<Item>) =>
+    request<{ item: Item }>("/items", { method: "POST", body: JSON.stringify(body) }),
+  attachItemToCase: (itemId: string, caseId: string) =>
+    request<{ item: Item }>(`/items/${itemId}/attach/${caseId}`, { method: "POST" }),
+  detachItem: (itemId: string) =>
+    request<{ item: Item }>(`/items/${itemId}/detach`, { method: "POST" }),
+
+  // /me — profile + readiness score
+  getMe: () => request<MeResponse>("/me"),
+  updateMe: (patch: Partial<Profile>) =>
+    request<MeResponse>("/me", { method: "PATCH", body: JSON.stringify(patch) }),
 
   getTerms: () => request<Terms>("/terms"),
   getTermsStatus: () => request<TermsStatus>("/terms/status"),

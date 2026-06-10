@@ -59,9 +59,14 @@ def build_recommender_from_db() -> Recommender:
 
 
 def get_recommender() -> Recommender:
+    """Cache the Recommender once it has resources, but never cache an
+    empty one — otherwise a request that lands before `flask db upgrade`
+    finishes the seed will poison the cache for the rest of the process."""
     rec = current_app.extensions.get("rebuildr_recommender")
-    if rec is None:
-        rec = build_recommender_from_db()
+    if rec is not None and rec.resources:
+        return rec
+    rec = build_recommender_from_db()
+    if rec.resources:
         current_app.extensions["rebuildr_recommender"] = rec
     return rec
 
