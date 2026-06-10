@@ -14,7 +14,7 @@ export default function Recommendations() {
     setErr(null);
     try {
       const r = await api.getRecommendations(id, 5);
-      setGroups(r.groups);
+      setGroups(r.by_category ?? {});
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
@@ -53,27 +53,27 @@ export default function Recommendations() {
       )}
 
       {groups && !empty && Object.entries(groups).map(([category, recs]) => (
-        recs.length > 0 && (
+        recs && recs.length > 0 && (
           <div key={category} className="rec-group">
             <h2>{category}</h2>
-            {recs.map((r) => (
-              <div key={r.resource.id} className="card rec-card">
+            {recs.filter(Boolean).map((r) => (
+              <div key={r.id} className="card rec-card">
                 <div style={{ flex: 1 }}>
                   <div className="row">
-                    <strong>{r.resource.title}</strong>
+                    <strong>{r.title}</strong>
                     <span className="spacer" />
                     <span className="score">score {r.score.toFixed(2)}</span>
                   </div>
-                  {r.resource.description && (
-                    <p style={{ margin: "6px 0", fontSize: 13 }}>{r.resource.description}</p>
+                  {r.body && (
+                    <p style={{ margin: "6px 0", fontSize: 13 }}>{r.body}</p>
                   )}
                   {r.reasons?.length > 0 && (
                     <p className="muted" style={{ margin: "6px 0 0", fontSize: 12 }}>
                       Why: {r.reasons.join(" · ")}
                     </p>
                   )}
-                  {r.resource.url && (
-                    <a href={r.resource.url} target="_blank" rel="noreferrer">
+                  {r.url && (
+                    <a href={r.url} target="_blank" rel="noreferrer">
                       <button className="secondary" style={{ marginTop: 8 }}>Open</button>
                     </a>
                   )}

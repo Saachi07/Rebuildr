@@ -79,21 +79,35 @@ export type RoomScan = {
   notes: string;
 };
 
+// Flat shape returned by the new Flask blueprint —
+// see backend/app/blueprints/recommendations.py: Recommendation.to_dict().
 export type Recommendation = {
-  resource: {
-    id: string;
-    title: string;
-    description?: string;
-    url?: string;
-    category?: string;
-    type?: string;
-  };
+  id: string;
+  type?: string;
+  title: string;
+  body?: string;
+  url?: string;
+  phone?: string;
   score: number;
   reasons: string[];
-  rank: number;
+  days_until_deadline?: number | null;
 };
 
 export type RecGroups = Record<string, Recommendation[]>;
+
+export type PersonalizeHint = {
+  question_id: string;
+  estimated_unlock_cad: number;
+  would_unlock: string[];
+  copy: string;
+};
+
+export type RecommendResponse = {
+  by_category: RecGroups;
+  top_pick: Recommendation | null;
+  deadline_radar: Recommendation[];
+  personalize_more: PersonalizeHint[];
+};
 
 export type Terms = {
   version: string;
@@ -119,9 +133,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  getRecommendations: (caseId: string, topK = 5) =>
-    request<{ case_id: string; groups: RecGroups }>(
-      `/cases/${caseId}/recommendations?top_k=${topK}`
+  getRecommendations: (caseId: string, _topK = 5) =>
+    request<RecommendResponse>(
+      `/cases/${caseId}/recommendations`,
+      { method: "POST", body: JSON.stringify({}) },
     ),
 
   listMyDocuments: () => request<{ documents: UserDocument[] }>("/documents"),
