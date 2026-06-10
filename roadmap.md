@@ -169,7 +169,7 @@ If something isn't working, here are fallback options:
 
 **Day 5: Create a Flask endpoint for the image pipeline**
 - `POST /ml/analyze-photo` — accepts image, returns structured inventory JSON
-- This is what  Person A's photo upload endpoint will call
+- This is what Person A's photo upload endpoint will call
 - Deploy locally, test end-to-end with frontend
 
 ## Person D (Documents + LLM)
@@ -205,8 +205,8 @@ If something isn't working, here are fallback options:
 - Help Person B with Tailwind config and component styling
 
 **Day 5: Testing + bug reporting**
-- Test every endpoint  Person A built (use Postman or similar)
-- Test  Person C's photo analysis with all 30 sample photos
+- Test every endpoint Person A built (use Postman or similar)
+- Test Person C's photo analysis with all 30 sample photos
 - Document what works, what breaks, accuracy issues
 - Create a shared bug/issue tracker (GitHub Issues)
 
@@ -220,7 +220,7 @@ If something isn't working, here are fallback options:
 
 **Days 1–2: Document endpoints**
 - New table: `case_documents` (case_id FK, filename, storage_url, original_text, simplified_text, key_deadlines JSON, created_at)
-- `POST /cases/<id>/documents` — upload doc, extract text (call  Person D's pipeline), store results
+- `POST /cases/<id>/documents` — upload doc, extract text (call Person D's pipeline), store results
 - `GET /cases/<id>/documents` — list docs with summaries
 
 **Days 3–4: Recovery plan endpoints**
@@ -232,7 +232,7 @@ If something isn't working, here are fallback options:
 **Day 5: Loss summary endpoint**
 - `POST /cases/<id>/loss-report` — aggregate inventory items, calculate total estimated loss range, generate a summary
 - `GET /cases/<id>/loss-report` — return the report (later: PDF export)
-- Wire up pre/post photo comparison if  Person C has it ready, otherwise just aggregate the inventory
+- Wire up pre/post photo comparison if Person C has it ready, otherwise just aggregate the inventory
 
 ## Person B (Frontend)
 
@@ -266,7 +266,7 @@ If something isn't working, here are fallback options:
 - Test with poor lighting, cluttered rooms, unusual angles
 - Add retry logic for Gemini failures
 - Handle: "no items detected", blurry photos, non-room photos
-- Improve price accuracy based onPerson E's testing feedback from Week 1
+- Improve price accuracy based on Person E's testing feedback from Week 1
 - Document model limitations honestly
 
 ## Person D (Documents + LLM)
@@ -416,11 +416,11 @@ If something isn't working, here are fallback options:
 
 | What | Where to Look | Who |
 |---|---|---|
-| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes |Person E |
-| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives |Person E |
-| Alberta DRP application form | alberta.ca/disaster-recovery-programs |  Person D +Person E |
-| Sample insurance policy (Canadian) | IBC website, or create realistic mock |  Person D +Person E |
-| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet |  Person C +Person E |
+| Room photos (furnished interiors) | Unsplash, Pexels, or photograph your own homes | Person E |
+| Post-disaster damage photos | Creative Commons on Flickr, FEMA media library (public domain), news archives | Person E |
+| Alberta DRP application form | alberta.ca/disaster-recovery-programs | Person D + Person E |
+| Sample insurance policy (Canadian) | IBC website, or create realistic mock | Person D + Person E |
+| Canadian retail prices by category | IKEA.ca, CanadianTire.ca, BestBuy.ca, Wayfair.ca — build a spreadsheet | Person C + Person E |
 | Alberta Emergency Alert info | emergencyalert.alberta.ca |Person E (reference only, no integration) |
 | Indigenous Services Canada disaster aid info | sac-isc.gc.ca |Person E (for plan content) |
 | 211 Alberta resource info | ab.211.ca |Person E (for plan content) |
