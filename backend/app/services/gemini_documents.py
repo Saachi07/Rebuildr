@@ -82,6 +82,8 @@ def analyze_document(pdf_bytes: bytes, api_key: str) -> DocumentAnalysis:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY not configured")
 
+    from .gemini_schema import to_gemini_schema
+
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -91,7 +93,7 @@ def analyze_document(pdf_bytes: bytes, api_key: str) -> DocumentAnalysis:
         ],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
-            response_schema=DocumentAnalysis,
+            response_schema=to_gemini_schema(DocumentAnalysis),
         ),
     )
-    return response.parsed
+    return DocumentAnalysis.model_validate_json(response.text)

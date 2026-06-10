@@ -83,6 +83,8 @@ def analyze_room_photo(
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY not configured")
 
+    from .gemini_schema import to_gemini_schema
+
     client = genai.Client(api_key=api_key)
     image = Image.open(io.BytesIO(image_bytes))
     prompt = PRE_PROMPT if pre_post == "pre" else POST_PROMPT
@@ -92,7 +94,7 @@ def analyze_room_photo(
         contents=[prompt, image],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
-            response_schema=RoomAnalysis,
+            response_schema=to_gemini_schema(RoomAnalysis),
         ),
     )
-    return response.parsed
+    return RoomAnalysis.model_validate_json(response.text)

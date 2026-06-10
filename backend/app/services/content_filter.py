@@ -42,6 +42,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from .signals import DocumentSignals, InventorySignals
+
 
 # Weights are interpretable and hand-tuned. Replace with a learned ranker
 # once feedback data (saved / dismissed / acted-on) is in place.
@@ -50,7 +52,12 @@ W_TAG_OVERLAP = 0.4
 W_INSURER = 0.8
 W_FRESHNESS = 0.1
 W_URGENCY = 0.5
+W_DEADLINE = 0.7
 PENALTY_DONE = 1.0
+
+# Resource types where an extracted document deadline (claim window, DRP
+# application date) is actually actionable — shelters don't care.
+_DEADLINE_TYPES = {"insurance", "financial", "policy", "legal", "documents"}
 
 TOP_K_PER_CATEGORY = 5
 URGENT_DAYS = 7
@@ -63,6 +70,7 @@ class Recommendation:
     score: float
     reasons: list[str] = field(default_factory=list)
     rank: int = 0
+    days_until_deadline: Optional[int] = None
 
     def to_dict(self) -> dict:
         return {
@@ -75,6 +83,7 @@ class Recommendation:
             "score": round(self.score, 4),
             "reasons": self.reasons,
             "rank": self.rank,
+            "days_until_deadline": self.days_until_deadline,
         }
 
 
@@ -88,6 +97,8 @@ def recommend(
     resources: list[dict],
     top_k_per_category: int = TOP_K_PER_CATEGORY,
     completed_ids: Optional[set[str]] = None,
+    inventory: Optional[InventorySignals] = None,
+    documents: Optional[DocumentSignals] = None,
 ) -> dict[str, list[Recommendation]]:
     """Return content-based recommendations grouped by resource ``type``.
 
@@ -106,6 +117,14 @@ def recommend(
         Max suggestions to keep per resource ``type``.
     completed_ids
         Resource ids the user has already marked done — they get scored down.
+    inventory
+        Signals derived from the image-classification pipeline
+        (``signals.inventory_signals_from_items``). Its tags join the
+        eligibility filter and the query vector.
+    documents
+        Signals derived from the Gemini document analyses
+        (``signals.document_signals_from_documents``). Supplies an insurer
+        fallback, denial/deadline tags, and deadline pressure scoring.
     """
     completed_ids = completed_ids or set()
     items = list(items)
@@ -113,8 +132,20 @@ def recommend(
     region = case.get("region")
     disaster = case.get("disaster_type")
     tags = set(case.get("derived_tags") or [])
-    insurer = case.get("insurance_provider")
+    if inventory is not None:
+        tags |= inventory.tags
+    if documents is not None:
+        tags |= documents.tags
+    # The case's own insurer wins; the one Gemini lifted from an uploaded
+    # policy/claim PDF fills the gap when the user never typed it in.
+    insurer = case.get("insurance_provider") or (
+        documents.extracted_insurer if documents else None
+    )
     days_since = _days_since(case.get("incident_date"))
+    soonest_doc_deadline = (
+        min(documents.deadlines, key=lambda d: d.due_date)
+        if documents and documents.deadlines else None
+    )
 
     # 1. eligibility filter
     candidates = [
@@ -164,13 +195,30 @@ def recommend(
             score += W_URGENCY
             reasons.append("immediate need given how recent this is")
 
+        # deadline pressure — own eligibility window or a deadline Gemini
+        # pulled out of an uploaded document. Closer = higher.
+        deadline_score, days_until = _deadline_pressure(
+            r, days_since, soonest_doc_deadline, reasons,
+        )
+        score += W_DEADLINE * deadline_score
+
+        # photo-derived reason copy — cite the image pipeline when the
+        # resource matches a damage signal. Static templates, no LLM here.
+        if inventory is not None:
+            _add_inventory_reasons(r, tags, reasons)
+        if documents is not None and documents.denial_flag and r["id"] == "gio-ombud":
+            reasons.append("your insurance documents look like a denial — this is who to call next")
+
         if r["id"] in completed_ids:
             score -= PENALTY_DONE
 
         if not reasons:
             reasons.append("generally applicable in your situation")
 
-        recs.append(Recommendation(resource=r, score=score, reasons=reasons))
+        recs.append(Recommendation(
+            resource=r, score=score, reasons=reasons,
+            days_until_deadline=days_until,
+        ))
 
     # 4. group by type, sort, take top-K, set rank
     by_type: dict[str, list[Recommendation]] = {}
@@ -258,6 +306,65 @@ def _window_ok(r: dict, days_since: Optional[int]) -> bool:
     if window is None or days_since is None:
         return True
     return days_since <= window
+
+
+# ---------------------------------------------------------------------------
+# Signal-derived scoring helpers
+# ---------------------------------------------------------------------------
+
+def _deadline_pressure(
+    r: dict,
+    days_since: Optional[int],
+    soonest_doc_deadline,
+    reasons: list[str],
+) -> tuple[float, Optional[int]]:
+    """Two deadline sources: the resource's own ``eligibility_days`` window,
+    and the soonest deadline extracted from uploaded documents (only for
+    resource types where a claim/application date is actionable).
+    Returns (score in [0, 1], days_until_deadline)."""
+    candidates: list[tuple[int, str]] = []  # (days_left, reason copy)
+
+    window = r.get("eligibility_days")
+    if window is not None and days_since is not None:
+        days_left = int(window) - days_since
+        if days_left >= 0:
+            candidates.append((
+                days_left,
+                f"application window closes in {days_left} day{'s' if days_left != 1 else ''}",
+            ))
+
+    if soonest_doc_deadline is not None and r["type"] in _DEADLINE_TYPES:
+        days_left = (soonest_doc_deadline.due_date - date.today()).days
+        if days_left >= 0:
+            candidates.append((
+                days_left,
+                f"your {soonest_doc_deadline.source_doc} mentions a deadline — "
+                f"{days_left} day{'s' if days_left != 1 else ''} left",
+            ))
+
+    if not candidates:
+        return 0.0, None
+
+    days_left, label = min(candidates, key=lambda c: c[0])
+    # 1.0 at 0 days, decaying to 0 by 60 days out.
+    score = max(0.0, 1.0 - days_left / 60.0)
+    # Only shout about genuinely close deadlines.
+    if days_left <= 30:
+        reasons.append(label)
+    return score, days_left
+
+
+def _add_inventory_reasons(r: dict, tags: set[str], reasons: list[str]) -> None:
+    if "structural_damage" in tags and r["id"] in {"ab-drp", "habitat-ab", "samaritans-purse"}:
+        reasons.append("your damage photos suggest structural loss — this program covers that")
+    elif "total_loss" in tags and r["id"] in {"ab-drp", "habitat-ab"}:
+        reasons.append("photos suggest a total loss — major rebuild programs apply")
+    if "medication_visible" in tags and r["type"] == "health":
+        reasons.append("photos showed medication left behind — Health Link can help with refills")
+    if "documents_destroyed" in tags and r["type"] == "documents":
+        reasons.append("photos suggest documents were lost — replacement is fee-waived after a declared disaster")
+    if "pet_items_present" in tags and r["id"] in {"red-cross-lodging", "211-alberta", "pet-friendly-shelters"}:
+        reasons.append("photos showed pet items — they can help locate pet-friendly lodging")
 
 
 # ---------------------------------------------------------------------------
