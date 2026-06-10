@@ -35,9 +35,9 @@ def debug_detect(image_path: str, labels_json_path: str) -> None:
         else:
             print(f"  {label:<20} x0")
 
-    os.makedirs("../outputs/images", exist_ok=True)
+    os.makedirs("../../outputs/images", exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    output_path = f"../outputs/images/debug_{timestamp}.jpg"
+    output_path = f"../../outputs/images/debug_{timestamp}.jpg"
 
     annotated = results[0].plot()  # BGR numpy array from ultralytics
     Image.fromarray(annotated[..., ::-1]).save(output_path)  # BGR → RGB

@@ -1,12 +1,15 @@
+from pathlib import Path
+
 from ultralytics import YOLOWorld
 
+_MODEL_PATH = Path(__file__).parent / "yolov8m-worldv2.pt"
 _model = None
 
 
 def _get_model() -> YOLOWorld:
     global _model
     if _model is None:
-        _model = YOLOWorld("yolov8m-worldv2.pt")
+        _model = YOLOWorld(str(_MODEL_PATH))
     return _model
 
 
