@@ -37,15 +37,38 @@ function useDerivedNotifications(): DerivedNotif[] {
     let cancelled = false;
     (async () => {
       try {
-        const [casesRes, docsRes] = await Promise.all([
+        const [casesRes, docsRes, alertsRes, meRes] = await Promise.all([
           api.listCases(),
           api.listMyDocuments(),
+          api.listAlerts(),
+          api.getMe(),
         ]);
         if (cancelled) return;
         const out: DerivedNotif[] = [];
         const cases = casesRes.cases;
         const docs = docsRes.documents;
+        const alerts = (alertsRes && (alertsRes.alerts ?? [])) || [];
+        const weatherTerms = ["tornado", "wildfire", "flood", "winter storm", "evacuation"];
+        const profileRegion = meRes?.profile?.region || null;
+        const caseRegion = cases && cases.length > 0 ? cases[0].region : null;
+        const userRegion = (profileRegion || caseRegion || "") as string;
 
+        // Filter alerts by region: include if alert has no regions (broad),
+        // or if any alert region fuzzily matches the user's profile/case region.
+        const filteredAlerts = alerts.filter((a) => {
+          try {
+            const regs = (a.regions || []).map((r: any) => String(r || "").toLowerCase().trim()).filter(Boolean);
+            if (regs.length === 0) return true;
+            if (!userRegion) return true;
+            const ur = String(userRegion).toLowerCase().trim();
+            for (const rr of regs) {
+              if (rr.includes(ur) || ur.includes(rr)) return true;
+            }
+            return false;
+          } catch {
+            return true;
+          }
+        });
         const hasPolicy = docs.some((d) => d.doc_type === "insurance_policy" || d.doc_type === "policy");
         if (!hasPolicy) {
           out.push({
@@ -75,6 +98,23 @@ function useDerivedNotifications(): DerivedNotif[] {
             to: `/cases/${latest.id}/recommendations`,
             unread: false,
           });
+
+          // Check inventory for the latest case; if missing or empty, remind user
+          try {
+            const itemsRes = await api.listItems(latest.id);
+            const items = itemsRes?.items ?? [];
+            if (!items || items.length === 0) {
+              out.push({
+                id: `inventory-missing-${latest.id}`,
+                title: "Complete your home inventory",
+                body: "A detailed home inventory helps document losses — add photos and items now.",
+                to: `/cases/${latest.id}/inventory`,
+                unread: true,
+              });
+            }
+          } catch {
+            // don't block notifications if the inventory check fails
+          }
         }
 
         // Surface document deadlines pulled out by Gemini.
@@ -89,6 +129,28 @@ function useDerivedNotifications(): DerivedNotif[] {
               to: "/documents",
               unread: true,
             });
+          }
+        }
+
+        // Surface weather / Alberta 511 alerts
+        for (const a of filteredAlerts) {
+          try {
+            const send = !!a.send_notification;
+            if (!send) continue;
+            const msg = String(a.message || a.long_description || a.description || "");
+            const lower = msg.toLowerCase();
+            const high = weatherTerms.some((t) => lower.includes(t));
+            const insuranceAppend = !hasPolicy ? "\n\nPlease upload your insurance documents to prepare for potential claims." : "";
+            out.push({
+              id: `alert-${a.id}`,
+              title: `${high ? '⚠️ ' : ''}${String(a.title || 'Weather alert')}`,
+              body: `${msg}${insuranceAppend}`,
+              to: "/emergency",
+              unread: true,
+            });
+          } catch {
+            // swallow malformed alerts
+            continue;
           }
         }
 
