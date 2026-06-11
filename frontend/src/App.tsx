@@ -19,6 +19,7 @@ import { Spinner } from "./components/Skeleton";
 import { HelpFooter } from "./components/HelpFooter";
 import { CasePicker } from "./components/CasePicker";
 import { api } from "./api";
+import { isAlertRelevantToLocation } from "./lib/regionMapping";
 
 type DerivedNotif = {
   id: string;
@@ -51,20 +52,14 @@ function useDerivedNotifications(): DerivedNotif[] {
         const weatherTerms = ["tornado", "wildfire", "flood", "winter storm", "evacuation"];
         const profileRegion = meRes?.profile?.region || null;
         const caseRegion = cases && cases.length > 0 ? cases[0].region : null;
-        const userRegion = (profileRegion || caseRegion || "") as string;
+        const userLocation = profileRegion || caseRegion || null;
 
-        // Filter alerts by region: include if alert has no regions (broad),
-        // or if any alert region fuzzily matches the user's profile/case region.
+        // Filter alerts by region: map user's municipality to Alberta 511 regions
+        // and only show alerts relevant to that location.
         const filteredAlerts = alerts.filter((a) => {
           try {
-            const regs = (a.regions || []).map((r: any) => String(r || "").toLowerCase().trim()).filter(Boolean);
-            if (regs.length === 0) return true;
-            if (!userRegion) return true;
-            const ur = String(userRegion).toLowerCase().trim();
-            for (const rr of regs) {
-              if (rr.includes(ur) || ur.includes(rr)) return true;
-            }
-            return false;
+            const alertRegions = (a.regions || []).map((r: any) => String(r || "")).filter(Boolean);
+            return isAlertRelevantToLocation(userLocation, alertRegions);
           } catch {
             return true;
           }
