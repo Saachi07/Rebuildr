@@ -63,11 +63,36 @@ def _load_documents_signals(sb):
     return document_signals_from_documents(res.data or [])
 
 
+def _load_profile(sb):
+    """Caller's profile row — region/location fallback when the case doesn't
+    carry them. Soft-fails to an empty dict."""
+    try:
+        res = (
+            sb.table("profiles")
+            .select("region, location")
+            .eq("id", g.user_id)
+            .maybe_single()
+            .execute()
+        )
+        return res.data or {}
+    except Exception:
+        return {}
+
+
 def _load_context(case_id: str):
     sb = user_client(g.access_token)
     case = sb.table("recovery_cases").select("*").eq("id", case_id).maybe_single().execute()
     if not case.data:
         return None, (jsonify({"error": "case not found"}), 404)
+
+    # Demographic fallback: a case without a region inherits the user's
+    # profile region so regional aid programs still surface.
+    profile = _load_profile(sb)
+    if not case.data.get("region") and profile.get("region"):
+        case.data["region"] = profile["region"]
+    if not case.data.get("location") and profile.get("location"):
+        case.data["location"] = profile["location"]
+
     items = sb.table("case_items").select("*").eq("case_id", case_id).execute()
     resources = sb.table("resources").select("*").execute()
     completed = (
@@ -104,6 +129,29 @@ def _run(ctx: _Context, top_k: int):
     )
 
 
+def _response_payload(case_id: str, grouped) -> dict:
+    """Shape the filter output for the frontend's RecommendResponse type:
+    per-category groups, a single top pick, and a deadline radar of the
+    recommendations with the nearest upcoming deadlines."""
+    all_recs = [rec for recs in grouped.values() for rec in recs]
+    top_pick = max(all_recs, key=lambda r: r.score, default=None)
+    radar = sorted(
+        (r for r in all_recs
+         if r.days_until_deadline is not None and r.days_until_deadline <= 60),
+        key=lambda r: r.days_until_deadline,
+    )[:5]
+    by_category = {t: [r.to_dict() for r in recs] for t, recs in grouped.items()}
+    return {
+        "case_id": case_id,
+        "by_category": by_category,
+        # Older clients read `groups`; same content, cheap to keep.
+        "groups": by_category,
+        "top_pick": top_pick.to_dict() if top_pick else None,
+        "deadline_radar": [r.to_dict() for r in radar],
+        "personalize_more": [],
+    }
+
+
 @bp.get("/cases/<case_id>/recommendations")
 @require_auth
 def get_recommendations(case_id: str):
@@ -112,10 +160,7 @@ def get_recommendations(case_id: str):
         return err
     top_k = int(request.args.get("top_k", 5))
     grouped = _run(ctx, top_k)
-    return jsonify({
-        "case_id": case_id,
-        "groups": {t: [r.to_dict() for r in recs] for t, recs in grouped.items()},
-    })
+    return jsonify(_response_payload(case_id, grouped))
 
 
 @bp.post("/cases/<case_id>/recommendations")
@@ -144,11 +189,9 @@ def materialize_recommendations(case_id: str):
             rows, on_conflict="case_id,resource_id"
         ).execute()
 
-    return jsonify({
-        "case_id": case_id,
-        "count": len(rows),
-        "groups": {t: [r.to_dict() for r in recs] for t, recs in grouped.items()},
-    })
+    payload = _response_payload(case_id, grouped)
+    payload["count"] = len(rows)
+    return jsonify(payload)
 
 
 @bp.patch("/recommendations/<rec_id>")

@@ -26,6 +26,7 @@ from flask import Blueprint, current_app, g, jsonify, request
 
 from ..auth import require_auth
 from ..extensions import service_client, user_client
+from ..services.document_pipeline import PipelineUnavailable, analyze_document_rich
 from ..services.gemini_documents import analyze_document
 
 bp = Blueprint("documents", __name__, url_prefix="/documents")
@@ -200,6 +201,22 @@ def analyze_document_endpoint(document_id: str):
         return jsonify({"error": str(exc)}), 500
 
     analysis = result.model_dump()
+
+    # For documents that are actually disaster-recovery related, run the richer
+    # pipeline (text extraction → spaCy NLP → structured Gemini summary) and
+    # merge its findings — deadlines, flagged issues, coverage limits, required
+    # actions, warnings — into the stored analysis. "other" documents are
+    # skipped: they don't feed the plan, so the extra work isn't worth it.
+    if analysis.get("doc_type") != "other":
+        try:
+            rich = analyze_document_rich(blob, api_key)
+            # The richer plain-language summary supersedes the one-line classifier
+            # blurb for display, but we keep the classifier `summary` too because
+            # the recommender's signal extraction reads it.
+            analysis["analysis"] = rich
+        except PipelineUnavailable as exc:  # degrade — classification still stands
+            current_app.logger.warning("rich document pipeline skipped: %s", exc)
+
     update = {
         "doc_type": analysis["doc_type"],
         "gemini_analysis": analysis,

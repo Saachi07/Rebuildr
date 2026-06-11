@@ -195,6 +195,29 @@ def document_signals_from_documents(
                         DocumentDeadline(source_doc=doc_name, label=label, due_date=due)
                     )
 
+        # Rich pipeline output (document_pipeline.analyze_document_rich) merged
+        # under "analysis": structured deadlines + flagged issues. Relative
+        # durations ("within 30 days") can't be anchored to a calendar date
+        # here, so only explicit dates feed the radar.
+        rich = analysis.get("analysis") or {}
+        for dl in rich.get("deadlines") or []:
+            task = str(dl.get("task") or "").strip()
+            due = parse_date_loose(str(dl.get("date") or ""))
+            if due and due >= ref:
+                sig.deadlines.append(
+                    DocumentDeadline(
+                        source_doc=doc_name,
+                        label=task or "deadline",
+                        due_date=due,
+                    )
+                )
+        rich_text = " ".join(
+            [str(rich.get("plain_language_summary") or "")]
+            + [str(f.get("message") or "") for f in rich.get("flagged_issues") or []]
+        )
+        if _DENIAL_WORDS.search(rich_text):
+            sig.denial_flag = True
+
     if sig.denial_flag:
         sig.tags.add("denial_received")
     if sig.deadlines:

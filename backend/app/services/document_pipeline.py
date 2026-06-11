@@ -1,0 +1,96 @@
+"""Rich document analysis via the repo-root ``pdf_and_summary`` package.
+
+The cheap classifier (``gemini_documents.analyze_document``) tells us *what*
+a document is. This wrapper runs the heavier pipeline — local PyMuPDF text
+extraction, spaCy NLP entity pre-scan, then a structured Gemini summary — to
+lift the things a recovering user actually needs: deadlines, flagged issues,
+coverage limits, required actions, and plain-language warnings.
+
+``pdf_and_summary`` lives at the repo root (a sibling of ``backend``), not on
+the backend's import path, so we add it here. Its heavy deps (PyMuPDF, spaCy,
+PaddleOCR) are imported lazily inside the package, so a missing dependency only
+fails when we actually call the pipeline — which we catch and degrade from.
+
+OCR is intentionally disabled: native, text-based PDFs are the common case and
+Paddle is a very heavy optional install. PII redaction is off because the
+summary is shown back to the document's own owner.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any, Optional
+
+# Put the repo root (parent of ``backend``) on sys.path so ``pdf_and_summary``
+# is importable. parents: [0]=services [1]=app [2]=backend [3]=repo root.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+
+class PipelineUnavailable(RuntimeError):
+    """Raised when the rich pipeline can't run (missing deps, no text, etc.)."""
+
+
+def analyze_document_rich(pdf_bytes: bytes, api_key: str) -> dict[str, Any]:
+    """Run the full extraction → NLP → Gemini-summary pipeline on a PDF.
+
+    Returns a dict with the summary fields the frontend renders plus a compact
+    ``nlp`` block of extracted entities. Raises :class:`PipelineUnavailable`
+    on any failure so the caller can fall back to the cheap analysis alone.
+    """
+    if not api_key:
+        raise PipelineUnavailable("GEMINI_API_KEY not configured")
+
+    # GeminiSummarizer reads the key from the environment; the request path
+    # already has it in app config, so make sure the env is populated.
+    import os
+
+    os.environ.setdefault("GEMINI_API_KEY", api_key)
+
+    try:
+        from pdf_and_summary import process_pdf
+    except ImportError as exc:  # PyMuPDF / package not installed
+        raise PipelineUnavailable(f"pdf_and_summary unavailable: {exc}") from exc
+
+    try:
+        result = process_pdf(
+            pdf_bytes,
+            prefer_gemini=True,
+            use_ocr=False,
+            use_nlp=True,
+            redact_pii=False,
+        )
+    except Exception as exc:  # noqa: BLE001 — any pipeline failure → degrade
+        raise PipelineUnavailable(str(exc)) from exc
+
+    return _shape(result)
+
+
+def _shape(result: dict[str, Any]) -> dict[str, Any]:
+    """Flatten the pipeline result into the fields we persist + render."""
+    summary: dict[str, Any] = result.get("summary") or {}
+    nlp: dict[str, Any] = result.get("nlp") or {}
+    extraction: dict[str, Any] = result.get("extraction") or {}
+
+    return {
+        "plain_language_summary": summary.get("plain_language_summary"),
+        "flagged_issues": summary.get("flagged_issues") or [],
+        "deadlines": summary.get("deadlines") or [],
+        "coverage_limits": summary.get("coverage_limits") or [],
+        "required_actions": summary.get("required_actions") or [],
+        "warnings": summary.get("warnings") or [],
+        "summary_provider": summary.get("provider"),
+        "nlp": {
+            "dates": nlp.get("dates") or [],
+            "money": nlp.get("money") or [],
+            "organizations": nlp.get("organizations") or [],
+            "provider": nlp.get("provider"),
+        },
+        "extraction_meta": {
+            "page_count": extraction.get("page_count"),
+            "ocr_pages": extraction.get("ocr_pages"),
+            "character_count": extraction.get("character_count"),
+        },
+    }

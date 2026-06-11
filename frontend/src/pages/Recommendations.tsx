@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, RecGroups } from "../api";
+import { api, RecGroups, Recommendation } from "../api";
 import { BackButton } from "../components/BackButton";
 
 export default function Recommendations() {
   const { id } = useParams();
   const [groups, setGroups] = useState<RecGroups | null>(null);
+  const [radar, setRadar] = useState<Recommendation[]>([]);
+  const [topPick, setTopPick] = useState<Recommendation | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -16,6 +18,8 @@ export default function Recommendations() {
     try {
       const r = await api.getRecommendations(id, 5);
       setGroups(r.by_category ?? {});
+      setRadar(r.deadline_radar ?? []);
+      setTopPick(r.top_pick ?? null);
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
@@ -48,6 +52,47 @@ export default function Recommendations() {
 
       {groups && empty && (
         <EmptyChecklist caseId={id} />
+      )}
+
+      {radar.length > 0 && (
+        <div className="card" style={{ borderLeft: "4px solid #d9822b" }}>
+          <h3 style={{ marginTop: 0 }}>⏰ Deadlines coming up</h3>
+          {radar.map((r) => (
+            <p key={r.id} style={{ margin: "6px 0", fontSize: 15 }}>
+              <strong>{r.title}</strong>
+              {r.days_until_deadline != null && (
+                <span className="badge" style={{ marginLeft: 8 }}>
+                  {r.days_until_deadline === 0
+                    ? "due today"
+                    : `${r.days_until_deadline} day${r.days_until_deadline === 1 ? "" : "s"} left`}
+                </span>
+              )}
+              {r.reasons?.length > 0 && (
+                <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
+                  {r.reasons.join(" · ")}
+                </span>
+              )}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {topPick && !empty && (
+        <div className="card" style={{ borderLeft: "4px solid #3a7d44" }}>
+          <h3 style={{ marginTop: 0 }}>Start here</h3>
+          <strong>{topPick.title}</strong>
+          {topPick.body && <p style={{ margin: "8px 0", fontSize: 15 }}>{topPick.body}</p>}
+          {topPick.reasons?.length > 0 && (
+            <p className="muted-strong" style={{ margin: "6px 0 0", fontSize: 13 }}>
+              Why this matters: {topPick.reasons.join(" · ")}
+            </p>
+          )}
+          {topPick.url && (
+            <a href={topPick.url} target="_blank" rel="noreferrer">
+              <button style={{ marginTop: 10 }}>Open</button>
+            </a>
+          )}
+        </div>
       )}
 
       {groups && !empty && Object.entries(groups).map(([category, recs]) => (

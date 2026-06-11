@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, GeminiAnalysis, UserDocument } from "../api";
+import { api, GeminiAnalysis, RichAnalysis, UserDocument } from "../api";
 import { Spinner } from "../components/Skeleton";
 import { BackButton } from "../components/BackButton";
 
@@ -188,28 +188,119 @@ function SummaryModal({ doc, onClose }: { doc: UserDocument; onClose: () => void
   );
 }
 
+// key_fields comes back as a list of {label, value} from the classifier, but
+// older rows may have stored a plain object — handle both.
+function keyFieldPairs(kf: GeminiAnalysis["key_fields"]): [string, string][] {
+  if (Array.isArray(kf)) {
+    return kf
+      .filter((f) => f && (f.label || f.value))
+      .map((f) => [f.label, f.value]);
+  }
+  if (kf && typeof kf === "object") {
+    return Object.entries(kf).map(([k, v]) => [
+      k,
+      typeof v === "string" || typeof v === "number" ? String(v) : JSON.stringify(v),
+    ]);
+  }
+  return [];
+}
+
 function AnalysisView({ analysis }: { analysis: GeminiAnalysis }) {
-  const entries = Object.entries(analysis.key_fields ?? {});
+  const fields = keyFieldPairs(analysis.key_fields);
+  const rich: RichAnalysis = analysis.analysis ?? {};
+  const summaryText = rich.plain_language_summary || analysis.summary;
+  const deadlines = rich.deadlines ?? [];
+  const flagged = rich.flagged_issues ?? [];
+  const actions = rich.required_actions ?? [];
+  const limits = rich.coverage_limits ?? [];
+  const warnings = rich.warnings ?? [];
+
   return (
     <div style={{ marginTop: 12 }}>
-      {analysis.summary && (
-        <p style={{ marginTop: 0, fontSize: 15, lineHeight: 1.55 }}>{analysis.summary}</p>
+      {summaryText && (
+        <p style={{ marginTop: 0, fontSize: 15, lineHeight: 1.55 }}>{summaryText}</p>
       )}
-      {entries.length > 0 && (
-        <table className="tbl" style={{ marginTop: 12 }}>
-          <thead>
-            <tr><th>Field</th><th>Value</th></tr>
-          </thead>
-          <tbody>
-            {entries.map(([k, v]) => (
-              <tr key={k}>
-                <td>{k.replace(/_/g, " ")}</td>
-                <td>{typeof v === "string" || typeof v === "number" ? String(v) : JSON.stringify(v)}</td>
-              </tr>
+
+      {flagged.length > 0 && (
+        <Section title="Flagged issues">
+          <ul className="summary-list">
+            {flagged.map((f, i) => (
+              <li key={i}>
+                <span className="badge" style={{ marginRight: 8 }}>
+                  {f.issue_type.replace(/_/g, " ").toLowerCase()}
+                </span>
+                {f.message}
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </Section>
       )}
+
+      {deadlines.length > 0 && (
+        <Section title="Deadlines">
+          <table className="tbl">
+            <thead>
+              <tr><th>What</th><th>When</th></tr>
+            </thead>
+            <tbody>
+              {deadlines.map((d, i) => (
+                <tr key={i}><td>{d.task}</td><td>{d.date}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
+
+      {actions.length > 0 && (
+        <Section title="What you need to do">
+          <ul className="summary-list">
+            {actions.map((a, i) => <li key={i}>{a}</li>)}
+          </ul>
+        </Section>
+      )}
+
+      {limits.length > 0 && (
+        <Section title="Coverage limits">
+          <ul className="summary-list">
+            {limits.map((c, i) => <li key={i}>{c}</li>)}
+          </ul>
+        </Section>
+      )}
+
+      {warnings.length > 0 && (
+        <Section title="Heads up">
+          <ul className="summary-list">
+            {warnings.map((w, i) => <li key={i}>{w}</li>)}
+          </ul>
+        </Section>
+      )}
+
+      {fields.length > 0 && (
+        <Section title="Key details">
+          <table className="tbl">
+            <thead>
+              <tr><th>Field</th><th>Value</th></tr>
+            </thead>
+            <tbody>
+              {fields.map(([k, v], i) => (
+                <tr key={i}>
+                  <td>{k.replace(/_/g, " ")}</td>
+                  <td>{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginTop: 16 }}>
+      <h4 style={{ margin: "0 0 6px" }}>{title}</h4>
+      {children}
     </div>
   );
 }

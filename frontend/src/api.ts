@@ -63,9 +63,33 @@ export type Item = {
   after_url?: string;
 };
 
+export type FlaggedIssue = { issue_type: string; message: string };
+export type Deadline = { task: string; date: string };
+
+// Output of the rich pdf_and_summary pipeline (text extraction → spaCy NLP →
+// structured Gemini summary), merged under `analysis` on relevant documents.
+export type RichAnalysis = {
+  plain_language_summary?: string | null;
+  flagged_issues?: FlaggedIssue[];
+  deadlines?: Deadline[];
+  coverage_limits?: string[];
+  required_actions?: string[];
+  warnings?: string[];
+  summary_provider?: string | null;
+  nlp?: {
+    dates?: string[];
+    money?: string[];
+    organizations?: string[];
+    provider?: string | null;
+  };
+};
+
 export type GeminiAnalysis = {
+  doc_type?: string;
+  title?: string | null;
   summary?: string;
-  key_fields?: Record<string, unknown>;
+  key_fields?: Record<string, unknown> | { label: string; value: string }[];
+  analysis?: RichAnalysis | null;
   [key: string]: unknown;
 };
 
