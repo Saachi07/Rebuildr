@@ -10,6 +10,8 @@ export default function Recommendations() {
   const [topPick, setTopPick] = useState<Recommendation | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [hasItems, setHasItems] = useState<boolean | null>(null);
+  const [hasDocs, setHasDocs] = useState<boolean | null>(null);
 
   async function load() {
     if (!id) return;
@@ -24,6 +26,16 @@ export default function Recommendations() {
       setErr(e.message ?? String(e));
     } finally {
       setBusy(false);
+    }
+    try {
+      const [itemsRes, docsRes] = await Promise.all([
+        api.listItems(id),
+        api.listMyDocuments(),
+      ]);
+      setHasItems((itemsRes?.items ?? []).length > 0);
+      setHasDocs((docsRes?.documents ?? []).length > 0);
+    } catch {
+      // Upload nudges are best-effort — don't block the plan if these fail.
     }
   }
 
@@ -52,6 +64,43 @@ export default function Recommendations() {
 
       {groups && empty && (
         <EmptyChecklist caseId={id} />
+      )}
+
+      {!empty && (hasItems === false || hasDocs === false) && (
+        <div className="card" style={{ borderLeft: "4px solid #3b6ea5" }}>
+          <h3 style={{ marginTop: 0 }}>✨ Make your plan even more personal</h3>
+          <p className="muted-strong" style={{ marginBottom: 10 }}>
+            These suggestions are based on your case details so far. The more
+            you share, the better we can match you with the right support —
+            it only takes a few minutes.
+          </p>
+          {hasItems === false && (
+            <div className="row" style={{ alignItems: "center", margin: "8px 0" }}>
+              <span style={{ fontSize: 15 }}>
+                <strong>You haven't added any inventory yet.</strong>{" "}
+                Snap a photo of a room and we'll list what's in it for you —
+                it helps unlock damage-specific resources and claim support.
+              </span>
+              <span className="spacer" />
+              <Link to={id ? `/cases/${id}/inventory` : "/dashboard"}>
+                <button style={{ whiteSpace: "nowrap" }}>Add photos →</button>
+              </Link>
+            </div>
+          )}
+          {hasDocs === false && (
+            <div className="row" style={{ alignItems: "center", margin: "8px 0" }}>
+              <span style={{ fontSize: 15 }}>
+                <strong>You haven't uploaded any documents yet.</strong>{" "}
+                Adding your insurance policy or claims unlocks deadline
+                tracking and coverage gap analysis.
+              </span>
+              <span className="spacer" />
+              <Link to="/documents">
+                <button style={{ whiteSpace: "nowrap" }}>Upload documents →</button>
+              </Link>
+            </div>
+          )}
+        </div>
       )}
 
       {radar.length > 0 && (
