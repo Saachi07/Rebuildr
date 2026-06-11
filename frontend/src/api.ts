@@ -59,7 +59,6 @@ export type Item = {
   estimated_value?: number;
   description?: string;
   room?: string;
-  photo_url?: string;
   before_url?: string;
   after_url?: string;
 };
@@ -179,6 +178,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ items }),
     }),
+  deleteItem: (caseId: string, itemId: string) =>
+    request<{ ok: true }>(`/cases/${caseId}/items/${itemId}`, { method: "DELETE" }),
   getRecommendations: (caseId: string, _topK = 5) =>
     request<RecommendResponse>(
       `/cases/${caseId}/recommendations`,
@@ -218,7 +219,7 @@ export const api = {
   },
 
   // Upload an item photo to storage; returns the public URL to store in
-  // one of the item's image columns (photo_url / before_url / after_url).
+  // one of the item's image columns (before_url / after_url).
   uploadItemImage: async (file: File): Promise<{ url: string }> => {
     const fd = new FormData();
     fd.append("image", file);

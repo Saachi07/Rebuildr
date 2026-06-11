@@ -51,7 +51,6 @@ WRITABLE = {
     "damage_severity",
     "confidence",
     "image_url",
-    "photo_url",
     "before_url",
     "after_url",
     "description",
@@ -215,7 +214,7 @@ def upload_item_image():
     """Upload an item photo and return its public URL.
 
     The frontend uploads the blob, gets back a URL, then stores that URL in
-    one of the item's image columns (photo_url / before_url / after_url) via
+    one of the item's image columns (before_url / after_url) via
     create or PATCH. Keeping the upload separate means a photo can be attached
     to a draft before the item row exists.
     """

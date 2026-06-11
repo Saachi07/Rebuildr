@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, Item, RoomScan, ScannedItem } from "../api";
 import { BackButton } from "../components/BackButton";
@@ -67,6 +67,12 @@ export default function Inventory() {
   // so they don't have to re-enter what they already documented elsewhere.
   const [library, setLibrary] = useState<Item[]>([]);
   const [attaching, setAttaching] = useState<string | null>(null);
+
+  // Distinct rooms already in use — offered as move targets in the row menu.
+  const allRooms = useMemo(
+    () => Array.from(new Set(items.map((i) => i.room?.trim()).filter(Boolean) as string[])).sort(),
+    [items],
+  );
 
   function load() {
     if (!id) return;
@@ -394,9 +400,9 @@ export default function Inventory() {
       {err && <div className="error">{err}</div>}
       {items.length === 0 && <p className="muted-strong">Nothing saved yet.</p>}
       {items.length > 0 && sortBy === "room" ? (
-        <RoomGroupedItems items={items} caseId={id ?? ""} onChange={load} />
+        <RoomGroupedItems items={items} caseId={id ?? ""} rooms={allRooms} onChange={load} />
       ) : items.length > 0 ? (
-        <ItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} onChange={load} />
+        <ItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} rooms={allRooms} onChange={load} />
       ) : null}
 
       {items.length > 0 && (
@@ -412,7 +418,9 @@ export default function Inventory() {
   );
 }
 
-function RoomGroupedItems({ items, caseId, onChange }: { items: Item[]; caseId: string; onChange: () => void }) {
+function RoomGroupedItems(
+  { items, caseId, rooms, onChange }: { items: Item[]; caseId: string; rooms: string[]; onChange: () => void },
+) {
   const groups = new Map<string, Item[]>();
   for (const it of items) {
     const key = it.room?.trim() || "Other";
@@ -425,14 +433,16 @@ function RoomGroupedItems({ items, caseId, onChange }: { items: Item[]; caseId: 
       {ordered.map(([room, group]) => (
         <div key={room} className="room-group">
           <h3>{room} <span className="badge" style={{ marginLeft: 6 }}>{group.length}</span></h3>
-          <ItemTable items={group} caseId={caseId} onChange={onChange} />
+          <ItemTable items={group} caseId={caseId} rooms={rooms} onChange={onChange} />
         </div>
       ))}
     </>
   );
 }
 
-function ItemTable({ items, caseId, onChange }: { items: Item[]; caseId: string; onChange: () => void }) {
+function ItemTable(
+  { items, caseId, rooms, onChange }: { items: Item[]; caseId: string; rooms: string[]; onChange: () => void },
+) {
   return (
     <table className="tbl">
       <thead>
@@ -443,6 +453,7 @@ function ItemTable({ items, caseId, onChange }: { items: Item[]; caseId: string;
           <th>Severity</th>
           <th>Est. value</th>
           <th>Photos</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -463,6 +474,7 @@ function ItemTable({ items, caseId, onChange }: { items: Item[]; caseId: string;
               <td>{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
               <td>{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
               <td><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
+              <td><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} /></td>
             </tr>
           );
         })}
@@ -471,8 +483,129 @@ function ItemTable({ items, caseId, onChange }: { items: Item[]; caseId: string;
   );
 }
 
-const PHOTO_SLOTS: [string, "photo_url" | "before_url" | "after_url"][] = [
-  ["Photo", "photo_url"],
+function ItemActions(
+  { item, caseId, rooms, onChange }: { item: Item; caseId: string; rooms: string[]; onChange: () => void },
+) {
+  const [open, setOpen] = useState(false);
+  const [moving, setMoving] = useState(false);
+  const [newRoom, setNewRoom] = useState("");
+  const [busy, setBusy] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close the menu on any outside click.
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setMoving(false);
+      }
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  function reset() {
+    setOpen(false);
+    setMoving(false);
+    setNewRoom("");
+  }
+
+  async function moveTo(room: string) {
+    const target = room.trim();
+    if (!caseId || !target || target === (item.room ?? "")) {
+      reset();
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.updateItem(caseId, item.id, { room: target });
+      onChange();
+    } finally {
+      setBusy(false);
+      reset();
+    }
+  }
+
+  async function remove() {
+    if (!caseId) return;
+    if (!window.confirm(`Delete "${item.name}"? This can't be undone.`)) return;
+    setBusy(true);
+    try {
+      await api.deleteItem(caseId, item.id);
+      onChange();
+    } finally {
+      setBusy(false);
+      reset();
+    }
+  }
+
+  const otherRooms = rooms.filter((r) => r !== (item.room ?? "").trim());
+
+  return (
+    <div ref={ref} style={{ position: "relative", textAlign: "right" }}>
+      <button
+        className="secondary"
+        aria-label="Item actions"
+        disabled={busy}
+        onClick={() => setOpen((o) => !o)}
+        style={{ padding: "2px 8px", lineHeight: 1 }}
+      >
+        ⋮
+      </button>
+      {open && (
+        <div
+          style={{
+            position: "absolute", right: 0, top: "100%", zIndex: 10, marginTop: 4, minWidth: 180,
+            background: "var(--card, #fff)", border: "1px solid var(--border, #ddd)",
+            borderRadius: 8, boxShadow: "0 6px 20px rgba(0,0,0,0.12)", padding: 6, textAlign: "left",
+          }}
+        >
+          {!moving ? (
+            <>
+              <button className="menu-item" style={MENU_ITEM} onClick={() => setMoving(true)}>
+                Move to another room…
+              </button>
+              <button
+                className="menu-item"
+                style={{ ...MENU_ITEM, color: "var(--danger, #c0392b)" }}
+                onClick={remove}
+              >
+                Delete item
+              </button>
+            </>
+          ) : (
+            <div style={{ padding: 4 }}>
+              <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>Move to…</div>
+              {otherRooms.map((r) => (
+                <button key={r} className="menu-item" style={MENU_ITEM} disabled={busy} onClick={() => moveTo(r)}>
+                  {r}
+                </button>
+              ))}
+              <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
+                <input
+                  value={newRoom}
+                  placeholder="New room"
+                  onChange={(e) => setNewRoom(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && moveTo(newRoom)}
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                <button disabled={busy || !newRoom.trim()} onClick={() => moveTo(newRoom)}>Move</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const MENU_ITEM: React.CSSProperties = {
+  display: "block", width: "100%", textAlign: "left", background: "none", border: "none",
+  padding: "8px 10px", borderRadius: 6, cursor: "pointer", fontSize: 14,
+};
+
+const PHOTO_SLOTS: [string, "before_url" | "after_url"][] = [
   ["Before", "before_url"],
   ["After", "after_url"],
 ];
@@ -480,7 +613,7 @@ const PHOTO_SLOTS: [string, "photo_url" | "before_url" | "after_url"][] = [
 function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; onChange: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
 
-  async function upload(key: "photo_url" | "before_url" | "after_url", file?: File) {
+  async function upload(key: "before_url" | "after_url", file?: File) {
     if (!file || !caseId) return;
     setBusy(key);
     try {
