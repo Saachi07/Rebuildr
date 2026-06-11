@@ -133,6 +133,8 @@ export type RoomScan = {
 
 // Flat shape returned by the new Flask blueprint —
 // see backend/app/blueprints/recommendations.py: Recommendation.to_dict().
+export type RecStatus = "suggested" | "saved" | "dismissed" | "done";
+
 export type Recommendation = {
   id: string;
   type?: string;
@@ -143,6 +145,8 @@ export type Recommendation = {
   score: number;
   reasons: string[];
   days_until_deadline?: number | null;
+  status?: RecStatus;
+  rec_id?: string | null;
 };
 
 export type RecGroups = Record<string, Recommendation[]>;
@@ -159,6 +163,7 @@ export type RecommendResponse = {
   top_pick: Recommendation | null;
   deadline_radar: Recommendation[];
   personalize_more: PersonalizeHint[];
+  empty_categories?: string[];
 };
 
 export type Terms = {
@@ -219,6 +224,11 @@ export const api = {
     request<RecommendResponse>(
       `/cases/${caseId}/recommendations`,
       { method: "POST", body: JSON.stringify({}) },
+    ),
+  updateRecommendation: (recId: string, status: RecStatus) =>
+    request<{ recommendation: { id: string; status: RecStatus } }>(
+      `/recommendations/${recId}`,
+      { method: "PATCH", body: JSON.stringify({ status }) },
     ),
 
   listMyDocuments: () => request<{ documents: UserDocument[] }>("/documents"),

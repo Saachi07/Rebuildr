@@ -102,7 +102,7 @@ function useDerivedNotifications(): DerivedNotif[] {
               out.push({
                 id: `inventory-missing-${latest.id}`,
                 title: "Complete your home inventory",
-                body: "A detailed home inventory helps document losses — add photos and items now.",
+                body: "A detailed home inventory helps document your losses. Adding photos and items now makes everything easier later.",
                 to: `/cases/${latest.id}/inventory`,
                 unread: true,
               });

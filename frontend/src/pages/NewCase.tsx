@@ -54,7 +54,7 @@ export default function NewCase() {
         <form onSubmit={submit}>
           <label>
             What would you like to call this?{" "}
-            <Hint text="Just a name to find it later — e.g. 'Our house fire' or 'June flood'. You can change it anytime." />
+            <Hint text="Just a name to find it later. You can change it anytime." />
           </label>
           <input
             value={form.case_name}
