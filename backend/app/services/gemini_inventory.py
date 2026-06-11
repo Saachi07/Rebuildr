@@ -14,10 +14,26 @@ The `pre_post` argument changes the prompt:
 from __future__ import annotations
 
 import io
+import time
 from typing import Literal, Optional
 
 from PIL import Image
 from pydantic import BaseModel
+
+# Gemini occasionally returns 503 UNAVAILABLE ("high demand") or 429
+# RESOURCE_EXHAUSTED. These are transient — retry the primary model a few
+# times, then fall back to a second model, before giving up.
+PRIMARY_MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-2.0-flash"
+_TRANSIENT_MARKERS = ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "overloaded", "high demand")
+
+
+class ModelOverloaded(RuntimeError):
+    """Raised when Gemini stays unavailable after retries — maps to HTTP 503."""
+
+
+def _is_transient(exc: Exception) -> bool:
+    return any(marker in str(exc) for marker in _TRANSIENT_MARKERS)
 
 POST_PROMPT = """Analyze this AFTER-the-disaster room photo and return a structured inventory of everything visible.
 
@@ -109,13 +125,38 @@ def analyze_room_photo(
     client = genai.Client(api_key=api_key)
     image = Image.open(io.BytesIO(image_bytes))
     prompt = {"pre": PRE_PROMPT, "post": POST_PROMPT, "auto": AUTO_PROMPT}[pre_post]
-
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[prompt, image],
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=to_gemini_schema(RoomAnalysis),
-        ),
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_schema=to_gemini_schema(RoomAnalysis),
     )
+
+    response = _generate_with_retry(client, [prompt, image], config)
     return RoomAnalysis.model_validate_json(response.text)
+
+
+def _generate_with_retry(client, contents, config, *, attempts: int = 3):
+    """Call Gemini, retrying the primary model on transient outages and then
+    falling back to a second model. Raises ModelOverloaded if it stays
+    unavailable; re-raises any non-transient error immediately."""
+    for attempt in range(attempts):
+        try:
+            return client.models.generate_content(
+                model=PRIMARY_MODEL, contents=contents, config=config
+            )
+        except Exception as exc:  # noqa: BLE001
+            if not _is_transient(exc):
+                raise
+            if attempt < attempts - 1:
+                time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s
+
+    # Primary stayed unavailable — try the fallback model once.
+    try:
+        return client.models.generate_content(
+            model=FALLBACK_MODEL, contents=contents, config=config
+        )
+    except Exception as exc:  # noqa: BLE001
+        if _is_transient(exc):
+            raise ModelOverloaded(
+                "The image model is busy right now. Please try again in a moment."
+            ) from exc
+        raise

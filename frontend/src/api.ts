@@ -8,6 +8,19 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+// Pull the friendly `{ "error": "..." }` message out of a failed response,
+// falling back to the raw body. Used by the raw-fetch (multipart) helpers.
+async function errorText(res: Response): Promise<string> {
+  const text = await res.text();
+  try {
+    const json = JSON.parse(text);
+    if (json && typeof json.error === "string") return json.error;
+  } catch {
+    /* not JSON — use the raw text */
+  }
+  return text;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -187,7 +200,7 @@ export const api = {
       headers: await authHeaders(),
       body: fd,
     });
-    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(await errorText(res));
     return res.json();
   },
 
@@ -200,7 +213,7 @@ export const api = {
       headers: await authHeaders(),
       body: fd,
     });
-    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(await errorText(res));
     return res.json();
   },
 
@@ -214,7 +227,7 @@ export const api = {
       headers: await authHeaders(),
       body: fd,
     });
-    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(await errorText(res));
     return res.json();
   },
 

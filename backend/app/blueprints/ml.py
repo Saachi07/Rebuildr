@@ -5,7 +5,7 @@ from __future__ import annotations
 from flask import Blueprint, current_app, jsonify, request
 
 from ..auth import require_auth
-from ..services.gemini_inventory import analyze_room_photo
+from ..services.gemini_inventory import ModelOverloaded, analyze_room_photo
 
 bp = Blueprint("ml", __name__, url_prefix="/ml")
 
@@ -36,6 +36,10 @@ def analyze_photo():
 
     try:
         result = analyze_room_photo(blob, api_key, pre_post=pre_post)
+    except ModelOverloaded as exc:
+        # Gemini is temporarily unavailable after retries — tell the client to
+        # retry rather than reporting a server bug.
+        return jsonify({"error": str(exc)}), 503
     except Exception as exc:  # noqa: BLE001 — surface error to client
         return jsonify({"error": str(exc)}), 500
     return jsonify(result.model_dump())
