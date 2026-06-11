@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-from flask import Flask
-=======
 from flask import Flask, jsonify
 from flask_compress import Compress
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 from flask_cors import CORS
 
 from .config import Config
@@ -12,21 +8,14 @@ from .config import Config
 def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_class)
-<<<<<<< HEAD
-=======
     # Gzip JSON responses — the documents/cases lists are the hot paths and
     # compress well. flask-compress only kicks in above ~500 bytes by default.
     Compress(app)
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     CORS(app, supports_credentials=True)
 
     from .blueprints.health import bp as health_bp
     from .blueprints.auth import bp as auth_bp
     from .blueprints.cases import bp as cases_bp
-<<<<<<< HEAD
-    from .blueprints.items import bp as items_bp
-    from .blueprints.recommendations import bp as recs_bp
-=======
     from .blueprints.items import case_bp as case_items_bp, lib_bp as items_lib_bp
     from .blueprints.recommendations import bp as recs_bp
     from .blueprints.documents import bp as documents_bp
@@ -34,15 +23,10 @@ def create_app(config_class: type = Config) -> Flask:
     from .blueprints.ml import bp as ml_bp
     from .blueprints.terms import bp as terms_bp
     from .blueprints.me import bp as me_bp
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(cases_bp)
-<<<<<<< HEAD
-    app.register_blueprint(items_bp)
-    app.register_blueprint(recs_bp)
-=======
     app.register_blueprint(case_items_bp)
     app.register_blueprint(items_lib_bp)
     app.register_blueprint(recs_bp)
@@ -70,6 +54,5 @@ def create_app(config_class: type = Config) -> Flask:
     @app.errorhandler(405)
     def _method_not_allowed(_e):
         return jsonify({"error": "method not allowed"}), 405
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     return app

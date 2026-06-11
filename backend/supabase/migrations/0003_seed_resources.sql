@@ -9,11 +9,7 @@ values
      'Alberta Disaster Recovery Program (DRP)',
      'Provincial program covering uninsurable losses from declared disasters — personal essentials, structural repair, temporary lodging.',
      'https://alberta.ca/disaster-recovery-programs', '310-4455',
-<<<<<<< HEAD
-     'AB', '{wildfire,flood,tornado,*}', '{4,7,10,11}', '{}', '{on_reserve_or_metis}', null, 90, null),
-=======
      'AB', '{wildfire,flood,tornado,*}', '{4,7,10,11}', '{}', '{on_reserve_or_metis}', null, 30, null),
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     ('ei', 'financial',
      'Employment Insurance (EI) — disaster provisions',
@@ -25,21 +21,12 @@ values
      'Indigenous Services Canada — Emergency Management Assistance Program',
      'Covers eligible response and recovery costs for on-reserve communities. Coordinated through the band office.',
      'https://sac-isc.gc.ca/eng/1534954090122', '1-800-567-9604',
-<<<<<<< HEAD
-     '*', '{*}', '{2,3}', '{on_reserve_or_metis}', '{}', null, null, null),
-=======
      '*', '{*}', '{2,3}', '{on_reserve}', '{}', null, null, null),
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     ('cra-disaster-relief', 'financial',
      'CRA Taxpayer Relief — disaster provisions',
      'Cancellation of penalties and interest on tax debt for taxpayers affected by a declared disaster. Filing extensions also available.',
-<<<<<<< HEAD
-     'https://canada.ca/en/revenue-agency/services/about-canada-revenue-agency-cra/complaints-disputes/cancel-waive-penalties-interest.html',
-     '1-800-959-8281',
-=======
      'https://www.canada.ca/en/revenue-agency/services/about-canada-revenue-agency-cra/complaints-disputes/taxpayer-relief-provisions.html','1-800-959-8281',
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
      '*', '{*}', '{4,5,8,9,10,11}', '{}', '{}', null, null, null),
 
     ('ab-income-support', 'financial',
@@ -52,11 +39,7 @@ values
      'AISH caseworker — update your file',
      'If you were already receiving AISH or Income Support, contact your caseworker to update your address and confirm direct deposit continues.',
      'https://alberta.ca/aish', '1-877-644-9992',
-<<<<<<< HEAD
-     'AB', '{*}', '{4}', '{on_assistance}', '{}', null, null, null),
-=======
      'AB', '{*}', '{4,7}', '{on_assistance}', '{}', null, null, null),
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     ('red-cross-lodging', 'shelter',
      'Canadian Red Cross — Emergency Lodging',
@@ -72,11 +55,7 @@ values
 
     ('salvation-army-ab', 'community',
      'Salvation Army Alberta — Emergency Disaster Services',
-<<<<<<< HEAD
-     'Mobile feeding, hydration, and emotional/spiritual care at evacuation centres across Alberta.',
-=======
      'Provides emergency food, hydration, shelter support, clothing, and emotional/spiritual care for evacuees, responders, and disaster-affected communities.',
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
      'https://salvationarmy.ca', null,
      'AB', '{*}', '{0,7}', '{}', '{}', null, null, null),
 
@@ -98,11 +77,7 @@ values
      'https://albertahealthservices.ca', '1-877-303-2642',
      'AB', '{*}', '{0,1,2,3,4,5,6,7,8,9,10,11}', '{}', '{}', null, null, null),
 
-<<<<<<< HEAD
-    ('ibc-consumer', 'financial',
-=======
     ('ibc-consumer', 'insurance',
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
      'Insurance Bureau of Canada — Consumer Info Centre',
      'Free help understanding your policy, the claims process, and what additional living expenses (ALE) coverage typically pays for.',
      'https://ibc.ca', '1-844-227-5422',
@@ -121,13 +96,6 @@ values
      'AB', '{*}', '{1}', '{missing_id}', '{}', null, null, null),
 
     ('service-canada-sin', 'documents',
-<<<<<<< HEAD
-     'Service Canada — replace SIN and federal ID',
-     'Replacement Social Insurance Number card and other federal identity documents.',
-     'https://canada.ca/en/employment-social-development/services/sin.html', '1-800-622-6232',
-     '*', '{*}', '{1}', '{missing_id}', '{}', null, null, null),
-
-=======
      'Service Canada — Replace ID and Registry Documents',
      'Information on replacing Alberta driver’s licences, ID cards, and registry documents. Disaster-affected residents may be directed to registry services for replacement documents.',
      'https://canada.ca/en/employment-social-development/services/sin.html', '1-800-622-6232',
@@ -160,7 +128,6 @@ values
     'https://psychologistsassociation.ab.ca/disaster-response-network/', null,
     'AB', '{wildfire,flood,tornado,*}', '{2,3}', '{}', '{}', null, null, null),
 
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     ('habitat-ab', 'community',
      'Habitat for Humanity — Alberta chapters',
      'Long-term rebuild support and ReStore discounts for materials. Eligibility varies by chapter — worth a call.',
@@ -171,9 +138,6 @@ values
      'Samaritan''s Purse Canada — Disaster Relief',
      'Free volunteer crews for mud-out, ash-out, and chainsaw work after floods, wildfires, and tornadoes.',
      'https://samaritanspurse.ca', '1-866-628-6565',
-<<<<<<< HEAD
-     '*', '{wildfire,flood,tornado}', '{4,7,10,11}', '{}', '{}', null, 180, null)
-=======
      '*', '{wildfire,flood,tornado}', '{4,7,10,11}', '{}', '{}', null, null, null),
 
      ('ab-emergency-alert', 'preparedness',
@@ -244,7 +208,6 @@ values
     
     
     
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 on conflict (id) do update set
     type = excluded.type,
     title = excluded.title,

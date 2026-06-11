@@ -42,11 +42,8 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-<<<<<<< HEAD
-=======
 from .signals import DocumentSignals, InventorySignals
 
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 # Weights are interpretable and hand-tuned. Replace with a learned ranker
 # once feedback data (saved / dismissed / acted-on) is in place.
@@ -55,10 +52,6 @@ W_TAG_OVERLAP = 0.4
 W_INSURER = 0.8
 W_FRESHNESS = 0.1
 W_URGENCY = 0.5
-<<<<<<< HEAD
-PENALTY_DONE = 1.0
-
-=======
 W_DEADLINE = 0.7
 PENALTY_DONE = 1.0
 
@@ -66,7 +59,6 @@ PENALTY_DONE = 1.0
 # application date) is actually actionable — shelters don't care.
 _DEADLINE_TYPES = {"insurance", "financial", "policy", "legal", "documents"}
 
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 TOP_K_PER_CATEGORY = 5
 URGENT_DAYS = 7
 FRESH_HALFLIFE_DAYS = 30
@@ -78,10 +70,7 @@ class Recommendation:
     score: float
     reasons: list[str] = field(default_factory=list)
     rank: int = 0
-<<<<<<< HEAD
-=======
     days_until_deadline: Optional[int] = None
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     def to_dict(self) -> dict:
         return {
@@ -94,10 +83,7 @@ class Recommendation:
             "score": round(self.score, 4),
             "reasons": self.reasons,
             "rank": self.rank,
-<<<<<<< HEAD
-=======
             "days_until_deadline": self.days_until_deadline,
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
         }
 
 
@@ -111,11 +97,8 @@ def recommend(
     resources: list[dict],
     top_k_per_category: int = TOP_K_PER_CATEGORY,
     completed_ids: Optional[set[str]] = None,
-<<<<<<< HEAD
-=======
     inventory: Optional[InventorySignals] = None,
     documents: Optional[DocumentSignals] = None,
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 ) -> dict[str, list[Recommendation]]:
     """Return content-based recommendations grouped by resource ``type``.
 
@@ -134,8 +117,6 @@ def recommend(
         Max suggestions to keep per resource ``type``.
     completed_ids
         Resource ids the user has already marked done — they get scored down.
-<<<<<<< HEAD
-=======
     inventory
         Signals derived from the image-classification pipeline
         (``signals.inventory_signals_from_items``). Its tags join the
@@ -144,7 +125,6 @@ def recommend(
         Signals derived from the Gemini document analyses
         (``signals.document_signals_from_documents``). Supplies an insurer
         fallback, denial/deadline tags, and deadline pressure scoring.
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     """
     completed_ids = completed_ids or set()
     items = list(items)
@@ -152,10 +132,6 @@ def recommend(
     region = case.get("region")
     disaster = case.get("disaster_type")
     tags = set(case.get("derived_tags") or [])
-<<<<<<< HEAD
-    insurer = case.get("insurance_provider")
-    days_since = _days_since(case.get("incident_date"))
-=======
     if inventory is not None:
         tags |= inventory.tags
     if documents is not None:
@@ -170,7 +146,6 @@ def recommend(
         min(documents.deadlines, key=lambda d: d.due_date)
         if documents and documents.deadlines else None
     )
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     # 1. eligibility filter
     candidates = [
@@ -220,8 +195,6 @@ def recommend(
             score += W_URGENCY
             reasons.append("immediate need given how recent this is")
 
-<<<<<<< HEAD
-=======
         # deadline pressure — own eligibility window or a deadline Gemini
         # pulled out of an uploaded document. Closer = higher.
         deadline_score, days_until = _deadline_pressure(
@@ -236,21 +209,16 @@ def recommend(
         if documents is not None and documents.denial_flag and r["id"] == "gio-ombud":
             reasons.append("your insurance documents look like a denial — this is who to call next")
 
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
         if r["id"] in completed_ids:
             score -= PENALTY_DONE
 
         if not reasons:
             reasons.append("generally applicable in your situation")
 
-<<<<<<< HEAD
-        recs.append(Recommendation(resource=r, score=score, reasons=reasons))
-=======
         recs.append(Recommendation(
             resource=r, score=score, reasons=reasons,
             days_until_deadline=days_until,
         ))
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     # 4. group by type, sort, take top-K, set rank
     by_type: dict[str, list[Recommendation]] = {}
@@ -341,8 +309,6 @@ def _window_ok(r: dict, days_since: Optional[int]) -> bool:
 
 
 # ---------------------------------------------------------------------------
-<<<<<<< HEAD
-=======
 # Signal-derived scoring helpers
 # ---------------------------------------------------------------------------
 
@@ -402,7 +368,6 @@ def _add_inventory_reasons(r: dict, tags: set[str], reasons: list[str]) -> None:
 
 
 # ---------------------------------------------------------------------------
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 # Numeric helpers
 # ---------------------------------------------------------------------------
 

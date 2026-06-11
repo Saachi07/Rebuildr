@@ -3,8 +3,6 @@
 GET  /cases/<case_id>/recommendations  → run the filter and return groups
 POST /cases/<case_id>/recommendations  → run + persist into ``recommendations``
 PATCH /recommendations/<rec_id>        → mark saved / dismissed / done
-<<<<<<< HEAD
-=======
 
 The filter is fed by three sources, all already persisted (no Gemini call
 in this request path):
@@ -16,7 +14,6 @@ in this request path):
 * the document pipeline — ``user_documents.gemini_analysis`` rows from
   ``POST /documents/<id>/analyze``, folded into insurer / deadline / denial
   signals via ``services.signals.document_signals_from_documents``.
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 """
 
 from __future__ import annotations
@@ -26,36 +23,25 @@ from flask import Blueprint, g, jsonify, request
 from ..auth import require_auth
 from ..extensions import user_client
 from ..services.content_filter import recommend
-<<<<<<< HEAD
-=======
 from ..services.signals import (
     document_signals_from_documents,
     inventory_signals_from_items,
 )
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 bp = Blueprint("recommendations", __name__)
 
 
 class _Context:
-<<<<<<< HEAD
-    __slots__ = ("case", "items", "resources", "completed_ids", "sb")
-
-    def __init__(self, case, items, resources, completed_ids, sb):
-=======
     __slots__ = ("case", "items", "resources", "completed_ids", "sb",
                  "inventory", "documents")
 
     def __init__(self, case, items, resources, completed_ids, sb,
                  inventory, documents):
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
         self.case = case
         self.items = items
         self.resources = resources
         self.completed_ids = completed_ids
         self.sb = sb
-<<<<<<< HEAD
-=======
         self.inventory = inventory
         self.documents = documents
 
@@ -91,7 +77,6 @@ def _load_profile(sb):
         return res.data or {}
     except Exception:
         return {}
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 
 def _load_context(case_id: str):
@@ -99,8 +84,6 @@ def _load_context(case_id: str):
     case = sb.table("recovery_cases").select("*").eq("id", case_id).maybe_single().execute()
     if not case.data:
         return None, (jsonify({"error": "case not found"}), 404)
-<<<<<<< HEAD
-=======
 
     # Demographic fallback: a case without a region inherits the user's
     # profile region so regional aid programs still surface.
@@ -110,7 +93,6 @@ def _load_context(case_id: str):
     if not case.data.get("location") and profile.get("location"):
         case.data["location"] = profile["location"]
 
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     items = sb.table("case_items").select("*").eq("case_id", case_id).execute()
     resources = sb.table("resources").select("*").execute()
     completed = (
@@ -121,9 +103,6 @@ def _load_context(case_id: str):
         .execute()
     )
     completed_ids = {row["resource_id"] for row in (completed.data or [])}
-<<<<<<< HEAD
-    return _Context(case.data, items.data or [], resources.data or [], completed_ids, sb), None
-=======
 
     item_rows = items.data or []
     ctx = _Context(
@@ -171,7 +150,6 @@ def _response_payload(case_id: str, grouped) -> dict:
         "deadline_radar": [r.to_dict() for r in radar],
         "personalize_more": [],
     }
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 
 @bp.get("/cases/<case_id>/recommendations")
@@ -181,18 +159,8 @@ def get_recommendations(case_id: str):
     if err:
         return err
     top_k = int(request.args.get("top_k", 5))
-<<<<<<< HEAD
-    grouped = recommend(ctx.case, ctx.items, ctx.resources,
-                        top_k_per_category=top_k,
-                        completed_ids=ctx.completed_ids)
-    return jsonify({
-        "case_id": case_id,
-        "groups": {t: [r.to_dict() for r in recs] for t, recs in grouped.items()},
-    })
-=======
     grouped = _run(ctx, top_k)
     return jsonify(_response_payload(case_id, grouped))
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 
 @bp.post("/cases/<case_id>/recommendations")
@@ -201,17 +169,8 @@ def materialize_recommendations(case_id: str):
     ctx, err = _load_context(case_id)
     if err:
         return err
-<<<<<<< HEAD
-    case, items, resources, completed_ids, sb = (
-        ctx.case, ctx.items, ctx.resources, ctx.completed_ids, ctx.sb
-    )
-    top_k = int((request.get_json(silent=True) or {}).get("top_k", 5))
-    grouped = recommend(case, items, resources, top_k_per_category=top_k,
-                        completed_ids=completed_ids)
-=======
     top_k = int((request.get_json(silent=True) or {}).get("top_k", 5))
     grouped = _run(ctx, top_k)
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
     rows = []
     for recs in grouped.values():
@@ -226,17 +185,6 @@ def materialize_recommendations(case_id: str):
             })
     if rows:
         # upsert keeps the cache fresh without piling duplicate rows.
-<<<<<<< HEAD
-        sb.table("recommendations").upsert(
-            rows, on_conflict="case_id,resource_id"
-        ).execute()
-
-    return jsonify({
-        "case_id": case_id,
-        "count": len(rows),
-        "groups": {t: [r.to_dict() for r in recs] for t, recs in grouped.items()},
-    })
-=======
         ctx.sb.table("recommendations").upsert(
             rows, on_conflict="case_id,resource_id"
         ).execute()
@@ -244,7 +192,6 @@ def materialize_recommendations(case_id: str):
     payload = _response_payload(case_id, grouped)
     payload["count"] = len(rows)
     return jsonify(payload)
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 
 @bp.patch("/recommendations/<rec_id>")

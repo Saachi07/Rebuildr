@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-"""Case-item CRUD — the damaged objects inside a recovery case.
-=======
 """Case-item CRUD — damaged objects in a user's library.
 
 Originally items belonged to a single case (case_items.case_id NOT NULL).
@@ -10,7 +7,6 @@ linked to a case — see the SQL for the new RLS policies.
 Routes:
     /items                         user-scoped CRUD (the library)
     /cases/<case_id>/items         legacy + scoped view for the recommender
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 These rows feed the content-based filter: an item's ``category``,
 ``material``, ``damage_type`` and ``damage_severity`` are appended to the
@@ -19,14 +15,6 @@ query vector the recommender builds for that case.
 
 from __future__ import annotations
 
-<<<<<<< HEAD
-from flask import Blueprint, g, jsonify, request
-
-from ..auth import require_auth
-from ..extensions import user_client
-
-bp = Blueprint("items", __name__, url_prefix="/cases/<case_id>/items")
-=======
 import uuid
 
 from flask import Blueprint, g, jsonify, request
@@ -53,7 +41,6 @@ case_bp = Blueprint("case_items", __name__, url_prefix="/cases/<case_id>/items")
 
 # User library
 lib_bp = Blueprint("user_items", __name__, url_prefix="/items")
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
 
 WRITABLE = {
     "name",
@@ -64,15 +51,6 @@ WRITABLE = {
     "damage_severity",
     "confidence",
     "image_url",
-<<<<<<< HEAD
-    "description",
-}
-
-
-@bp.get("")
-@require_auth
-def list_items(case_id: str):
-=======
     "before_url",
     "after_url",
     "description",
@@ -101,7 +79,6 @@ def _insert_item(sb, row):
 @case_bp.get("")
 @require_auth
 def list_items_for_case(case_id: str):
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     sb = user_client(g.access_token)
     res = (
         sb.table("case_items")
@@ -113,30 +90,14 @@ def list_items_for_case(case_id: str):
     return jsonify({"items": res.data or []})
 
 
-<<<<<<< HEAD
-@bp.post("")
-@require_auth
-def create_item(case_id: str):
-=======
 @case_bp.post("")
 @require_auth
 def create_item_for_case(case_id: str):
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     data = request.get_json(silent=True) or {}
     if not data.get("name"):
         return jsonify({"error": "name is required"}), 400
     row = {k: v for k, v in data.items() if k in WRITABLE}
     row["case_id"] = case_id
-<<<<<<< HEAD
-    sb = user_client(g.access_token)
-    res = sb.table("case_items").insert(row).execute()
-    return jsonify({"item": res.data[0] if res.data else None}), 201
-
-
-@bp.patch("/<item_id>")
-@require_auth
-def update_item(case_id: str, item_id: str):
-=======
     row["user_id"] = g.user_id
     sb = user_client(g.access_token)
     item, error = _insert_item(sb, row)
@@ -179,7 +140,6 @@ def create_items_bulk(case_id: str):
 @case_bp.patch("/<item_id>")
 @require_auth
 def update_item_for_case(case_id: str, item_id: str):
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     data = request.get_json(silent=True) or {}
     row = {k: v for k, v in data.items() if k in WRITABLE}
     if not row:
@@ -197,15 +157,9 @@ def update_item_for_case(case_id: str, item_id: str):
     return jsonify({"item": res.data[0]})
 
 
-<<<<<<< HEAD
-@bp.delete("/<item_id>")
-@require_auth
-def delete_item(case_id: str, item_id: str):
-=======
 @case_bp.delete("/<item_id>")
 @require_auth
 def delete_item_for_case(case_id: str, item_id: str):
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
     sb = user_client(g.access_token)
     res = (
         sb.table("case_items")
@@ -217,8 +171,6 @@ def delete_item_for_case(case_id: str, item_id: str):
     if not res.data:
         return jsonify({"error": "not found"}), 404
     return jsonify({"ok": True})
-<<<<<<< HEAD
-=======
 
 
 # ---------------------------------------------------------------------------
@@ -362,4 +314,3 @@ def detach_item(item_id: str):
     if not res.data:
         return jsonify({"error": "not found"}), 404
     return jsonify({"item": res.data[0]})
->>>>>>> 4df51eb4a1ab014d97176955a2c5976151070bef
