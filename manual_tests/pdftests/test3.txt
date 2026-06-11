@@ -1,0 +1,102 @@
+Using summary provider: gemini:gemini-2.5-flash
+{
+  "extraction": {
+    "text": "--- Page 1 (native) ---\nAlberta Shield Insurance Co.\nPROPERTY DAMAGE CLAIM FORM\n1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4\nTel: 1-800-555-0192 | [EMAIL_1]\nPolicy No: [POLICY_NUMBER_1]\nDate: July 22, 2024\nComplete all sections. Incomplete forms will delay processing. Submit to [EMAIL_1] or mail to the address above.\nPART A \u2014 POLICYHOLDER INFORMATION\nFull Name:\n[PERSON_1]\nPolicy Number:\n[POLICY_NUMBER_1]\nProperty Address:\n[ADDRESS_1]\nMailing Address (if different):\nSame as above\nPhone (Daytime):\n[PHONE_1]\nPhone (Evening/Cell):\n[PHONE_2]\nEmail Address:\n[EMAIL_2]\nPART B \u2014 LOSS INFORMATION\nDate of Loss:\nJuly 18, 2024\nTime of Loss (approx.):\nApproximately 3:30 PM\nType of Loss:\nWildfire \u2014 structure and contents damage\nLocation of Loss:\n[ADDRESS_2]\nWas an evacuation order issued?\nYes \u2014 Lac La Biche County Evacuation Order No. LLC-2024-07-17\nWere police or fire services\ncalled?\nYes \u2014 Alberta Wildfire and RCMP responded\nHas temporary accommodation\nbeen arranged?\nYes \u2014 staying with family in Edmonton\nEstimated Date of Return to\nProperty:\nUnknown pending structural assessment\nPART C \u2014 DESCRIPTION OF DAMAGE\nDescribe the damage in detail:\nWildfire spread from adjacent crown land. Exterior structure sustained\nsignificant fire and smoke damage. Roof partially collapsed on north side.\nInterior of main floor affected by smoke, heat, and water from suppression\nefforts. Detached garage destroyed. Personal property throughout home\ndamaged or destroyed.\n\n--- Page 2 (native) ---\nHas any damaged property been\nremoved?\nNo \u2014 awaiting adjuster inspection\nHave any emergency repairs been\nmade?\nNo \u2014 property not yet accessible\nDo you have pre-disaster\nphotos/inventory?\nYes \u2014 digital photos stored in cloud backup\nPART D \u2014 ESTIMATED LOSS SUMMARY\nCategory\nBrief Description\nEst. Value (CAD)\nDwelling \u2014 Structure\nRoof, exterior walls, interior flooring, drywall\n$180,000 \u2013 $220,000\nOther Structures\nDetached garage (approx. 600 sq ft)\n$45,000 \u2013 $55,000\nPersonal Property\nFurniture, appliances, clothing, electronics\n$80,000 \u2013 $110,000\nAdditional Living Expenses\nTemporary accommodation + meals (ongoing)\nTBD\nTOTAL ESTIMATED LOSS\n$305,000 \u2013 $385,000\nPART E \u2014 DECLARATION\nI declare that the information provided in this claim form is true, accurate, and complete to the best of my\nknowledge. I understand that providing false or misleading information may result in denial of my claim and could\nconstitute insurance fraud under the Insurance Act (Alberta). I authorize Alberta Shield Insurance Co. to obtain\nany records necessary to verify this claim.\nSignature of Policyholder:\n_________________________________\nDate:\n_______________\nPrint Name:\n[PERSON_1]\nFOR OFFICE USE ONLY \u2014 Claim received: ___________ | Adjuster assigned: ___________ | File No.: ___________",
+    "page_count": 2,
+    "pages_with_text": 2,
+    "character_count": 2892,
+    "native_text_pages": 2,
+    "ocr_pages": 0,
+    "ocr_engine": null,
+    "warnings": [],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "July 22, 2024",
+      "555-0198",
+      "July 18, 2024 Time of Loss"
+    ],
+    "date_sentences": [
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. PROPERTY DAMAGE CLAIM FORM 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: July 22, 2024 Complete all sections.",
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS\u2026",
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS\u2026"
+    ],
+    "money": [
+      "180,000",
+      "220,000",
+      "45,000",
+      "55,000",
+      "80,000",
+      "110,000",
+      "305,000",
+      "385,000"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Alberta Shield Insurance Co.",
+      "Edmonton",
+      "Rural Route 4",
+      "Mailing Address",
+      "Phone",
+      "RCMP",
+      "CAD",
+      "Personal Property Furniture"
+    ],
+    "top_sentences": [
+      "[PERSON_1] Policy Number: [POLICY_NUMBER_1] Property Address: [ADDRESS_1] Mailing Address (if different): Same as above Phone (Daytime): [PHONE_1] Phone (Evening/Cell): [PHONE_2] Email Address: [EMAIL_2] PART B \u2014 LOSS INFORMATION Date of Loss: July 18, 2024 Time of Loss (approx.):",
+      "--- Page 1 (native) --- Alberta Shield Insurance Co. PROPERTY DAMAGE CLAIM FORM 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4 Tel: 1-800-555-0192 [EMAIL_1] Policy No: [POLICY_NUMBER_1] Date: July 22, 2024 Complete all sections.",
+      "600 sq ft) $45,000 \u2013 $55,000 Personal Property Furniture, appliances, clothing, electronics $80,000 \u2013 $110,000 Additional Living Expenses Temporary accommodation + meals (ongoing) TBD TOTAL ESTIMATED LOSS $305,000 \u2013 $385,000 PART E \u2014 DECLARATION I declare that the information provided in this claim form is true, accurate, and complete to the best of my knowledge.",
+      "Value (CAD) Dwelling \u2014 Structure Roof, exterior walls, interior flooring, drywall $180,000 \u2013 $220,000 Other Structures Detached garage (approx.",
+      "Submit to [EMAIL_1] or mail to the address above.",
+      "Yes \u2014 Alberta Wildfire and RCMP responded Has temporary accommodation been arranged?",
+      "I understand that providing false or misleading information may result in denial of my claim and could constitute insurance fraud under the Insurance Act (Alberta).",
+      "I authorize Alberta Shield Insurance Co. to obtain any records necessary to verify this claim.",
+      "Approximately 3:30 PM Type of Loss: Wildfire \u2014 structure and contents damage Location of Loss: [ADDRESS_2] Was an evacuation order issued?",
+      "Interior of main floor affected by smoke, heat, and water from suppression efforts.",
+      "Incomplete forms will delay processing.",
+      "PART A \u2014 POLICYHOLDER INFORMATION Full Name:",
+      "Yes \u2014 Lac La Biche County Evacuation Order No. LLC-2024-07-17 Were police or fire services called?",
+      "Yes \u2014 staying with family in Edmonton Estimated Date of Return to Property:",
+      "Unknown pending structural assessment PART C \u2014 DESCRIPTION OF DAMAGE Describe the damage in detail: Wildfire spread from adjacent crown land."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 8,
+    "categories": {
+      "EMAIL": 2,
+      "POLICY_NUMBER": 1,
+      "PERSON": 1,
+      "ADDRESS": 2,
+      "PHONE": 2
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a property damage claim form for a wildfire loss that occurred on July 18, 2024, at Rural Route 4, Site 12, Box 3, Lac La Biche County, AB T0A 2C0. The property, including the main structure, a detached garage, and personal belongings, sustained significant fire, smoke, and water damage. An evacuation order was issued, and you are currently staying with family. The estimated date to return to the property is unknown, pending a structural assessment. You have provided pre-disaster photos and inventory stored in a cloud backup. The form requires you to complete all sections and submit it to Alberta Shield Insurance Co. You have also declared that the information is true and authorized the insurer to obtain records to verify the claim.",
+    "flagged_issues": [
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "The estimated value for Additional Living Expenses is not yet determined ('TBD')."
+      }
+    ],
+    "deadlines": [],
+    "coverage_limits": [
+      "Dwelling \u2014 Structure damage up to $180,000 \u2013 $220,000 CAD",
+      "Other Structures (detached garage) damage up to $45,000 \u2013 $55,000 CAD",
+      "Personal Property damage up to $80,000 \u2013 $110,000 CAD",
+      "Total estimated loss up to $305,000 \u2013 $385,000 CAD"
+    ],
+    "required_actions": [
+      "Complete all sections of the claim form.",
+      "Submit the completed claim form to [EMAIL_1] or mail it to Alberta Shield Insurance Co. at 1200 Jasper Avenue, Suite 400, Edmonton, AB T5J 3N4."
+    ],
+    "warnings": [
+      "Providing false or misleading information on this claim form can lead to your claim being denied and may be considered insurance fraud.",
+      "You have authorized Alberta Shield Insurance Co. to get any records needed to check your claim."
+    ],
+    "provider": "gemini:gemini-2.5-flash"
+  }
+}

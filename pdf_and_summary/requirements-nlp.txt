@@ -1,0 +1,9 @@
+-r requirements.txt
+spacy>=3.7.5
+markitdown[pdf]>=0.1.0
+
+# After installing, download the spaCy English model:
+#   python -m spacy download en_core_web_sm
+#
+# For higher accuracy (transformer-based, ~500 MB):
+#   python -m spacy download en_core_web_trf

@@ -1,0 +1,12 @@
+node_modules
+dist
+.env.local
+.vite
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+instance/
+*.db
+.pytest_cache/

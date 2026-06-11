@@ -1,0 +1,360 @@
+[
+  {
+    "severity": 0.48746206638768846,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.277
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.676
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.576
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_12.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_12_burn_000.jpg"
+  },
+  {
+    "severity": 0.3571828219931587,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.302
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.346
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_12.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_12_burn_001.jpg"
+  },
+  {
+    "severity": 0.48410824222430204,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.55
+      },
+      {
+        "name": "charring",
+        "severity": 0.241
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_12.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_12_burn_002.jpg"
+  },
+  {
+    "severity": 0.6498559809032565,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.701
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.81
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_2.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_2_burn_000.jpg"
+  },
+  {
+    "severity": 0.9492244143727055,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.75
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.816
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 1.0
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_2.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_2_burn_001.jpg"
+  },
+  {
+    "severity": 0.6575081925479609,
+    "effects": [
+      {
+        "name": "ember_glow",
+        "severity": 0.651
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.604
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.471
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_2.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_2_burn_002.jpg"
+  },
+  {
+    "severity": 0.25464394574224425,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.2
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.387
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_8.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_8_burn_000.jpg"
+  },
+  {
+    "severity": 0.44134202277121165,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.252
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.324
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.502
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_8.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_8_burn_001.jpg"
+  },
+  {
+    "severity": 0.7529054194106599,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.66
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.513
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.692
+      },
+      {
+        "name": "charring",
+        "severity": 0.862
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.88
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\burnt_dining_table_house_fire_damage_1780617042_8.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\burnt_dining_table_house_fire_damage_1780617042_8_burn_002.jpg"
+  },
+  {
+    "severity": 0.8647679849076653,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.798
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.76
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.938
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_10.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_10_burn_000.jpg"
+  },
+  {
+    "severity": 0.699247297118785,
+    "effects": [
+      {
+        "name": "ember_glow",
+        "severity": 0.54
+      },
+      {
+        "name": "charring",
+        "severity": 0.577
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.348
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.777
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_10.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_10_burn_001.jpg"
+  },
+  {
+    "severity": 0.8910725850386514,
+    "effects": [
+      {
+        "name": "edge_warping",
+        "severity": 0.955
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.983
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.921
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.922
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.73
+      },
+      {
+        "name": "charring",
+        "severity": 0.786
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_10.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_10_burn_002.jpg"
+  },
+  {
+    "severity": 0.8369831833698453,
+    "effects": [
+      {
+        "name": "smoke_haze",
+        "severity": 0.957
+      },
+      {
+        "name": "charring",
+        "severity": 0.984
+      },
+      {
+        "name": "ash_debris",
+        "severity": 0.811
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.934
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_26_burn_000.jpg"
+  },
+  {
+    "severity": 0.5521131401793518,
+    "effects": [
+      {
+        "name": "soot_texture",
+        "severity": 0.804
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.661
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_26_burn_001.jpg"
+  },
+  {
+    "severity": 0.3415039529315358,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.263
+      },
+      {
+        "name": "soot_texture",
+        "severity": 0.439
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.299
+      },
+      {
+        "name": "charring",
+        "severity": 0.479
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_26.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_26_burn_002.jpg"
+  },
+  {
+    "severity": 0.6871869480829413,
+    "effects": [
+      {
+        "name": "ash_debris",
+        "severity": 0.659
+      },
+      {
+        "name": "edge_warping",
+        "severity": 0.721
+      },
+      {
+        "name": "heat_discoloration",
+        "severity": 0.617
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_5.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_5_burn_000.jpg"
+  },
+  {
+    "severity": 0.28517842012938455,
+    "effects": [
+      {
+        "name": "heat_discoloration",
+        "severity": 0.293
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_5.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_5_burn_001.jpg"
+  },
+  {
+    "severity": 0.7156011876690112,
+    "effects": [
+      {
+        "name": "charring",
+        "severity": 0.65
+      },
+      {
+        "name": "ember_glow",
+        "severity": 0.832
+      },
+      {
+        "name": "crack_pattern",
+        "severity": 0.767
+      },
+      {
+        "name": "smoke_haze",
+        "severity": 0.904
+      },
+      {
+        "name": "soot_texture",
+        "severity": 1.0
+      }
+    ],
+    "source": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable\\charred_table_fire_aftermath_home_1780617120_5.jpg",
+    "output": "C:\\Users\\saach\\Downloads\\burn-detection-toolkit\\dataset\\raw\\table_damaged\\salvageable_synthetic\\charred_table_fire_aftermath_home_1780617120_5_burn_002.jpg"
+  }
+]

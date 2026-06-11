@@ -1,0 +1,245 @@
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii 'ocr3.pdf'
+Using summary provider: gemini:gemini-3.1-flash-lite
+/opt/homebrew/lib/python3.11/site-packages/paddle/utils/cpp_extension/extension_utils.py:711: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+Creating model: ('PP-OCRv5_mobile_det', None)
+Using official model (PP-OCRv5_mobile_det), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+Creating model: ('PP-OCRv5_mobile_rec', None)
+Using official model (PP-OCRv5_mobile_rec), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+{
+  "extraction": {
+    "text": "--- Page 1 (ocr) ---\nPRAIRIE MUTUALINSURANCE\nClaim#:AB-CAT-2609-331\nCATASTROPHE DISASTER CLAIM INTAKE\nDoc ID:CAT-009\nSYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM\nEvent\nSouthem Alberta wildf ire smoke +\nEvacuation order date\n2026-05-31\nember damage\nMandatory evacuation\nPower outage\nBoil water advisory\nRoad closure affected access\nTemporary Contact Information\nCurrent lodging\nRamada Airport South-room 218\nEmail\n[EMAIL_1]\nMobile\n[PHONE_1]\nPreferred contact\nText after 5 pm\nObserved Damage/ Losses\nExterior smoke staining, me lted vinyl trim on south wall, shed roof scorched. Food spoiled in fridge\nduring outage. Family left home with two pets.\nAdvance Payment Request\nAmount requested\n$2,500\nReason\nhotel +food + fuel\nAdjuster triage notes\nCAT queue priority [PERSON_1] smoke cle aning estimate and ALE review. Verify evacuation dates.",
+    "page_count": 1,
+    "pages_with_text": 1,
+    "character_count": 857,
+    "native_text_pages": 0,
+    "ocr_pages": 1,
+    "ocr_engine": "paddleocr",
+    "warnings": [
+      "OCR was used for 1 page(s). Verify OCR-derived text against the original document."
+    ],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "2026-05-31"
+    ],
+    "date_sentences": [
+      "--- Page 1 (ocr) --- PRAIRIE MUTUALINSURANCE Claim#:AB-CAT-2609-331 CATASTROPHE DISASTER CLAIM INTAKE Doc ID:CAT-009 SYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM Event Southem Alberta wildf ire smoke + Evacuation order date 2026-05-31 ember damage Mandatory evacuation Power outage Boil water\u2026"
+    ],
+    "money": [
+      "2,500"
+    ],
+    "percentages": [],
+    "organizations": [
+      "Temporary Contact Information Current",
+      "CAT",
+      "ALE"
+    ],
+    "top_sentences": [
+      "--- Page 1 (ocr) --- PRAIRIE MUTUALINSURANCE Claim#:AB-CAT-2609-331 CATASTROPHE DISASTER CLAIM INTAKE Doc ID:CAT-009 SYNTHETIC OCR TEST DOCUMENT-NOTA REAL CLAIM Event Southem Alberta wildf ire smoke + Evacuation order date 2026-05-31 ember damage Mandatory evacuation Power outage Boil water advisory Road closure affected access Temporary Contact Information Current lodging Ramada Airport South-room 218 Email [EMAIL_1] Mobile [PHONE_1] Preferred contact Text after 5 pm Observed Damage/ Losses Exterior smoke staining, me lted vinyl trim on south wall, shed roof scorched.",
+      "Advance Payment Request Amount requested $2,500 Reason hotel +food + fuel Adjuster triage notes CAT queue priority",
+      "Family left home with two pets.",
+      "[PERSON_1] smoke cle aning estimate and ALE review.",
+      "Food spoiled in fridge during outage."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 3,
+    "categories": {
+      "EMAIL": 1,
+      "PHONE": 1,
+      "PERSON": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a claim intake form for a disaster event involving wildfire smoke and ember damage. It lists the damages observed, such as smoke staining, melted trim, and spoiled food. The claimant has requested an advance payment of $2,500 to cover immediate costs for lodging, food, and fuel.",
+    "flagged_issues": [],
+    "deadlines": [
+      {
+        "task": "Mandatory evacuation period",
+        "date": "2026-05-31"
+      }
+    ],
+    "coverage_limits": [
+      "Advance payment request of $2,500 for hotel, food, and fuel"
+    ],
+    "required_actions": [],
+    "warnings": [
+      "This document is a synthetic test document and not a real insurance claim."
+    ],
+    "provider": "gemini:gemini-3.1-flash-lite"
+  }
+}
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii 'ocr4.pdf'
+Using summary provider: gemini:gemini-3.1-flash-lite
+/opt/homebrew/lib/python3.11/site-packages/paddle/utils/cpp_extension/extension_utils.py:711: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+Creating model: ('PP-OCRv5_mobile_det', None)
+Using official model (PP-OCRv5_mobile_det), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+Creating model: ('PP-OCRv5_mobile_rec', None)
+Using official model (PP-OCRv5_mobile_rec), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+{
+  "extraction": {
+    "text": "--- Page 1 (ocr) ---\nPRAIRIEMUTUALINSURANCE\nClaim#:AB-26-05802\nWATER / SEWER BACKUP CLAIM STATEMENT: wSB-014\nSYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM\nLoss Location and Occupancy\nInsured\nOwen and [PERSON_1]\nAddress\n[ADDRESS_1]\nOccupancy\nOwner occupied\nYear buit\n1987\nSource of Water\nBurst pipe\nSump pump failure\nSewer backup\nAppliance leak\nUnknown\nRooms Affected\nBasement family room\nLaundry room\nMechanical room\nMain floor kitchen\nBathroom\nMitigation Company\nRapidDry Restoration\nStart date\n2026-04-09\nNarrative\nWereturned from weekend away and found 3 inches of water in basement. Sump pump tripped breaker.\nCarpet removed same night.\nSupporting documents submitted\nPlumber invoice\nMitigation invoice\nPhotos\nContents list\nHotel receipt",
+    "page_count": 1,
+    "pages_with_text": 1,
+    "character_count": 760,
+    "native_text_pages": 0,
+    "ocr_pages": 1,
+    "ocr_engine": "paddleocr",
+    "warnings": [
+      "OCR was used for 1 page(s). Verify OCR-derived text against the original document."
+    ],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "Year",
+      "2026-04-09",
+      "weekend"
+    ],
+    "date_sentences": [
+      "--- Page 1 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_1] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026",
+      "--- Page 1 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_1] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026",
+      "--- Page 1 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_1] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of\u2026"
+    ],
+    "money": [],
+    "percentages": [],
+    "organizations": [
+      "Red Deer",
+      "Appliance",
+      "Bathroom Mitigation Company RapidDry Restoration Start",
+      "Carpet",
+      "Hotel"
+    ],
+    "top_sentences": [
+      "--- Page 1 (ocr) --- PRAIRIEMUTUALINSURANCE Claim#:AB-26-05802 WATER / SEWER BACKUP CLAIM STATEMENT: wSB-014 SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Loss Location and Occupancy Insured Owen and [PERSON_1] Address [ADDRESS_1] Occupancy Owner occupied Year buit 1987 Source of Water Burst pipe Sump pump failure Sewer backup Appliance leak Unknown Rooms Affected Basement family room Laundry room Mechanical room Main floor kitchen Bathroom Mitigation Company RapidDry Restoration Start date 2026-04-09 Narrative Wereturned from weekend away and found 3 inches of water in basement.",
+      "Carpet removed same night.",
+      "Supporting documents submitted Plumber invoice Mitigation invoice Photos Contents list Hotel receipt",
+      "Sump pump tripped breaker."
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 2,
+    "categories": {
+      "PERSON": 1,
+      "ADDRESS": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a claim statement for water and sewer damage at your property. You reported that you returned from a weekend away to find water in your basement caused by a sump pump failure. Mitigation work began on April 9, 2026, and you have provided several documents to support your claim, including invoices, photos, and a list of damaged items.",
+    "flagged_issues": [
+      {
+        "issue_type": "WARNING",
+        "message": "This document describes a claim involving water intrusion and sewer backup. Please verify that your insurance policy explicitly includes coverage for these specific perils, as they are often excluded from standard home insurance policies."
+      }
+    ],
+    "deadlines": [],
+    "coverage_limits": [],
+    "required_actions": [],
+    "warnings": [
+      "This document is a claim statement and does not confirm that your insurance company has accepted liability for the loss or agreed to pay the claim."
+    ],
+    "provider": "gemini:gemini-3.1-flash-lite"
+  }
+}
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % python3 -m pdf_and_summary.cli --redact-pii 'ocr5.pdf'
+Using summary provider: gemini:gemini-3.1-flash-lite
+/opt/homebrew/lib/python3.11/site-packages/paddle/utils/cpp_extension/extension_utils.py:711: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+Creating model: ('PP-OCRv5_mobile_det', None)
+Using official model (PP-OCRv5_mobile_det), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+Creating model: ('PP-OCRv5_mobile_rec', None)
+Using official model (PP-OCRv5_mobile_rec), the model files will be automatically downloaded and saved in /Users/vidhi/.paddlex/official_models.
+{
+  "extraction": {
+    "text": "--- Page 1 (ocr) ---\nClaim #: AB-26-04177\nPRAIRIE MUTUAL INSURANCE\nDoc ID: EST-227\nCONTRACTOR REPAIR ESTIMATE\nSYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM\nEstimate date: 2026-05-22\nVendor: North Ridge Exteriors Ltd.\nEstimator: [PERSON_1]GST #: 77122 6604 RT0001\nQty\nUnit\nTotal\nLine\nDescription\n310\nsq ft\n$775.00\n1\nRemove damaged asphalt shingles- garage slope\n310\nsq ft\n$2,418.00\n2\nSupplylinstall laminated shingles incl. underlay\nIf\n$714.00\n42\n3\nReplace dented aluminum fascia, west elevation\n220\nsq ft\n$1,980.00\nReplace vinyl siding panels, colour match pending\n4\neach\n$1,640.00\n2\n5\nSkylight replacement, tempered glass\nallow\n$620.00\n1\n6\nInterior drywall patch and prime at bedroom window\nSubtotal\n$8,147.00\nGST (5%)\n$407.35\n$8,554.35\nTOTAL\nEstimator notes\nPrice excludes hidden framing damage. Siding match may require fullelevat ion if discontinued. Reinspect\nafter tear-off.\nPENDING REVIEV",
+    "page_count": 1,
+    "pages_with_text": 1,
+    "character_count": 890,
+    "native_text_pages": 0,
+    "ocr_pages": 1,
+    "ocr_engine": "paddleocr",
+    "warnings": [
+      "OCR was used for 1 page(s). Verify OCR-derived text against the original document."
+    ],
+    "extraction_format": "text"
+  },
+  "nlp": {
+    "dates": [
+      "2026-05-22",
+      "77122 6604"
+    ],
+    "date_sentences": [
+      "--- Page 1 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge Exteriors Ltd. Estimator: [PERSON_1] GST #: 77122 6604 RT0001 Qty Unit Total Line Description 310 sq ft",
+      "--- Page 1 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge Exteriors Ltd. Estimator: [PERSON_1] GST #: 77122 6604 RT0001 Qty Unit Total Line Description 310 sq ft"
+    ],
+    "money": [
+      "775.00",
+      "2,418.00",
+      "714.00",
+      "1,980.00",
+      "1,640.00",
+      "620.00",
+      "8,147.00",
+      "407.35",
+      "8,554.35"
+    ],
+    "percentages": [
+      "5%"
+    ],
+    "organizations": [
+      "North Ridge Exteriors Ltd."
+    ],
+    "top_sentences": [
+      "underlay If $714.00 42 3 Replace dented aluminum fascia, west elevation 220 sq ft $1,980.00 Replace vinyl siding panels, colour match pending 4 each $1,640.00 2 5 Skylight replacement, tempered glass allow $620.00 1 6 Interior drywall patch and prime at bedroom window Subtotal $8,147.00 GST (5%) $407.35 $8,554.35 TOTAL Estimator notes Price excludes hidden framing damage.",
+      "--- Page 1 (ocr) --- Claim #: AB-26-04177 PRAIRIE MUTUAL INSURANCE Doc ID: EST-227 CONTRACTOR REPAIR ESTIMATE SYNTHETIC OCR TEST DOCUMENT-NOTAREAL CLAIM Estimate date: 2026-05-22 Vendor: North Ridge Exteriors Ltd. Estimator: [PERSON_1] GST #: 77122 6604 RT0001 Qty Unit Total Line Description 310 sq ft",
+      "garage slope 310 sq ft $2,418.00 2 Supplylinstall laminated shingles incl.",
+      "$775.00 1 Remove damaged asphalt shingles-"
+    ],
+    "provider": "spacy"
+  },
+  "redaction": {
+    "enabled": true,
+    "rehydrated": true,
+    "placeholder_count": 1,
+    "categories": {
+      "PERSON": 1
+    }
+  },
+  "summary": {
+    "plain_language_summary": "This document is a repair estimate from North Ridge Exteriors Ltd. for damage to a garage and bedroom window. The total estimated cost for the repairs is $8,554.35, which includes a 5% tax. Please note that this is an estimate and does not include potential hidden damage to the framing.",
+    "flagged_issues": [
+      {
+        "issue_type": "UNRELIABLE_DATA",
+        "message": "The cost for siding replacement is based on a color match that is currently pending."
+      },
+      {
+        "issue_type": "WARNING",
+        "message": "The estimate notes that siding replacement may require replacing the full elevation if the current siding is discontinued."
+      }
+    ],
+    "deadlines": [],
+    "coverage_limits": [
+      "Total repair estimate of $8,554.35 including 5% GST",
+      "Subtotal for repairs of $8,147.00",
+      "GST amount of $407.35"
+    ],
+    "required_actions": [
+      "Arrange for a reinspection of the property after the initial tear-off of damaged materials is complete."
+    ],
+    "warnings": [
+      "The estimate excludes costs for any hidden framing damage discovered during repairs.",
+      "The total cost is subject to change based on the availability of matching siding materials."
+    ],
+    "provider": "gemini:gemini-3.1-flash-lite"
+  }
+}
+vidhi@Vidhis-MacBook-Air-2 Rebuildr % 
