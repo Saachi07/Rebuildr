@@ -49,6 +49,24 @@ For each item include:
 
 Be thorough. Include all significant items — furniture, appliances, electronics, decor."""
 
+AUTO_PROMPT = """Analyze this room photo and return a structured inventory of everything visible.
+
+First decide whether this is a BEFORE photo (pristine, no disaster damage) or an
+AFTER photo (visible fire, smoke, soot, water, charring, breakage or structural
+damage) and set `detected_phase` to "before" or "after" accordingly.
+
+For each item include:
+- A descriptive name (e.g. "wooden dining chair", "stainless steel refrigerator")
+- Category
+- Count of identical items visible
+- Condition reflecting what you actually see. Only use "damaged" if there is
+  visible disaster damage; otherwise use new / good / fair / worn.
+- Brand if visible on the item
+- Approximate size
+- Canadian retail price estimate in CAD (realistic low and high range, as if buying new today)
+
+Be thorough. Include all significant items — furniture, appliances, electronics, decor."""
+
 
 class PriceRange(BaseModel):
     low: int
@@ -69,13 +87,16 @@ class RoomAnalysis(BaseModel):
     room_type: Literal["kitchen", "bedroom", "living_room", "bathroom", "other"]
     items: list[InventoryItem]
     notes: str
+    # Only populated when pre_post="auto" — Gemini's guess at whether this is a
+    # before- or after-disaster photo, so the UI can default the toggle.
+    detected_phase: Optional[Literal["before", "after"]] = None
 
 
 def analyze_room_photo(
     image_bytes: bytes,
     api_key: str,
     *,
-    pre_post: Literal["pre", "post"] = "post",
+    pre_post: Literal["pre", "post", "auto"] = "post",
 ) -> RoomAnalysis:
     from google import genai
     from google.genai import types
@@ -87,7 +108,7 @@ def analyze_room_photo(
 
     client = genai.Client(api_key=api_key)
     image = Image.open(io.BytesIO(image_bytes))
-    prompt = PRE_PROMPT if pre_post == "pre" else POST_PROMPT
+    prompt = {"pre": PRE_PROMPT, "post": POST_PROMPT, "auto": AUTO_PROMPT}[pre_post]
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",

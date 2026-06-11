@@ -46,6 +46,9 @@ export type Item = {
   estimated_value?: number;
   description?: string;
   room?: string;
+  photo_url?: string;
+  before_url?: string;
+  after_url?: string;
 };
 
 export type GeminiAnalysis = {
@@ -78,6 +81,7 @@ export type RoomScan = {
   room_type: string;
   items: ScannedItem[];
   notes: string;
+  detected_phase?: "before" | "after" | null;
 };
 
 // Flat shape returned by the new Flask blueprint —
@@ -152,6 +156,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  updateItem: (caseId: string, itemId: string, body: Partial<Item>) =>
+    request<{ item: Item }>(`/cases/${caseId}/items/${itemId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  createItemsBulk: (caseId: string, items: Partial<Item>[]) =>
+    request<{ items: Item[] }>(`/cases/${caseId}/items/bulk`, {
+      method: "POST",
+      body: JSON.stringify({ items }),
+    }),
   getRecommendations: (caseId: string, _topK = 5) =>
     request<RecommendResponse>(
       `/cases/${caseId}/recommendations`,
@@ -177,11 +191,25 @@ export const api = {
     return res.json();
   },
 
-  analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" = "post"): Promise<RoomScan> => {
+  analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" | "auto" = "auto"): Promise<RoomScan> => {
     const fd = new FormData();
     fd.append("image", file);
     fd.append("pre_post", prePost);
     const res = await fetch(`${BASE}/ml/analyze-photo`, {
+      method: "POST",
+      headers: await authHeaders(),
+      body: fd,
+    });
+    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    return res.json();
+  },
+
+  // Upload an item photo to storage; returns the public URL to store in
+  // one of the item's image columns (photo_url / before_url / after_url).
+  uploadItemImage: async (file: File): Promise<{ url: string }> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    const res = await fetch(`${BASE}/items/upload-image`, {
       method: "POST",
       headers: await authHeaders(),
       body: fd,

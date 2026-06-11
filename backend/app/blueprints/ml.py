@@ -23,11 +23,11 @@ def analyze_photo():
     if not blob:
         return jsonify({"error": "empty image"}), 400
 
-    # "pre" = before the disaster (proof of what the user owned).
-    # "post" = after the disaster (showing the damage). Default "post"
-    # because that's the dominant flow.
+    # "pre"  = before the disaster (proof of what the user owned).
+    # "post" = after the disaster (showing the damage).
+    # "auto" = let Gemini decide and report it back as detected_phase.
     pre_post = (request.form.get("pre_post") or "post").lower()
-    if pre_post not in {"pre", "post"}:
+    if pre_post not in {"pre", "post", "auto"}:
         pre_post = "post"
 
     api_key = current_app.config.get("GEMINI_API_KEY")

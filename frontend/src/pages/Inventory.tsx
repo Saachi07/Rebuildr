@@ -4,9 +4,19 @@ import { api, Item, RoomScan, ScannedItem } from "../api";
 import { BackButton } from "../components/BackButton";
 import { Hint } from "../components/Hint";
 
-const CATEGORIES = ["furniture", "electronics", "appliance", "clothing", "structural", "document", "other"];
 const SEVERITIES = ["minor", "moderate", "severe", "destroyed"];
 const DAMAGE_TYPES = ["fire", "smoke", "water", "wind", "mold", "other"];
+
+// Default an item's damage type from the case's disaster, so the user doesn't
+// re-pick fire/water/wind on every single item (#1).
+const DISASTER_TO_DAMAGE: Record<string, string> = {
+  wildfire: "fire",
+  flood: "water",
+  hurricane: "wind",
+  tornado: "wind",
+  earthquake: "other",
+  other: "other",
+};
 
 type PrePost = "pre" | "post";
 
@@ -22,11 +32,11 @@ function midPrice(s: ScannedItem) {
   return Math.round((low + high) / 2);
 }
 
-function toDraft(s: ScannedItem, i: number, kind: PrePost): Draft {
+function toDraft(s: ScannedItem, i: number, kind: PrePost, defaultDamage: string): Draft {
   return {
     ...s,
     draft_id: `${Date.now()}-${i}`,
-    damage_type: kind === "post" ? "fire" : "other",
+    damage_type: kind === "post" ? defaultDamage : "other",
     damage_severity: kind === "post" ? "moderate" : "minor",
     estimated_value: midPrice(s),
   };
@@ -36,23 +46,22 @@ export default function Inventory() {
   const { id } = useParams();
   const [items, setItems] = useState<Item[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [kind, setKind] = useState<PrePost>("post");
-  const [form, setForm] = useState({
-    name: "",
-    category: "furniture",
-    damage_type: "fire",
-    damage_severity: "moderate",
-    estimated_value: "",
-    description: "",
-    room: "",
-  });
-  const [busy, setBusy] = useState(false);
+  const [sortBy, setSortBy] = useState<"none" | "room" | "category" | "status" | "price">("room");
 
+  // Scan + draft-review state.
+  const [kind, setKind] = useState<PrePost>("post");
   const [scan, setScan] = useState<RoomScan | null>(null);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [scanBusy, setScanBusy] = useState(false);
   const [scanErr, setScanErr] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"none" | "room" | "category" | "status" | "price">("room");
+  const [busy, setBusy] = useState(false);
+  // One room label for the whole batch — set once, applied to every item (#4).
+  const [batchRoom, setBatchRoom] = useState("");
+  // Per-item editing is collapsed by default; expand only what you want (#3/#6).
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // Default damage type, inferred from the case's disaster type (#1).
+  const [defaultDamage, setDefaultDamage] = useState("fire");
 
   // Items the user has from other cases — offered as "attach to this case"
   // so they don't have to re-enter what they already documented elsewhere.
@@ -69,6 +78,14 @@ export default function Inventory() {
 
   useEffect(load, [id]);
 
+  // Fetch the case once to seed the default damage type for scanned items.
+  useEffect(() => {
+    if (!id) return;
+    api.getCase(id)
+      .then((r) => setDefaultDamage(DISASTER_TO_DAMAGE[r.case.disaster_type] ?? "other"))
+      .catch(() => {});
+  }, [id]);
+
   async function attachFromLibrary(itemId: string) {
     if (!id) return;
     setAttaching(itemId);
@@ -82,25 +99,6 @@ export default function Inventory() {
     }
   }
 
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
-    if (!id) return;
-    setBusy(true);
-    setErr(null);
-    try {
-      await api.createItem(id, {
-        ...form,
-        estimated_value: form.estimated_value ? Number(form.estimated_value) : undefined,
-      });
-      setForm({ ...form, name: "", estimated_value: "", description: "" });
-      load();
-    } catch (e: any) {
-      setErr(e.message ?? String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function onScan(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -108,14 +106,31 @@ export default function Inventory() {
     setScanBusy(true);
     setScanErr(null);
     try {
-      const result = await api.analyzeRoomPhoto(file, kind);
+      // Let Gemini decide before/after — the user only corrects it if wrong (#5).
+      const result = await api.analyzeRoomPhoto(file, "auto");
+      const detected: PrePost = result.detected_phase === "before" ? "pre" : "post";
+      setKind(detected);
+      setBatchRoom(result.room_type ?? "");
       setScan(result);
-      setDrafts(result.items.map((s, i) => toDraft(s, i, kind)));
+      setDrafts(result.items.map((s, i) => toDraft(s, i, detected, defaultDamage)));
+      setExpanded(new Set());
     } catch (e: any) {
       setScanErr(e.message ?? String(e));
     } finally {
       setScanBusy(false);
     }
+  }
+
+  // Correcting the phase re-derives the damage defaults for every draft.
+  function changePhase(next: PrePost) {
+    setKind(next);
+    setDrafts((ds) =>
+      ds.map((d) => ({
+        ...d,
+        damage_type: next === "post" ? defaultDamage : "other",
+        damage_severity: next === "post" ? "moderate" : "minor",
+      })),
+    );
   }
 
   function updateDraft(draft_id: string, patch: Partial<Draft>) {
@@ -126,23 +141,32 @@ export default function Inventory() {
     setDrafts((ds) => ds.filter((d) => d.draft_id !== draft_id));
   }
 
+  function toggleExpand(draft_id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(draft_id) ? next.delete(draft_id) : next.add(draft_id);
+      return next;
+    });
+  }
+
   async function saveAllDrafts() {
     if (!id || drafts.length === 0) return;
     setBusy(true);
     setScanErr(null);
     try {
-      const roomLabel = scan?.room_type ?? "";
-      for (const d of drafts) {
-        await api.createItem(id, {
+      // One request for the whole batch — faster and atomic (#2).
+      await api.createItemsBulk(
+        id,
+        drafts.map((d) => ({
           name: d.name,
           category: mapCategory(d.category),
           damage_type: d.damage_type,
           damage_severity: d.damage_severity,
           estimated_value: d.estimated_value,
           description: [d.visible_brand, d.approximate_size, `x${d.count}`].filter(Boolean).join(" · "),
-          room: roomLabel,
-        });
-      }
+          room: batchRoom,
+        })),
+      );
       setDrafts([]);
       setScan(null);
       load();
@@ -164,41 +188,16 @@ export default function Inventory() {
         </Link>
       </div>
       <p className="warm-note" style={{ marginTop: 8 }}>
-        Snap a photo of one room at a time — we'll list what we see. You can
-        edit anything before saving.
+        Snap a photo of one room at a time — we'll list what we see, guess
+        whether it's a before- or after-damage photo, and fill in the rest. You
+        only review what you want before saving.
       </p>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Scan a room from a photo</h3>
-
-        <label style={{ marginTop: 0 }}>
-          Is this photo from before or after the damage?{" "}
-          <Hint text="Before-photos help prove what you had. After-photos document the damage. Pick one — you can add more photos for the other later." />
-        </label>
-        <div className="toggle-group" role="tablist" aria-label="Photo type">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={kind === "pre"}
-            className={kind === "pre" ? "active" : ""}
-            onClick={() => setKind("pre")}
-          >
-            Before the damage
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={kind === "post"}
-            className={kind === "post" ? "active" : ""}
-            onClick={() => setKind("post")}
-          >
-            After the damage
-          </button>
-        </div>
-
-        <p className="muted-strong" style={{ marginTop: 14, fontSize: 14 }}>
+        <p className="muted-strong" style={{ marginTop: 0, fontSize: 14 }}>
           Upload a photo and we'll list what's in it with rough replacement
-          prices. You'll get to review every item before anything is saved.
+          prices. Nothing is saved until you say so.
         </p>
         <input type="file" accept="image/*" onChange={onScan} disabled={scanBusy} />
         {scanBusy && <p className="muted-strong" style={{ marginTop: 8 }}>Looking at your photo…</p>}
@@ -212,69 +211,117 @@ export default function Inventory() {
               <span className="badge">{kind === "pre" ? "Before" : "After"}</span>
               <span className="spacer" />
               <button onClick={saveAllDrafts} disabled={busy}>
-                {busy ? "Saving…" : `Save all ${drafts.length} items`}
+                {busy ? "Saving…" : `Looks good — save all ${drafts.length}`}
               </button>
             </div>
+
+            <div className="grid grid-2" style={{ marginTop: 12 }}>
+              <div>
+                <label>
+                  Room{" "}
+                  <Hint text="We set this for the whole batch from the photo. Change it once here and it applies to every item." />
+                </label>
+                <input
+                  value={batchRoom}
+                  placeholder="e.g. Living room"
+                  onChange={(e) => setBatchRoom(e.target.value)}
+                />
+              </div>
+              <div>
+                <label>
+                  Before or after the damage?{" "}
+                  <Hint text="We guessed from the photo — change it if we got it wrong. This sets the damage defaults below." />
+                </label>
+                <div className="toggle-group" role="tablist" aria-label="Photo type">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={kind === "pre"}
+                    className={kind === "pre" ? "active" : ""}
+                    onClick={() => changePhase("pre")}
+                  >
+                    Before the damage
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={kind === "post"}
+                    className={kind === "post" ? "active" : ""}
+                    onClick={() => changePhase("post")}
+                  >
+                    After the damage
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {scan.notes && <p className="muted-strong" style={{ fontSize: 14, marginTop: 8 }}>{scan.notes}</p>}
 
             <div className="grid grid-2" style={{ marginTop: 12 }}>
-              {drafts.map((d) => (
-                <div key={d.draft_id} className="card" style={{ margin: 0 }}>
-                  <input
-                    value={d.name}
-                    onChange={(e) => updateDraft(d.draft_id, { name: e.target.value })}
-                  />
-                  <p className="muted-strong" style={{ fontSize: 13, margin: "6px 0" }}>
-                    {d.category} · {d.condition} · {d.approximate_size}
-                    {d.visible_brand ? ` · ${d.visible_brand}` : ""} · x{d.count}
-                  </p>
-                  <div className="grid grid-2">
-                    <div>
-                      <label>
-                        Damage type{" "}
-                        <Hint text="The cause of the damage — fire, smoke, water, etc. We use this to match you with the right resources." />
-                      </label>
-                      <select
-                        value={d.damage_type}
-                        onChange={(e) => updateDraft(d.draft_id, { damage_type: e.target.value })}
-                      >
-                        {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
-                      </select>
+              {drafts.map((d) => {
+                const open = expanded.has(d.draft_id);
+                return (
+                  <div key={d.draft_id} className="card" style={{ margin: 0 }}>
+                    <input
+                      value={d.name}
+                      onChange={(e) => updateDraft(d.draft_id, { name: e.target.value })}
+                    />
+                    <p className="muted-strong" style={{ fontSize: 13, margin: "6px 0" }}>
+                      {d.category} · {d.condition} · {d.approximate_size}
+                      {d.visible_brand ? ` · ${d.visible_brand}` : ""} · x{d.count}
+                    </p>
+                    <div className="row" style={{ fontSize: 13 }}>
+                      <span className="badge">{kind === "post" ? d.damage_type : "undamaged"}</span>
+                      {kind === "post" && <span className="badge">{d.damage_severity}</span>}
+                      <span className="spacer" />
+                      <strong>${d.estimated_value}</strong>
                     </div>
-                    <div>
-                      <label>
-                        How bad?{" "}
-                        <Hint text="Minor = surface marks. Moderate = repairable. Severe = barely usable. Destroyed = total loss." />
-                      </label>
-                      <select
-                        value={d.damage_severity}
-                        onChange={(e) => updateDraft(d.draft_id, { damage_severity: e.target.value })}
-                      >
-                        {SEVERITIES.map((c) => <option key={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label>
-                        Replacement value (CAD){" "}
-                        <Hint text="What it would cost to buy this again today, not what you originally paid." />
-                      </label>
-                      <input
-                        type="number"
-                        value={d.estimated_value}
-                        onChange={(e) => updateDraft(d.draft_id, { estimated_value: Number(e.target.value) })}
-                      />
-                      <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
-                        Our estimate: ${d.canadian_retail_estimate_cad.low}–${d.canadian_retail_estimate_cad.high}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "flex-end" }}>
-                      <button className="secondary" onClick={() => dropDraft(d.draft_id)}>
+                    <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                      Our estimate: ${d.canadian_retail_estimate_cad.low}–${d.canadian_retail_estimate_cad.high}
+                    </p>
+                    <div className="row" style={{ marginTop: 8 }}>
+                      <button className="secondary" type="button" onClick={() => toggleExpand(d.draft_id)}>
+                        {open ? "Done" : "Edit"}
+                      </button>
+                      <span className="spacer" />
+                      <button className="secondary" type="button" onClick={() => dropDraft(d.draft_id)}>
                         Remove
                       </button>
                     </div>
+
+                    {open && (
+                      <div className="grid grid-2" style={{ marginTop: 12 }}>
+                        <div>
+                          <label>Damage type</label>
+                          <select
+                            value={d.damage_type}
+                            onChange={(e) => updateDraft(d.draft_id, { damage_type: e.target.value })}
+                          >
+                            {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label>How bad?</label>
+                          <select
+                            value={d.damage_severity}
+                            onChange={(e) => updateDraft(d.draft_id, { damage_severity: e.target.value })}
+                          >
+                            {SEVERITIES.map((c) => <option key={c}>{c}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label>Replacement value (CAD)</label>
+                          <input
+                            type="number"
+                            value={d.estimated_value}
+                            onChange={(e) => updateDraft(d.draft_id, { estimated_value: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -324,68 +371,6 @@ export default function Inventory() {
         </div>
       )}
 
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>Add a damaged item manually</h3>
-        <form onSubmit={add}>
-          <div className="grid grid-2">
-            <div>
-              <label>Item name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </div>
-            <div>
-              <label>
-                Room{" "}
-                <Hint text="Which room was it in? e.g. Living room, Kitchen, Garage." />
-              </label>
-              <input
-                value={form.room}
-                placeholder="e.g. Living room"
-                onChange={(e) => setForm({ ...form, room: e.target.value })}
-              />
-            </div>
-            <div>
-              <label>Category</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>
-                Damage type{" "}
-                <Hint text="The cause of the damage — fire, smoke, water, wind, mold, or something else." />
-              </label>
-              <select value={form.damage_type} onChange={(e) => setForm({ ...form, damage_type: e.target.value })}>
-                {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>
-                How bad?{" "}
-                <Hint text="Minor = surface marks. Moderate = repairable. Severe = barely usable. Destroyed = total loss." />
-              </label>
-              <select value={form.damage_severity} onChange={(e) => setForm({ ...form, damage_severity: e.target.value })}>
-                {SEVERITIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label>
-                Replacement value ($){" "}
-                <Hint text="What it would cost to buy this again today, not what you originally paid." />
-              </label>
-              <input type="number" value={form.estimated_value} onChange={(e) => setForm({ ...form, estimated_value: e.target.value })} />
-            </div>
-            <div>
-              <label>Description</label>
-              <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            </div>
-          </div>
-          {err && <div className="error">{err}</div>}
-          <div style={{ marginTop: 12 }}>
-            <button type="submit" disabled={busy}>{busy ? "Adding…" : "Add item"}</button>
-          </div>
-        </form>
-      </div>
-
       <div className="row" style={{ marginTop: 8 }}>
         <h3 style={{ margin: 0 }}>Saved items ({items.length})</h3>
         <span className="spacer" />
@@ -406,11 +391,12 @@ export default function Inventory() {
           </>
         )}
       </div>
+      {err && <div className="error">{err}</div>}
       {items.length === 0 && <p className="muted-strong">Nothing saved yet.</p>}
       {items.length > 0 && sortBy === "room" ? (
-        <RoomGroupedItems items={items} />
+        <RoomGroupedItems items={items} caseId={id ?? ""} onChange={load} />
       ) : items.length > 0 ? (
-        <ItemTable items={sortItems(items, sortBy)} />
+        <ItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} onChange={load} />
       ) : null}
 
       {items.length > 0 && (
@@ -426,7 +412,7 @@ export default function Inventory() {
   );
 }
 
-function RoomGroupedItems({ items }: { items: Item[] }) {
+function RoomGroupedItems({ items, caseId, onChange }: { items: Item[]; caseId: string; onChange: () => void }) {
   const groups = new Map<string, Item[]>();
   for (const it of items) {
     const key = it.room?.trim() || "Other";
@@ -439,14 +425,14 @@ function RoomGroupedItems({ items }: { items: Item[] }) {
       {ordered.map(([room, group]) => (
         <div key={room} className="room-group">
           <h3>{room} <span className="badge" style={{ marginLeft: 6 }}>{group.length}</span></h3>
-          <ItemTable items={group} />
+          <ItemTable items={group} caseId={caseId} onChange={onChange} />
         </div>
       ))}
     </>
   );
 }
 
-function ItemTable({ items }: { items: Item[] }) {
+function ItemTable({ items, caseId, onChange }: { items: Item[]; caseId: string; onChange: () => void }) {
   return (
     <table className="tbl">
       <thead>
@@ -456,6 +442,7 @@ function ItemTable({ items }: { items: Item[] }) {
           <th>Status</th>
           <th>Severity</th>
           <th>Est. value</th>
+          <th>Photos</th>
         </tr>
       </thead>
       <tbody>
@@ -475,11 +462,73 @@ function ItemTable({ items }: { items: Item[] }) {
               </td>
               <td>{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
               <td>{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
+              <td><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
             </tr>
           );
         })}
       </tbody>
     </table>
+  );
+}
+
+const PHOTO_SLOTS: [string, "photo_url" | "before_url" | "after_url"][] = [
+  ["Photo", "photo_url"],
+  ["Before", "before_url"],
+  ["After", "after_url"],
+];
+
+function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; onChange: () => void }) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function upload(key: "photo_url" | "before_url" | "after_url", file?: File) {
+    if (!file || !caseId) return;
+    setBusy(key);
+    try {
+      const { url } = await api.uploadItemImage(file);
+      await api.updateItem(caseId, item.id, { [key]: url });
+      onChange();
+    } catch {
+      // surfaced inline below via title; keep the table resilient
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      {PHOTO_SLOTS.map(([label, key]) => {
+        const url = item[key];
+        return (
+          <label key={key} title={label} style={{ cursor: "pointer", textAlign: "center", display: "block" }}>
+            {url ? (
+              <img src={url} alt={label} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6, display: "block" }} />
+            ) : (
+              <span
+                className="muted"
+                style={{
+                  width: 40, height: 40, borderRadius: 6, border: "1px dashed var(--border, #ccc)",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
+                }}
+              >
+                {busy === key ? "…" : "+"}
+              </span>
+            )}
+            <span className="muted" style={{ fontSize: 10 }}>{label}</span>
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              disabled={busy !== null}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                upload(key, f);
+              }}
+            />
+          </label>
+        );
+      })}
+    </div>
   );
 }
 

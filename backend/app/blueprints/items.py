@@ -15,12 +15,26 @@ query vector the recommender builds for that case.
 
 from __future__ import annotations
 
+import uuid
+
 from flask import Blueprint, g, jsonify, request
 
 from ..auth import require_auth
-from ..extensions import user_client
+from ..extensions import service_client, user_client
 
 bp = Blueprint("items", __name__)
+
+# Public-read storage bucket for item photos (see migration 0007). Writes go
+# through the service role; reads are plain public URLs the browser loads.
+IMAGE_BUCKET = "item-images"
+IMAGE_EXT = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/gif": ".gif",
+    "image/heic": ".heic",
+}
 
 # Per-case view (kept for the recommender and the case-scoped Inventory page)
 case_bp = Blueprint("case_items", __name__, url_prefix="/cases/<case_id>/items")
@@ -37,10 +51,27 @@ WRITABLE = {
     "damage_severity",
     "confidence",
     "image_url",
+    "photo_url",
+    "before_url",
+    "after_url",
     "description",
     "room",
     "case_id",
 }
+
+
+def _insert_item(sb, row):
+    """Insert a case_items row, turning a DB error into a clean 4xx/5xx
+    instead of an opaque 500. The common cause of a failed insert here is a
+    column missing on the deployed DB (run the migrations) or an RLS denial.
+    """
+    try:
+        res = sb.table("case_items").insert(row).execute()
+    except Exception as exc:  # noqa: BLE001 — surface the real cause to the client
+        return None, (jsonify({"error": f"could not save item: {exc}"}), 500)
+    if not res.data:
+        return None, (jsonify({"error": "item was not saved"}), 500)
+    return res.data[0], None
 
 
 # ---------------------------------------------------------------------------
@@ -70,8 +101,41 @@ def create_item_for_case(case_id: str):
     row["case_id"] = case_id
     row["user_id"] = g.user_id
     sb = user_client(g.access_token)
-    res = sb.table("case_items").insert(row).execute()
-    return jsonify({"item": res.data[0] if res.data else None}), 201
+    item, error = _insert_item(sb, row)
+    if error:
+        return error
+    return jsonify({"item": item}), 201
+
+
+@case_bp.post("/bulk")
+@require_auth
+def create_items_bulk(case_id: str):
+    """Insert many items for a case in one round-trip.
+
+    The photo-scan flow drafts a whole room at once; saving them one POST at a
+    time was slow and non-atomic (a failure midway left a partial save). This
+    inserts the batch in a single call.
+    """
+    data = request.get_json(silent=True) or {}
+    items = data.get("items")
+    if not isinstance(items, list) or not items:
+        return jsonify({"error": "items array is required"}), 400
+
+    rows = []
+    for it in items:
+        if not isinstance(it, dict) or not it.get("name"):
+            return jsonify({"error": "each item needs a name"}), 400
+        row = {k: v for k, v in it.items() if k in WRITABLE}
+        row["case_id"] = case_id
+        row["user_id"] = g.user_id
+        rows.append(row)
+
+    sb = user_client(g.access_token)
+    try:
+        res = sb.table("case_items").insert(rows).execute()
+    except Exception as exc:  # noqa: BLE001 — surface the real cause
+        return jsonify({"error": f"could not save items: {exc}"}), 500
+    return jsonify({"items": res.data or []}), 201
 
 
 @case_bp.patch("/<item_id>")
@@ -139,8 +203,47 @@ def create_library_item():
     row["user_id"] = g.user_id
     # If the caller didn't pass case_id, the item lives in the library only.
     sb = user_client(g.access_token)
-    res = sb.table("case_items").insert(row).execute()
-    return jsonify({"item": res.data[0] if res.data else None}), 201
+    item, error = _insert_item(sb, row)
+    if error:
+        return error
+    return jsonify({"item": item}), 201
+
+
+@lib_bp.post("/upload-image")
+@require_auth
+def upload_item_image():
+    """Upload an item photo and return its public URL.
+
+    The frontend uploads the blob, gets back a URL, then stores that URL in
+    one of the item's image columns (photo_url / before_url / after_url) via
+    create or PATCH. Keeping the upload separate means a photo can be attached
+    to a draft before the item row exists.
+    """
+    if "image" not in request.files:
+        return jsonify({"error": "image file is required"}), 400
+    f = request.files["image"]
+    if not f or not f.filename:
+        return jsonify({"error": "image file is required"}), 400
+
+    mime = (f.mimetype or "").lower()
+    if mime not in IMAGE_EXT:
+        return jsonify({"error": "unsupported image type"}), 415
+
+    blob = f.read()
+    if not blob:
+        return jsonify({"error": "empty image"}), 400
+
+    storage_path = f"{g.user_id}/{uuid.uuid4()}{IMAGE_EXT[mime]}"
+    svc = service_client()
+    try:
+        svc.storage.from_(IMAGE_BUCKET).upload(
+            storage_path, blob, {"content-type": mime, "upsert": "false"}
+        )
+    except Exception as exc:  # noqa: BLE001 — surface the real cause
+        return jsonify({"error": f"upload failed: {exc}"}), 500
+
+    public_url = svc.storage.from_(IMAGE_BUCKET).get_public_url(storage_path)
+    return jsonify({"url": public_url}), 201
 
 
 @lib_bp.patch("/<item_id>")
