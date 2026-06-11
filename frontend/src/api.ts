@@ -93,6 +93,17 @@ export type GeminiAnalysis = {
   [key: string]: unknown;
 };
 
+export type Alert = {
+  id: string;
+  title: string;
+  message: string;
+  send_notification?: boolean;
+  severity?: string;
+  regions?: string[];
+  published_at?: string | null;
+  [key: string]: unknown;
+};
+
 export type UserDocument = {
   id: string;
   name: string;
@@ -277,4 +288,5 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ version }),
     }),
+  listAlerts: () => request<{ alerts: Alert[] }>("/alerts"),
 };

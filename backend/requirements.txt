@@ -10,6 +10,11 @@ gunicorn==23.0.0
 google-genai==0.3.0
 Pillow==11.0.0
 pydantic==2.9.2
+<<<<<<< HEAD
 # After install, download the model: python -m spacy download en_core_web_sm
 PyMuPDF==1.26.0
 spacy>=3.7.5
+=======
+requests>=2.28
+pydantic==2.9.2
+>>>>>>> 4ea3c4f52b7c2a2ef6584334627d7149a9c3c80e

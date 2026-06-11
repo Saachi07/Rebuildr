@@ -19,6 +19,7 @@ def create_app(config_class: type = Config) -> Flask:
     from .blueprints.items import case_bp as case_items_bp, lib_bp as items_lib_bp
     from .blueprints.recommendations import bp as recs_bp
     from .blueprints.documents import bp as documents_bp
+    from .blueprints.alerts import bp as alerts_bp
     from .blueprints.ml import bp as ml_bp
     from .blueprints.terms import bp as terms_bp
     from .blueprints.me import bp as me_bp
@@ -30,6 +31,7 @@ def create_app(config_class: type = Config) -> Flask:
     app.register_blueprint(items_lib_bp)
     app.register_blueprint(recs_bp)
     app.register_blueprint(documents_bp)
+    app.register_blueprint(alerts_bp)
     app.register_blueprint(ml_bp)
     app.register_blueprint(terms_bp)
     app.register_blueprint(me_bp)
