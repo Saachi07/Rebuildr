@@ -170,6 +170,10 @@ The original requested document-processing deliverables were:
 - [x] `_PERSON_FP_WORDS` extended with room/area names (`kitchen`, `pantry`, `bedroom`, `bathroom`, `garage`, `basement`, `hallway`, `laundry`) — prevents spaCy from tagging room-name values from OCR "Room /Area:" fields (e.g. `"Kitchen + pantry"`) as PERSON placeholders; also adds org-indicator words (`insurance`, `company`) to guard against the new `Claimant`/`Prepared by` labels capturing insurer names as person names
 - [x] `_PERSON_FIELD_RE` extended with `Claimant` and `Prepared by` labels — catches preparer and claimant names on inventory and ALE receipt forms (e.g. `"Claimant: Danielle Rivera"`, `"Prepared by: Danielle Rivera"`) that spaCy's NER misses in dense OCR table contexts; `Claimant` scoped to colon/newline separator so mid-sentence `"the claimant must"` cannot match; `_PERSON_FP_WORDS` guards prevent org names from being captured
 - [x] Whitespace-normalized alias registration added in `Redactor.redact()` — after building `original_to_ph`, iterates entries and registers a space-normalized alias (newlines → single space) for any original containing newline characters; fixes PII leak in `date_sentences`/`top_sentences` when spaCy tags a name spanning an OCR line break (e.g. `"Marta Kowalski\nSigned"`) so `redact_text()` exact-match also catches the space-joined form that appears in spaCy sentence strings
+- [x] `_PERSON_FP_WORDS` extended with `proofs` — prevents spaCy from tagging the word immediately before `"and Proofs"` as a PERSON entity in documents using `"Documents and Proofs"` as a section heading (session-7 FP fix)
+- [x] `_person_spans()` updated to strip leading tokens that appear in `_PERSON_FP_WORDS` from PERSON entity spans before applying the FP-word filter — handles contact-table rows like `"Disaster Health Adjuster Samira Cole"` where spaCy includes the job title in the entity boundary; strategy: find the last FP-word token in the span and take everything after it as the actual name; char offsets recomputed by searching for the trimmed name within the entity region (session-7 FN fix for `Samira Cole`, `Andre Wu`, `Keira Holt`)
+- [x] `_POLICY_NUMBER_RE` extended with two new alternatives: `[A-Z]{2,6}-\d{2,4}-\d{4,6}-[A-Z]{1,3}` (catches `AUTO-74-39928-AB` style: letters–digits–digits–letters) and `[A-Z]{2,6}-[A-Z]\d{1,3}-\d{4,8}-[A-Z]{1,3}` (catches `LIFE-T20-991204-BC` style: letters–letter+digits–digits–letters); comment updated from "three" to "five" formats (session-7 FN fix)
+- [x] Gemini `SYSTEM_PROMPT` overland-water `flagged_issues` rule scoped to property policies only — added explicit guard: `"Do NOT apply this rule for auto insurance, life insurance, or health insurance claim documents — the Overland Water endorsement only exists on home, property, condominium, and tenant/renter insurance policies."` (session-7 cross-domain FP fix)
 
 ### Not Implemented
 
@@ -379,7 +383,7 @@ pip install -r pdf_and_summary/requirements-nlp.txt
 python -m spacy download en_core_web_sm
 ```
 
-Disable NLP with `--no-nlp` on the CLI or `use_nlp=False` in `process_pdf()`.
+Disable NLP programmatically with `use_nlp=False` in `process_pdf()`.
 
 ### NLP Result Shape
 
@@ -430,10 +434,9 @@ field in the result leaks PII, regardless of the `--no-rehydrate` setting.
 
 ### Recommended mode
 
-**Use `--redact-pii` (with rehydration, the default)** for user-facing output.
-The summary reads naturally with real names and address restored. Use
-`--no-rehydrate` only for log storage or backend pipelines where anonymised
-output is required.
+PII redaction with rehydration is always on. Gemini never sees personal
+identifiers; the `plain_language_summary` is rehydrated so it reads naturally
+with real names and addresses restored.
 
 ### Design: Option 2 (Redact + Rehydrate)
 
@@ -574,11 +577,8 @@ statistics — original values are never serialised:
 ### CLI Usage
 
 ```bash
-# Redact PII before Gemini; rehydrate summary for natural user-facing output
-python3 -m pdf_and_summary.cli --redact-pii /path/to/document.pdf
-
-# Redact and keep placeholders in output (safe for logs / backend storage)
-python3 -m pdf_and_summary.cli --redact-pii --no-rehydrate /path/to/document.pdf
+# PII is always redacted before Gemini; summary is rehydrated automatically.
+python3 -m pdf_and_summary.cli /path/to/document.pdf
 ```
 
 ### Programmatic Usage
@@ -665,13 +665,12 @@ like a successful Gemini run.
 
 That behavior was changed:
 
-- Normal analysis now requires Gemini configuration.
+- Analysis always requires Gemini configuration.
 - The CLI automatically loads `.env` from the repository root.
 - `--env-file /path/to/file` loads a different environment file.
 - Shell environment values take precedence over environment-file values.
 - The selected provider is printed to stderr before analysis.
-- A missing key now produces an actionable error.
-- Local analysis must be explicitly requested with `--local`.
+- A missing key produces an actionable error.
 
 Expected Gemini provider message:
 
@@ -1038,10 +1037,10 @@ required.
 
 Provides a command-line runner with:
 
-- Normal strict Gemini analysis
-- `--local` mode
-- `--extract-only` mode
-- `--env-file` mode
+- Gemini analysis (always-on; key required)
+- PII redaction and rehydration (always-on)
+- `--no-ocr` to disable PaddleOCR fallback
+- `--env-file` to load a custom environment file
 - User-friendly errors
 - Non-zero exit status on failure
 - Selected provider reporting on stderr
@@ -1148,42 +1147,6 @@ use. This requires internet access and can take several minutes.
 
 Use a native PDF containing selectable text.
 
-### Check Extraction Only
-
-```bash
-python3 -m pdf_and_summary.cli --extract-only /full/path/to/document.pdf
-```
-
-Expected output:
-
-- JSON printed to the terminal
-- `extraction.text` contains page-labelled text
-- `page_count` matches the PDF
-- `pages_with_text` is greater than zero
-- `warnings` is empty for a normal text PDF
-
-To explicitly disable OCR:
-
-```bash
-python3 -m pdf_and_summary.cli --extract-only --no-ocr /full/path/to/document.pdf
-```
-
-### Check Local Analysis Without Gemini
-
-```bash
-python3 -m pdf_and_summary.cli --local /full/path/to/document.pdf
-```
-
-Expected output:
-
-- Extraction metadata
-- `summary.plain_language_summary`
-- `summary.flagged_issues`
-- `summary.deadlines`
-- `summary.coverage_limits`
-- `summary.required_actions`
-- `summary.provider` equals `local-extractive`
-
 ### Check Live Gemini Analysis
 
 Create a Gemini API key in Google AI Studio, then run:
@@ -1214,12 +1177,12 @@ Expected output:
 ### Check Scanned or Image-Only PDF OCR
 
 ```bash
-python3 -m pdf_and_summary.cli --extract-only /full/path/to/scanned-document.pdf
+python3 -m pdf_and_summary.cli /full/path/to/scanned-document.pdf
 ```
 
 Expected result:
 
-- PaddleOCR runs for pages without selectable text.
+- PaddleOCR runs automatically for pages without selectable text.
 - OCR-derived text appears under a page label ending in `(ocr)`.
 - `ocr_pages` is greater than zero.
 - `ocr_engine` is `paddleocr`.
@@ -1228,7 +1191,7 @@ Expected result:
 To check behavior without OCR:
 
 ```bash
-python3 -m pdf_and_summary.cli --extract-only --no-ocr /full/path/to/scanned-document.pdf
+python3 -m pdf_and_summary.cli --no-ocr /full/path/to/scanned-document.pdf
 ```
 
 ### View CLI Help
@@ -1237,16 +1200,10 @@ python3 -m pdf_and_summary.cli --extract-only --no-ocr /full/path/to/scanned-doc
 python3 -m pdf_and_summary.cli --help
 ```
 
-Available modes:
+Available flags:
 
 ```text
---local           Force local analysis (skip Gemini)
---extract-only    Extraction only, no summary
 --no-ocr          Disable PaddleOCR fallback
---markitdown      Use MarkItDown for structured Markdown extraction
---no-nlp          Skip spaCy NLP entity extraction
---redact-pii      Replace personal identifiers with placeholders before Gemini
---no-rehydrate    Keep placeholders in output (use with --redact-pii for logs)
 --env-file        Load a custom .env file
 ```
 
@@ -1423,6 +1380,10 @@ summarises the outcome of each approach.
 | `ocr7.pdf run` | `--redact-pii` on adjuster field notes (post-ocrtest2 fix) | ⚠️ partial†† | ✅ Yes | ✅ Clean | n/a — different doc |
 | `ocr8.pdf run` | `--redact-pii` on ALE receipt summary (post-ocrtest2 fix) | ✅ clean | ✅ Yes | ✅ Clean | n/a — different doc |
 | `ocr9.pdf run` | `--redact-pii` on sworn proof of loss (post-ocrtest2 fix) | ✅ clean | ✅ Yes | ✅ Clean | n/a — different doc |
+| `gemini_01_auto.txt` | `--redact-pii` on auto flood claim (session-7, gemini-3.1-flash-lite) | ⚠️ partial‡ | ✅ Yes | ✅ Clean | n/a — different doc |
+| `gemini_02_health.txt` | `--redact-pii` on health disaster injury claim (session-7, gemini-3.1-flash-lite) | ⚠️ partial‡‡ | ✅ Yes | ✅ Clean | n/a — different doc |
+| `gemini_03_life.txt` | `--redact-pii` on life disaster death claim (session-7, gemini-3.1-flash-lite) | ⚠️ partial‡‡‡ | ✅ Yes | ✅ Clean | n/a — different doc |
+| `gemini_05_tenant.txt` | `--redact-pii` on tenant/renter apartment damage claim (session-7, gemini-3.1-flash-lite) | ⚠️ partial§ | ✅ Yes | ✅ Clean | n/a — different doc |
 
 **Current best: `--redact-pii` with rehydration. Redaction scores 100% precision / 100% recall / 100% F1 across the original five evaluated documents.**
 
@@ -1433,6 +1394,14 @@ summarises the outcome of each approach.
 † ocr6.pdf: `"Kitchen + pantry"` false-positive PERSON fixed by adding room names to `_PERSON_FP_WORDS`. `"Danielle Rivera"` (Prepared by field) now caught by `Prepared by` label addition to `_PERSON_FIELD_RE`. Remaining gap: `"D Rivera"` abbreviated claimant signature not redacted (known abbreviated-signature gap, item 15).
 
 †† ocr7.pdf: No person name appears in formal label form — only `"Priya"` (first name only, 1 token, below 2-token minimum) and adjuster initials `"RJT"`. Both are known gaps. Gemini correctly inferred $20,000 from OCR-corrupted `"$2ok"`. `"2ok"` in `money` NLP list is an OCR-error artefact.
+
+‡ gemini_01_auto.txt (auto flood claim): 3 PERSON FPs — vehicle trim/color descriptor, `"[PERSON_3] Diagnostic"` (EV/Hybrid Diagnostic section header), `"[PERSON_4] and Proofs"` (Documents section header) tagged as persons; 1 FN — policy number `AUTO-74-39928-AB` doesn't match any `_POLICY_NUMBER_RE` pattern. Gemini flagged an overland-water endorsement WARNING which is a FP for an auto-insurance document (rule fires for home/property claims only). Inconsistent vehicle-starting-statement risk not flagged despite being explicitly marked in the document.
+
+‡‡ gemini_02_health.txt (health disaster injury claim): 2 PERSON FPs — department-name fragment in insurer header, hotel/lodge name in narrative tagged as persons; 1 FN — adjuster `Samira Cole` not redacted (likely spaCy tags `"Disaster Health Adjuster Samira Cole"` as a single span, which is then filtered by `adjuster` in `_PERSON_FP_WORDS`). Other-insurance-disclosure explicitly flagged in document not mirrored in `flagged_issues`.
+
+‡‡‡ gemini_03_life.txt (life disaster death claim): 3 PERSON FPs — building number/street name in insurer header, `"[PERSON_3] and Proofs"` section heading, payment-option header tagged as persons; 3 FNs — beneficiary `Leah M. Brenner` not redacted (appears in narrative, not a labeled field), examiner `Andre Wu` not redacted (same job-title span filter issue as ‡‡), policy number `LIFE-T20-991204-BC` not matched. Unsigned beneficiary-change email not flagged.
+
+§ gemini_05_tenant.txt (tenant/renter apartment damage claim): 1 PERSON FP — `"[PERSON_3] and Proofs"` section heading; 1 FN — adjuster `Keira Holt` not redacted (same job-title span filter issue). ALE 12-month duration cap missing from `deadlines`. Flood/sewer-backup exclusion correctly noted but coded as `WARNING` in `flagged_issues` instead of `warnings` for a claim already coded as storm/roof-opening; landlord-property exclusion explicitly flagged in document but only in `warnings`, not `flagged_issues`.
 
 `result5.txt` confirmed that extraction and NLP fields were correctly redacted after
 the first round of fixes, but exposed three remaining issues that were fixed in a
@@ -1639,6 +1608,46 @@ Remaining known redaction gaps (lower priority):
 The zero-flagged-issues regression in `results_without_markdown2.txt` was caused
 by Gemini temperature variance at `0.1`. Fixed by setting temperature to `0.0`.
 
+### F1 Evaluation Results (Session 7 — four new fictional sample PDFs, gemini-3.1-flash-lite)
+
+Four new multi-domain insurance/claim PDFs were evaluated against manually-derived
+ground truth using `--redact-pii` with `gemini-3.1-flash-lite`.
+
+| Component | 01_auto (Auto flood) | 02_health (Health disaster) | 03_life (Life death claim) | 05_tenant (Renter storm) |
+|---|---|---|---|---|
+| **Redaction** | ~0.778 | ~0.824 | ~0.700 | ~0.900 |
+| **Deadlines** | 1.00 | 1.00 | 1.00 | ~0.909 |
+| **Coverage limits** | ~0.857 | 1.00 | 1.00 | 1.00 |
+| **Required actions** | 1.00 | 1.00 | 1.00 | 1.00 |
+| **Warnings** | ~0.800 | ~0.909 | ~0.909 | ~0.800 |
+| **Flagged issues** | ~0.572 | ~0.857 | ~0.889 | ~0.750 |
+| **Macro F1** | **~0.835** | **~0.932** | **~0.916** | **~0.893** |
+
+**Overall mean macro F1 across four new documents: ~0.894**
+
+Note: model was `gemini-3.1-flash-lite` (configured in `.env`), not `gemini-2.5-flash`.
+Summary quality components (deadlines, coverage limits, required actions) remain excellent.
+Redaction and flagged-issues components drive the lower scores.
+
+Redaction issues across these four documents:
+
+- **01_auto (0.778)** — 3 FPs: vehicle trim/color descriptor, `"EV Diagnostic"` section header, `"Documents and Proofs"` section header tagged as persons; 1 FN: `AUTO-74-39928-AB` policy number doesn't match any `_POLICY_NUMBER_RE` pattern
+- **02_health (0.824)** — 2 FPs: department-name fragment in insurer header, hotel name in loss narrative; 1 FN: adjuster `Samira Cole` not caught — root cause: spaCy tags `"Disaster Health Adjuster Samira Cole"` as one span, `adjuster` in `_PERSON_FP_WORDS` filters the whole entity
+- **03_life (0.700)** — 3 FPs: building-number/street token in insurer address, `"Documents and Proofs"` header, payment-option label; 3 FNs: beneficiary `Leah M. Brenner` not caught (appears in narrative, not a labeled field), examiner `Andre Wu` not caught (same job-title span issue), `LIFE-T20-991204-BC` policy number not matched
+- **05_tenant (0.900)** — 1 FP: `"Documents and Proofs"` header; 1 FN: adjuster `Keira Holt` not caught (same job-title span issue)
+
+New recurring patterns found in session 7:
+
+1. **"[X] and Proofs" section-header FP** — spaCy tags the word before `"and Proofs"` as a PERSON entity (fires in 01, 03, 05). The fix is to add `proofs` to `_PERSON_FP_WORDS` so any span containing that word is filtered.
+2. **Job-title span contamination FN** — when a contact-table row reads `"Role Title FirstName LastName phone|email"`, spaCy sometimes includes the role title in the PERSON entity boundary (e.g. `"Disaster Health Adjuster Samira Cole"`). The `_PERSON_FP_WORDS` check then rejects the whole span because it contains `adjuster`, leaving the actual name unredacted. Affects 02, 03, 05. Fix: strip leading job-title tokens (words in `_PERSON_FP_WORDS`) from the front of a PERSON span before applying the FP filter, then re-check.
+3. **Non-standard policy-number formats FN** — `AUTO-74-39928-AB` (letters–digits–digits-letters) and `LIFE-T20-991204-BC` (letters–alphanumeric–digits–letters) don't match the three existing `_POLICY_NUMBER_RE` alternatives. Extend regex with additional patterns.
+4. **Cross-domain overland-water FP** — the overland-water endorsement `flagged_issues` rule fires for an auto insurance document (`01_auto`). Rule should scope to property/home/renter coverage types only.
+
+Flagged-issue pattern (session 7):
+
+- All four documents' deadlines and required actions scored 1.00 — the Gemini SYSTEM_PROMPT handles these well even for non-property claim types (health, life, auto).
+- `flagged_issues` is the weakest component across the session (0.57–0.89), driven by: domain-wrong FPs (overland-water on auto), missed explicit document-flagged issues, and occasional warnings/flags categorization disagreements.
+
 ## Current Limitations
 
 ### Standalone Scanned Files
@@ -1776,6 +1785,10 @@ Recommended follow-up work:
     the dedup set only checks if the key was seen before, not if the sentence
     object identity was already added. Same root cause as item 19; fix both
     together by deduplicating on `id(sent)` before appending.
+25. ~~Fix `"[X] and Proofs"` section-header PERSON FP (session-7)~~ — **Fixed** (`"proofs"` added to `_PERSON_FP_WORDS`).
+26. ~~Fix job-title span contamination FN (session-7)~~ — **Fixed** (`_person_spans()` now strips leading `_PERSON_FP_WORDS` tokens from entity boundaries before applying the FP filter; `Samira Cole`, `Andre Wu`, `Keira Holt` now caught).
+27. ~~Extend `_POLICY_NUMBER_RE` with additional formats (session-7)~~ — **Fixed** (two new alternatives added for `AUTO-74-39928-AB` and `LIFE-T20-991204-BC` style numbers).
+28. ~~Scope overland-water endorsement `flagged_issues` rule to property claims only (session-7)~~ — **Fixed** (explicit auto/life/health exclusion guard added to `SYSTEM_PROMPT`).
 
 ## OCR Implementation Reference
 

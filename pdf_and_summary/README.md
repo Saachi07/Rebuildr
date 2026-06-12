@@ -2,9 +2,9 @@
 
 This package extracts text from multi-page PDFs and produces a structured,
 plain-language summary. Native PDF text is preferred; pages without selectable
-text use PaddleOCR when the optional OCR dependencies are installed. Normal
-CLI analysis requires Gemini configuration. The conservative local extractive
-summary is available only when `--local` is explicitly used.
+text use PaddleOCR when the optional OCR dependencies are installed. Gemini
+configuration is required. PII is always redacted before sending text to Gemini
+and rehydrated in the final summary.
 
 The result contract matches the Documents Page UX in
 `claude_documents_page_prompt.md`:
@@ -21,7 +21,7 @@ source .venv/bin/activate
 python3 -m pip install -r pdf_and_summary/requirements-ocr.txt
 python3 -m pip install -r pdf_and_summary/requirements-nlp.txt
 python3 -m spacy download en_core_web_sm
-export GEMINI_API_KEY="your-key"        # optional
+export GEMINI_API_KEY="your-key"        # required
 export GEMINI_MODEL="gemini-2.5-flash"  # optional
 ```
 
@@ -42,22 +42,15 @@ selected summary provider to stderr before analysis.
 ## Usage
 
 ```bash
-# Verify PDF text extraction only
-python3 -m pdf_and_summary.cli --extract-only path/to/document.pdf
-
-# Verify native extraction without running OCR
-python3 -m pdf_and_summary.cli --extract-only --no-ocr path/to/document.pdf
-
-# Verify extraction plus the local summary without an API key
-python3 -m pdf_and_summary.cli --local path/to/document.pdf
-
-# Verify extraction plus the Gemini wrapper
-export GEMINI_API_KEY="your-key"
+# Redact PII and summarize a PDF using Gemini (OCR runs automatically for scanned pages)
 python3 -m pdf_and_summary.cli path/to/document.pdf
+
+# Disable PaddleOCR fallback (text-extractable PDFs only)
+python3 -m pdf_and_summary.cli --no-ocr path/to/document.pdf
 ```
 
-The Gemini wrapper uses structured JSON responses, validates the result shape,
-and retries temporary service or rate-limit failures.
+PaddleOCR runs automatically for pages without selectable text. Scanned PDFs
+and native-text PDFs are processed the same way — OCR is a transparent fallback.
 
 You can configure Gemini in the ignored local `.env`:
 

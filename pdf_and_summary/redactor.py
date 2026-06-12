@@ -57,12 +57,20 @@ class RedactionMap:
         return bool(self._entries)
 
 
-# Policy / claim numbers — three common formats:
-#   ASI-2024-00847  (letters – 4-digit year – 5+ digits)
-#   TD-HM-456789    (letters – letters – 5+ digits, e.g. TD Insurance)
-#   HOP-884-19A     (letters – digits – digits + letter suffix, e.g. Prairie Mutual)
+# Policy / claim numbers — five common formats:
+#   ASI-2024-00847     (letters – 4-digit year – 5+ digits)
+#   TD-HM-456789       (letters – letters – 5+ digits, e.g. TD Insurance)
+#   HOP-884-19A        (letters – digits – digits + letter suffix, e.g. Prairie Mutual)
+#   AUTO-74-39928-AB   (letters – 2–4 digits – 4–6 digits – 1–3 letters, e.g. auto policies)
+#   LIFE-T20-991204-BC (letters – letter+1–3 digits – 4–8 digits – 1–3 letters, e.g. life policies)
 _POLICY_NUMBER_RE = re.compile(
-    r"\b(?:[A-Z]{2,5}-\d{4}-\d{5,}|[A-Z]{2,5}-[A-Z]{2,5}-\d{5,}|[A-Z]{2,5}-\d{2,4}-\d{2,4}[A-Z]{1,2})\b"
+    r"\b(?:"
+    r"[A-Z]{2,5}-\d{4}-\d{5,}"
+    r"|[A-Z]{2,5}-[A-Z]{2,5}-\d{5,}"
+    r"|[A-Z]{2,5}-\d{2,4}-\d{2,4}[A-Z]{1,2}"
+    r"|[A-Z]{2,6}-\d{2,4}-\d{4,6}-[A-Z]{1,3}"
+    r"|[A-Z]{2,6}-[A-Z]\d{1,3}-\d{4,8}-[A-Z]{1,3}"
+    r")\b"
 )
 
 # Legal descriptions: various orderings of Lot/Block/Plan used in Alberta
@@ -144,24 +152,48 @@ _PERSON_FP_WORDS = frozenset({
     # Organization-indicator words — guard against "Prepared by" / "Claimant"
     # labeled-field regex capturing an insurer or broker name as a person
     "insurance", "company",
+    # Document-section heading fragments mis-tagged as PERSON
+    # (e.g. "Required Documents and Proofs" section heading causes spaCy to
+    # tag "Required Documents" as a two-token PERSON entity)
+    "proofs", "documents", "document", "required",
 })
 
 # Trailing form-label tokens that spaCy sometimes folds into PERSON entity
 # boundaries when PDF table layout places the label on the very next line
 # (e.g. "Sarah Thompson\nAddress" → trim to "Sarah Thompson").
+# Also strips trailing phone/extension sequences on the next line
+# (e.g. "Andre Wu\n1-866-555-0448" → trim to "Andre Wu").
 _PERSON_TRAILING_LABEL_RE = re.compile(
-    r"[\s,]*\b(?:Address|Phone|Email|Date|Signature|Occupation|Witness)\b\s*$",
+    r"[\s,]*\b(?:Address|Phone|Email|Date|Signature|Occupation|Witness)\b\s*$"
+    r"|[\s]*\n\s*[\d\+][\d\s\-().+ext.]{6,}$",
     re.IGNORECASE,
 )
 
 # Person names captured directly from labeled form fields (e.g. "Last Name: Johnson"
 # or "Last Name\nJohnson" — colon optional for table-layout forms where label and
 # value appear in adjacent cells with no colon separator).
+# "Claimant / Beneficiary" and "Beneficiary" variants catch life/health claim forms.
 _PERSON_FIELD_RE = re.compile(
-    r"(?:Last Name|First Name|Full Name|Print Name|Named Insured|Insured|Claimant|Prepared by)"
+    r"(?:Last Name|First Name|Full Name|Print Name|Named Insured|Insured"
+    r"|Claimant(?:\s*/\s*Beneficiary)?|Beneficiary|Prepared by)"
     r"(?:[ \t]*:[ \t]*\n?[ \t]*|[ \t]*\n[ \t]*)"
     r"([A-Za-z][a-zA-Z'\-.]+(?:[ \t]+[A-Za-z][a-zA-Z'\-.]+)*)",
     re.IGNORECASE,
+)
+
+# Names in contact-information tables where spaCy never sees the name because
+# the table layout presents each field on its own line:
+#   Disaster Health Adjuster
+#   Samira Cole
+# The pattern matches a line ending with a recognised job-title word (the last word
+# of the role description) followed immediately by a 2+-token capitalised name.
+_CONTACT_TABLE_ROLES_RE = re.compile(
+    r"^(?:[A-Z][a-zA-Z]*[ \t]+){0,4}"
+    r"(?:Adjuster|Inspector|Coordinator|Examiner|Specialist|Supervisor"
+    r"|Analyst|Advisor|Consultant|Representative|Officer|Director|Manager|Handler|Reviewer)"
+    r"[ \t]*$\n"
+    r"^([A-Z][a-z]+[ \t]+(?:[A-Z]\.[ \t]+)?[A-Z][a-z]+(?:[ \t]+[A-Z][a-z]+)?)[ \t]*$",
+    re.MULTILINE,
 )
 
 
@@ -193,6 +225,19 @@ class Redactor:
 
         # Pure-regex field extractor: catches split Last/First Name entries spaCy misses.
         for m in _PERSON_FIELD_RE.finditer(text):
+            name = m.group(1).strip()
+            if not name or not name[0].isupper():
+                continue
+            if re.search(r"\d", name):
+                continue
+            if any(w in name.lower() for w in _PERSON_FP_WORDS):
+                continue
+            spans.append((m.start(1), m.end(1), "PERSON", name))
+
+        # Contact-table extractor: catches adjuster/examiner names in table layouts
+        # where each field occupies its own line (spaCy never forms a PERSON entity
+        # here because the name line has no surrounding sentence context).
+        for m in _CONTACT_TABLE_ROLES_RE.finditer(text):
             name = m.group(1).strip()
             if not name or not name[0].isupper():
                 continue
@@ -309,6 +354,19 @@ def _person_spans(text: str) -> list[tuple[int, int, str, str]]:
 
         # Strip leading non-alpha chars (bullets, punctuation) spaCy folds into entity bounds.
         clean = re.sub(r"^[^a-zA-Z]+", "", val)
+
+        # Strip leading tokens that appear in _PERSON_FP_WORDS — handles contact table rows
+        # where spaCy includes the job title in the entity span boundary.
+        # Strategy: find the LAST FP-word token in the span and take everything after it.
+        # "Disaster Health Adjuster Samira Cole" → last FP token = "Adjuster" → "Samira Cole"
+        tokens = clean.split()
+        last_fp_idx = -1
+        for i, tok in enumerate(tokens):
+            if tok.rstrip(".,;:").lower() in _PERSON_FP_WORDS:
+                last_fp_idx = i
+        if last_fp_idx >= 0:
+            clean = " ".join(tokens[last_fp_idx + 1:])  # empty → filtered by min_words below
+
         if len(clean.split()) < _PERSON_MIN_WORDS:
             continue
         # Reject all-lowercase spans ("sonic booms") that spaCy mislabels as PERSON.
@@ -320,14 +378,18 @@ def _person_spans(text: str) -> list[tuple[int, int, str, str]]:
         if any(w in clean.lower() for w in _PERSON_FP_WORDS):
             continue
 
-        # Recompute end_char after trailing label was stripped.
-        if m_trail:
-            leading_ws = len(ent.text) - len(ent.text.lstrip())
-            end_char = ent.start_char + leading_ws + len(val)
+        # Locate `clean` within the entity boundary for accurate char offsets.
+        found = text.find(clean, ent.start_char, ent.end_char + len(clean))
+        if found != -1:
+            start_char = found
+            end_char = found + len(clean)
         else:
-            end_char = ent.end_char
+            # Fallback: derive offsets from entity bounds.
+            leading_ws = len(ent.text) - len(ent.text.lstrip())
+            start_char = ent.start_char + leading_ws
+            end_char = (ent.start_char + leading_ws + len(val)) if m_trail else ent.end_char
 
-        spans.append((ent.start_char, end_char, "PERSON", val))
+        spans.append((start_char, end_char, "PERSON", clean))
     return spans
 
 
