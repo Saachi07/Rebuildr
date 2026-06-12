@@ -12,8 +12,9 @@ PaddleOCR) are imported lazily inside the package, so a missing dependency only
 fails when we actually call the pipeline — which we catch and degrade from.
 
 OCR is intentionally disabled: native, text-based PDFs are the common case and
-Paddle is a very heavy optional install. PII redaction is off because the
-summary is shown back to the document's own owner.
+Paddle is a very heavy optional install. PII redaction is on so personal
+identifiers never reach the Gemini API in plaintext; the summary shown back to
+the owner is rehydrated locally after the API call.
 """
 
 from __future__ import annotations
@@ -60,7 +61,7 @@ def analyze_document_rich(pdf_bytes: bytes, api_key: str) -> dict[str, Any]:
             prefer_gemini=True,
             use_ocr=False,
             use_nlp=True,
-            redact_pii=False,
+            redact_pii=True,
         )
     except Exception as exc:  # noqa: BLE001 — any pipeline failure → degrade
         raise PipelineUnavailable(str(exc)) from exc

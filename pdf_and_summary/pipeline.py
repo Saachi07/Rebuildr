@@ -62,13 +62,27 @@ def process_pdf(
         nlp_analysis=nlp_analysis,
     )
 
-    # Rehydrate plain_language_summary only — structured fields (flagged_issues,
-    # warnings, required_actions, coverage_limits, deadlines) use generic language
-    # and almost never echo back personal identifiers.
+    # Rehydration happens locally after the API call, so placeholders that Gemini
+    # echoes into any output field can be safely swapped back to the originals.
     if redact_pii and rehydrate and rmap:
         summary = dataclasses.replace(
             summary,
             plain_language_summary=rmap.rehydrate(summary.plain_language_summary),
+            flagged_issues=[
+                dataclasses.replace(issue, message=rmap.rehydrate(issue.message))
+                for issue in summary.flagged_issues
+            ],
+            deadlines=[
+                dataclasses.replace(
+                    deadline,
+                    task=rmap.rehydrate(deadline.task),
+                    date=rmap.rehydrate(deadline.date),
+                )
+                for deadline in summary.deadlines
+            ],
+            coverage_limits=[rmap.rehydrate(s) for s in summary.coverage_limits],
+            required_actions=[rmap.rehydrate(s) for s in summary.required_actions],
+            warnings=[rmap.rehydrate(s) for s in summary.warnings],
         )
 
     result["summary"] = summary.to_dict()
