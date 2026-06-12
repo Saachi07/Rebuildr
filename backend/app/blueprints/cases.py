@@ -27,6 +27,38 @@ WRITABLE = {
 }
 
 
+def _sync_profile_location(sb, case_row: dict | None) -> None:
+    """A case is often the first place the user types where they live.
+    Mirror its location/region into a blank profile so readiness, regional
+    matching, and alerts all benefit. Existing profile values win; this
+    never overwrites anything the user set themselves, and it never blocks
+    the case write."""
+    if not case_row:
+        return
+    try:
+        loc = case_row.get("location")
+        region = case_row.get("region")
+        if not loc and not region:
+            return
+        prof = (
+            sb.table("profiles")
+            .select("location, region")
+            .eq("id", g.user_id)
+            .maybe_single()
+            .execute()
+        )
+        existing = prof.data or {}
+        patch = {}
+        if loc and not existing.get("location"):
+            patch["location"] = loc
+        if region and not existing.get("region"):
+            patch["region"] = region
+        if patch:
+            sb.table("profiles").update(patch).eq("id", g.user_id).execute()
+    except Exception:
+        pass
+
+
 @bp.get("")
 @require_auth
 def list_cases():
@@ -54,7 +86,9 @@ def create_case():
 
     sb = user_client(g.access_token)
     res = sb.table("recovery_cases").insert(row).execute()
-    return jsonify({"case": res.data[0] if res.data else None}), 201
+    created = res.data[0] if res.data else None
+    _sync_profile_location(sb, created)
+    return jsonify({"case": created}), 201
 
 
 @bp.get("/<case_id>")
@@ -81,6 +115,7 @@ def update_case(case_id: str):
     res = sb.table("recovery_cases").update(row).eq("id", case_id).execute()
     if not res.data:
         return jsonify({"error": "not found"}), 404
+    _sync_profile_location(sb, res.data[0])
     return jsonify({"case": res.data[0]})
 
 

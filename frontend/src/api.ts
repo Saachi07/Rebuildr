@@ -164,6 +164,13 @@ export type RecommendResponse = {
   deadline_radar: Recommendation[];
   personalize_more: PersonalizeHint[];
   empty_categories?: string[];
+  todo?: Recommendation[];
+};
+
+export type ScrapeResult = {
+  sources_checked: number;
+  programs_found: number;
+  programs_added: number;
 };
 
 export type Terms = {
@@ -201,6 +208,8 @@ export const api = {
   getCase: (id: string) => request<{ case: Case }>(`/cases/${id}`),
   createCase: (body: Partial<Case>) =>
     request<{ case: Case }>("/cases", { method: "POST", body: JSON.stringify(body) }),
+  updateCase: (id: string, body: Partial<Case>) =>
+    request<{ case: Case }>(`/cases/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   listItems: (caseId: string) =>
     request<{ items: Item[] }>(`/cases/${caseId}/items`),
   createItem: (caseId: string, body: Partial<Item>) =>
@@ -230,6 +239,11 @@ export const api = {
       `/recommendations/${recId}`,
       { method: "PATCH", body: JSON.stringify({ status }) },
     ),
+  scrapePrograms: (caseId: string) =>
+    request<ScrapeResult>(`/cases/${caseId}/scrape-programs`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
 
   listMyDocuments: () => request<{ documents: UserDocument[] }>("/documents"),
   getDocumentUrl: (id: string) =>

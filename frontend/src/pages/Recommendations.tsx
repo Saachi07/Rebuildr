@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, PersonalizeHint, RecGroups, Recommendation, RecStatus } from "../api";
 import { BackButton } from "../components/BackButton";
+import { IntakeQuestions } from "../components/IntakeQuestions";
 
 // Friendly, recovery-phase-ordered category headers. Raw resource types
 // make poor headings, and the order should follow how recovery actually
@@ -65,6 +66,7 @@ export default function Recommendations() {
   const { id } = useParams();
   const [groups, setGroups] = useState<RecGroups | null>(null);
   const [radar, setRadar] = useState<Recommendation[]>([]);
+  const [todo, setTodo] = useState<Recommendation[]>([]);
   const [topPick, setTopPick] = useState<Recommendation | null>(null);
   const [hints, setHints] = useState<PersonalizeHint[]>([]);
   const [emptyCategories, setEmptyCategories] = useState<string[]>([]);
@@ -83,6 +85,7 @@ export default function Recommendations() {
       const r = await api.getRecommendations(id, 5);
       setGroups(r.by_category ?? {});
       setRadar(r.deadline_radar ?? []);
+      setTodo(r.todo ?? []);
       setTopPick(r.top_pick ?? null);
       setHints(r.personalize_more ?? []);
       setEmptyCategories(r.empty_categories ?? []);
@@ -215,6 +218,45 @@ export default function Recommendations() {
         </div>
       )}
 
+      {!empty && todo.length > 0 && (
+        <div className="card" style={{ borderLeft: "4px solid #6a5a8e" }}>
+          <h3 style={{ marginTop: 0 }}>Your to-do list</h3>
+          <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 13 }}>
+            The steps that matter most right now, with anything deadline-bound
+            at the top. Check them off as you go.
+          </p>
+          {todo
+            .filter((r) => statusOf(r) !== "dismissed")
+            .map((r, i) => {
+              const done = statusOf(r) === "done";
+              return (
+                <div key={`todo-${r.id}`} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
+                  <span style={{ fontSize: 15, opacity: done ? 0.6 : 1 }}>
+                    <strong style={done ? { textDecoration: "line-through" } : undefined}>
+                      {i + 1}. {r.title}
+                    </strong>
+                    {r.days_until_deadline != null && !done && (
+                      <span className="badge" style={{ marginLeft: 8 }}>
+                        {deadlineBadge(r.days_until_deadline)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="spacer" />
+                  {r.rec_id && (
+                    <button
+                      className="secondary"
+                      style={{ whiteSpace: "nowrap" }}
+                      onClick={() => setStatus(r, done ? "suggested" : "done")}
+                    >
+                      {done ? "Not done yet" : "Mark as done"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      )}
+
       {topPick && !empty && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed" && (
         <div className="card" style={{ borderLeft: "4px solid #3a7d44" }}>
           <h3 style={{ marginTop: 0 }}>Start here</h3>
@@ -283,6 +325,8 @@ export default function Recommendations() {
           ))}
         </div>
       )}
+
+      {id && <IntakeQuestions caseId={id} onPlanRefresh={load} />}
     </div>
   );
 }

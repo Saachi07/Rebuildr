@@ -26,8 +26,9 @@ from __future__ import annotations
 from flask import Blueprint, current_app, g, jsonify, request
 
 from ..auth import require_auth
-from ..extensions import user_client
+from ..extensions import service_client, user_client
 from ..services.content_filter import personalize_hints, recommend
+from ..services.program_scraper import scrape_programs_for_case
 from ..services.signals import (
     document_signals_from_documents,
     inventory_signals_from_items,
@@ -176,6 +177,18 @@ def _response_payload(case_id: str, ctx: _Context, grouped) -> dict:
         for t in _ordered_categories(grouped)
     }
 
+    # A short, ordered to-do list: deadline-bound steps first (soonest at
+    # the top), then the strongest remaining matches. The UI renders this
+    # as a checklist wired to the same status endpoint.
+    todo = sorted(
+        actionable,
+        key=lambda r: (
+            r.days_until_deadline is None,
+            r.days_until_deadline if r.days_until_deadline is not None else 0,
+            -r.score,
+        ),
+    )[:8]
+
     # Categories that exist in the catalog but matched nothing, so the UI
     # can say why a section is missing instead of silently omitting it.
     catalog_types = {r.get("type") for r in ctx.resources if r.get("type")}
@@ -198,6 +211,7 @@ def _response_payload(case_id: str, ctx: _Context, grouped) -> dict:
         "groups": by_category,
         "top_pick": top_pick.to_dict() if top_pick else None,
         "deadline_radar": [r.to_dict() for r in radar],
+        "todo": [r.to_dict() for r in todo],
         "empty_categories": empty_categories,
         "personalize_more": personalize_hints(
             ctx.case, ctx.items, ctx.resources, ctx.inventory, ctx.documents,
@@ -258,6 +272,39 @@ def materialize_recommendations(case_id: str):
     payload = _response_payload(case_id, ctx, grouped)
     payload["count"] = len(rows)
     return jsonify(payload)
+
+
+@bp.post("/cases/<case_id>/scrape-programs")
+@require_auth
+def scrape_programs(case_id: str):
+    """Search curated assistance sources for programs matching this case
+    and fold them into the shared catalog. Called by the frontend after the
+    user answers the optional intake questions, so the extra detail they
+    just shared immediately pays off in a richer plan."""
+    ctx, err = _load_context(case_id)
+    if err:
+        return err
+    api_key = current_app.config.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
+    try:
+        sb_service = service_client()
+    except RuntimeError:
+        return jsonify({"error": "catalog updates not configured on server"}), 503
+
+    tags = set(ctx.case.get("derived_tags") or [])
+    if ctx.inventory is not None:
+        tags |= ctx.inventory.tags
+    if ctx.documents is not None:
+        tags |= ctx.documents.tags
+
+    result = scrape_programs_for_case(ctx.case, tags, api_key, sb_service)
+    current_app.logger.info(
+        "program_scrape case=%s sources=%s found=%s added=%s",
+        case_id, result["sources_checked"],
+        result["programs_found"], result["programs_added"],
+    )
+    return jsonify(result)
 
 
 @bp.patch("/recommendations/<rec_id>")

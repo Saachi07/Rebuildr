@@ -58,7 +58,6 @@ export default function NewCase() {
           </label>
           <input
             value={form.case_name}
-            placeholder="e.g. Our house fire"
             onChange={(e) => update("case_name", e.target.value)}
             required
           />
@@ -79,7 +78,7 @@ export default function NewCase() {
 
           <label>
             When did it happen?{" "}
-            <Hint text="Optional — but it helps us flag insurance deadlines that are coming up soon." />
+            <Hint text="Optional - but it helps us flag insurance deadlines that are coming up soon." />
           </label>
           <input
             type="date"
