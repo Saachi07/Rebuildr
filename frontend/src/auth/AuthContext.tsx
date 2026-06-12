@@ -7,8 +7,13 @@ type AuthValue = {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  // Returns whether the account still needs email confirmation (no session yet).
+  signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
+  // Passwordless options — disaster survivors often lose devices and
+  // password notes, so a password should never be the only way in.
+  sendMagicLink: (email: string) => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
 };
 
 const Ctx = createContext<AuthValue | null>(null);
@@ -35,11 +40,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
     },
     signUp: async (email, password) => {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
+      return { needsConfirmation: !data.session };
     },
     signOut: async () => {
       await supabase.auth.signOut();
+    },
+    sendMagicLink: async (email) => {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + import.meta.env.BASE_URL },
+      });
+      if (error) throw error;
+    },
+    sendPasswordReset: async (email) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+      });
+      if (error) throw error;
     },
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

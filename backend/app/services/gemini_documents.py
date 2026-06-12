@@ -26,8 +26,9 @@ DOC_TYPES = (
 )
 
 PROMPT = """You are classifying a personal disaster-recovery document.
+It may arrive as a PDF or as a photo of a paper document.
 
-Read the PDF and return:
+Read the document and return:
 - doc_type: one of insurance_policy, claim, id, deed, receipt, invoice,
   estimate, correspondence, other.
 - title: a short human-readable title for the document.
@@ -75,7 +76,11 @@ class DocumentAnalysis(BaseModel):
     key_fields: list[KeyField] = []
 
 
-def analyze_document(pdf_bytes: bytes, api_key: str) -> DocumentAnalysis:
+def analyze_document(
+    pdf_bytes: bytes,
+    api_key: str,
+    mime_type: str = "application/pdf",
+) -> DocumentAnalysis:
     from google import genai
     from google.genai import types
 
@@ -89,7 +94,7 @@ def analyze_document(pdf_bytes: bytes, api_key: str) -> DocumentAnalysis:
         model="gemini-2.5-flash",
         contents=[
             PROMPT,
-            types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
+            types.Part.from_bytes(data=pdf_bytes, mime_type=mime_type),
         ],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",

@@ -14,3 +14,13 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+// Cache the app shell so the Emergency contacts page works with no signal.
+// Production only — a SW caching dev-server modules is pure confusion.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`)
+      .catch(() => { /* offline support is progressive enhancement */ });
+  });
+}

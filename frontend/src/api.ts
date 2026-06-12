@@ -2,10 +2,33 @@ import { supabase } from "./auth/supabase";
 
 const BASE = (import.meta.env.VITE_API_BASE as string) || "http://127.0.0.1:5000";
 
-async function authHeaders(): Promise<HeadersInit> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+export class ApiError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+export const OFFLINE_MESSAGE =
+  "It looks like you're offline. Your information is safe — check your connection and try again.";
+
+// Every error a user sees should be in plain language, never a status code
+// or a JSON blob. Server-provided `error` strings are already written for
+// humans, so we keep those; everything else gets translated.
+function friendlyMessage(status: number, serverText: string): string {
+  if (status === 401) {
+    return "Your session timed out. Please sign in again — your work is saved.";
+  }
+  if (status === 403) {
+    return "You don't have access to that. Signing out and back in usually fixes this.";
+  }
+  if (status === 404) return "We couldn't find that. It may have been removed.";
+  if (status === 413) return "That file is too large. Try a smaller one.";
+  if (status >= 500) {
+    return "Something went wrong on our side — not your fault. Please try again in a moment.";
+  }
+  return serverText || "Something didn't work. Please try again in a moment.";
 }
 
 // Pull the friendly `{ "error": "..." }` message out of a failed response,
@@ -21,18 +44,71 @@ async function errorText(res: Response): Promise<string> {
   return text;
 }
 
+async function toApiError(res: Response): Promise<ApiError> {
+  const serverText = await errorText(res);
+  return new ApiError(friendlyMessage(res.status, serverText), res.status);
+}
+
+async function authHeaders(): Promise<HeadersInit> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(await authHeaders()),
     ...(init.headers ?? {}),
   };
-  const res = await fetch(`${BASE}${path}`, { ...init, headers });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status}: ${text}`);
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, { ...init, headers });
+  } catch {
+    throw new ApiError(OFFLINE_MESSAGE);
   }
+  if (!res.ok) throw await toApiError(res);
   return res.json() as Promise<T>;
+}
+
+// Multipart upload with progress reporting. fetch() can't report upload
+// progress, so this one path uses XMLHttpRequest.
+async function uploadWithProgress<T>(
+  path: string,
+  form: FormData,
+  onProgress?: (percent: number) => void,
+): Promise<T> {
+  const headers = (await authHeaders()) as Record<string, string>;
+  return new Promise<T>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BASE}${path}`);
+    for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+    xhr.onerror = () => reject(new ApiError(OFFLINE_MESSAGE));
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText) as T);
+        } catch {
+          reject(new ApiError(friendlyMessage(500, "")));
+        }
+        return;
+      }
+      let serverText = xhr.responseText;
+      try {
+        const json = JSON.parse(xhr.responseText);
+        if (json && typeof json.error === "string") serverText = json.error;
+      } catch {
+        /* keep raw */
+      }
+      reject(new ApiError(friendlyMessage(xhr.status, serverText), xhr.status));
+    };
+    xhr.send(form);
+  });
 }
 
 export type Case = {
@@ -250,30 +326,37 @@ export const api = {
     request<{ url: string; ttl_seconds: number }>(`/documents/${id}/url`),
   analyzeDocument: (id: string) =>
     request<{ document: UserDocument }>(`/documents/${id}/analyze`, { method: "POST" }),
+  updateDocument: (id: string, patch: { name?: string; doc_type?: string }) =>
+    request<{ document: UserDocument }>(`/documents/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
   deleteDocument: (id: string) =>
     request<{ ok: true }>(`/documents/${id}`, { method: "DELETE" }),
-  uploadDocument: async (file: File): Promise<{ document: UserDocument }> => {
+  uploadDocument: async (
+    file: File,
+    onProgress?: (percent: number) => void,
+  ): Promise<{ document: UserDocument }> => {
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch(`${BASE}/documents`, {
-      method: "POST",
-      headers: await authHeaders(),
-      body: fd,
-    });
-    if (!res.ok) throw new Error(await errorText(res));
-    return res.json();
+    return uploadWithProgress("/documents", fd, onProgress);
   },
 
   analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" | "auto" = "auto"): Promise<RoomScan> => {
     const fd = new FormData();
     fd.append("image", file);
     fd.append("pre_post", prePost);
-    const res = await fetch(`${BASE}/ml/analyze-photo`, {
-      method: "POST",
-      headers: await authHeaders(),
-      body: fd,
-    });
-    if (!res.ok) throw new Error(await errorText(res));
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/ml/analyze-photo`, {
+        method: "POST",
+        headers: await authHeaders(),
+        body: fd,
+      });
+    } catch {
+      throw new ApiError(OFFLINE_MESSAGE);
+    }
+    if (!res.ok) throw await toApiError(res);
     return res.json();
   },
 
@@ -282,12 +365,17 @@ export const api = {
   uploadItemImage: async (file: File): Promise<{ url: string }> => {
     const fd = new FormData();
     fd.append("image", file);
-    const res = await fetch(`${BASE}/items/upload-image`, {
-      method: "POST",
-      headers: await authHeaders(),
-      body: fd,
-    });
-    if (!res.ok) throw new Error(await errorText(res));
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/items/upload-image`, {
+        method: "POST",
+        headers: await authHeaders(),
+        body: fd,
+      });
+    } catch {
+      throw new ApiError(OFFLINE_MESSAGE);
+    }
+    if (!res.ok) throw await toApiError(res);
     return res.json();
   },
 

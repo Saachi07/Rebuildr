@@ -10,7 +10,7 @@ export default function Landing() {
         <h1>You're not doing this alone.</h1>
         <p className="warm">
           Whatever happened, we'll help you piece it back together. One small
-          step at a time.Nothing has to happen all at once.
+          step at a time. Nothing has to happen all at once.
         </p>
         <div className="cta-row">
           <Link to="/emergency"><button className="urgent big">I need help right now</button></Link>

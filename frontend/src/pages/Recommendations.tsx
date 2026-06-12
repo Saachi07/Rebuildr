@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, PersonalizeHint, RecGroups, Recommendation, RecStatus } from "../api";
 import { BackButton } from "../components/BackButton";
-import { IntakeQuestions } from "../components/IntakeQuestions";
+import { PersonalizeCard, ResolvedHint } from "../components/IntakeQuestions";
 
 // Friendly, recovery-phase-ordered category headers. Raw resource types
 // make poor headings, and the order should follow how recovery actually
@@ -73,6 +73,10 @@ export default function Recommendations() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
+  // Stress narrows working memory — show only the next few steps by
+  // default, with the full plan one tap away.
+  const [showFull, setShowFull] = useState(false);
+  const [hasIntake, setHasIntake] = useState<boolean | null>(null);
   // Optimistic status changes, keyed by resource id, layered over the
   // statuses the server sent. Cleared on each successful reload.
   const [statusOverrides, setStatusOverrides] = useState<Record<string, RecStatus>>({});
@@ -99,6 +103,15 @@ export default function Recommendations() {
   }
 
   useEffect(() => { load(); }, [id]);
+
+  // Whether the optional questions were answered decides where the
+  // personalize card sits: top while unanswered, bottom afterwards.
+  useEffect(() => {
+    if (!id) return;
+    api.getCase(id)
+      .then((r) => setHasIntake(Object.keys(r.case.intake_answers ?? {}).length > 0))
+      .catch(() => setHasIntake(false));
+  }, [id]);
 
   function statusOf(r: Recommendation): RecStatus {
     return statusOverrides[r.id] ?? r.status ?? "suggested";
@@ -134,14 +147,37 @@ export default function Recommendations() {
       .sort(([a], [b]) => categoryRank(a) - categoryRank(b) || a.localeCompare(b));
   }, [groups]);
 
+  const resolvedHints: ResolvedHint[] = hints.map((h) => {
+    const link = hintLink(h.question_id, id);
+    return { ...h, to: link.to, linkLabel: link.label };
+  });
+
+  const openTodo = todo.filter((r) => statusOf(r) !== "dismissed" && statusOf(r) !== "done");
+  const focusList: Recommendation[] = [];
+  if (topPick && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed") {
+    focusList.push(topPick);
+  }
+  for (const r of openTodo) {
+    if (focusList.length >= 3) break;
+    if (!focusList.some((f) => f.id === r.id)) focusList.push(r);
+  }
+  const moreCount = Math.max(0, visibleCount - focusList.length);
+
+  const personalize = id && (
+    <PersonalizeCard caseId={id} hints={resolvedHints} onPlanRefresh={load} />
+  );
+
   return (
-    <div className="container">
-      <BackButton />
+    <div className="container plan-page">
+      <BackButton to="/dashboard" label="Dashboard" />
       <div className="row" style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Your recovery plan</h1>
         <span className="spacer" />
-        <button className="secondary" onClick={load} disabled={busy}>
-          {busy ? "Refreshing…" : "Refresh"}
+        <button className="secondary no-print" onClick={() => window.print()}>
+          Print or save as PDF
+        </button>
+        <button className="secondary no-print" onClick={load} disabled={busy}>
+          {busy ? "Checking…" : "Check for new help"}
         </button>
       </div>
 
@@ -167,38 +203,12 @@ export default function Recommendations() {
 
       {groups && empty && <EmptyChecklist caseId={id} />}
 
-      {!empty && hints.length > 0 && (
-        <div className="card" style={{ borderLeft: "4px solid #3b6ea5" }}>
-          <h3 style={{ marginTop: 0 }}>Make your plan even more personal</h3>
-          <p className="muted-strong" style={{ marginBottom: 10 }}>
-            These suggestions are based on what you've shared so far. The
-            more we know, the better we can match you with the right
-            support, and it only takes a few minutes.
-          </p>
-          {hints.map((h) => {
-            const link = hintLink(h.question_id, id);
-            return (
-              <div key={h.question_id} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
-                <span style={{ fontSize: 15 }}>
-                  {h.copy}
-                  {h.would_unlock?.length > 0 && (
-                    <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
-                      For example: {h.would_unlock.join(", ")}
-                    </span>
-                  )}
-                </span>
-                <span className="spacer" />
-                <Link to={link.to}>
-                  <button style={{ whiteSpace: "nowrap" }}>{link.label}</button>
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Optional questions: top while unanswered (it's the highest-leverage
+          thing on the page), tucked to the bottom once answered. */}
+      {!empty && hasIntake === false && personalize}
 
       {radar.length > 0 && (
-        <div className="card" style={{ borderLeft: "4px solid #d9822b" }}>
+        <div className="card warn-card">
           <h3 style={{ marginTop: 0 }}>Deadlines coming up</h3>
           {radar.map((r) => (
             <p key={r.id} style={{ margin: "6px 0", fontSize: 15 }}>
@@ -206,6 +216,12 @@ export default function Recommendations() {
               {r.days_until_deadline != null && (
                 <span className="badge" style={{ marginLeft: 8 }}>
                   {deadlineBadge(r.days_until_deadline)}
+                </span>
+              )}
+              {r.days_until_deadline != null && r.days_until_deadline < 0 && (
+                <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
+                  Missed deadlines often still have options — exceptions and
+                  late applications exist. It's worth calling them to ask.
                 </span>
               )}
               {r.reasons?.length > 0 && (
@@ -218,115 +234,169 @@ export default function Recommendations() {
         </div>
       )}
 
-      {!empty && todo.length > 0 && (
-        <div className="card" style={{ borderLeft: "4px solid #6a5a8e" }}>
-          <h3 style={{ marginTop: 0 }}>Your to-do list</h3>
-          <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 13 }}>
-            The steps that matter most right now, with anything deadline-bound
-            at the top. Check them off as you go.
-          </p>
-          {todo
-            .filter((r) => statusOf(r) !== "dismissed")
-            .map((r, i) => {
-              const done = statusOf(r) === "done";
-              return (
-                <div key={`todo-${r.id}`} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
-                  <span style={{ fontSize: 15, opacity: done ? 0.6 : 1 }}>
-                    <strong style={done ? { textDecoration: "line-through" } : undefined}>
-                      {i + 1}. {r.title}
-                    </strong>
-                    {r.days_until_deadline != null && !done && (
-                      <span className="badge" style={{ marginLeft: 8 }}>
-                        {deadlineBadge(r.days_until_deadline)}
-                      </span>
-                    )}
-                  </span>
-                  <span className="spacer" />
-                  {r.rec_id && (
-                    <button
-                      className="secondary"
-                      style={{ whiteSpace: "nowrap" }}
-                      onClick={() => setStatus(r, done ? "suggested" : "done")}
-                    >
-                      {done ? "Not done yet" : "Mark as done"}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      )}
-
-      {topPick && !empty && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed" && (
-        <div className="card" style={{ borderLeft: "4px solid #3a7d44" }}>
-          <h3 style={{ marginTop: 0 }}>Start here</h3>
-          <strong>{topPick.title}</strong>
-          {topPick.body && <p style={{ margin: "8px 0", fontSize: 15 }}>{topPick.body}</p>}
-          {topPick.reasons?.length > 0 && (
-            <p className="muted-strong" style={{ margin: "6px 0 0", fontSize: 13 }}>
-              Why this matters: {topPick.reasons.join(" · ")}
+      {/* Focused view: just the next few steps. The full plan is one tap away. */}
+      {!empty && !showFull && focusList.length > 0 && (
+        <>
+          <div className="card ok-card">
+            <h3 style={{ marginTop: 0 }}>Start with these</h3>
+            <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 13 }}>
+              Just {focusList.length} thing{focusList.length === 1 ? "" : "s"} for
+              now. Everything else can wait.
             </p>
-          )}
-          <RecActions rec={topPick} status={statusOf(topPick)} onStatus={setStatus} />
-        </div>
-      )}
-
-      {savedRecs.length > 0 && (
-        <div className="rec-group">
-          <h2>Saved for later</h2>
-          {savedRecs.map((r) => (
-            <RecCard key={`saved-${r.id}`} rec={r} status="saved" onStatus={setStatus} />
-          ))}
-        </div>
-      )}
-
-      {orderedGroups.map(([category, recs]) => {
-        const shown = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed");
-        if (shown.length === 0) return null;
-        return (
-          <div key={category} className="rec-group">
-            <h2>{categoryLabel(category)}</h2>
-            {shown.map((r) => (
-              <RecCard key={r.id} rec={r} status={statusOf(r)} onStatus={setStatus} />
+            {focusList.map((r, i) => (
+              <div key={`focus-${r.id}`} style={{ margin: "12px 0" }}>
+                <strong>{i + 1}. {r.title}</strong>
+                {r.days_until_deadline != null && (
+                  <span className="badge" style={{ marginLeft: 8 }}>
+                    {deadlineBadge(r.days_until_deadline)}
+                  </span>
+                )}
+                {r.body && <p style={{ margin: "6px 0", fontSize: 15 }}>{r.body}</p>}
+                {r.reasons?.length > 0 && (
+                  <p className="muted-strong" style={{ margin: "4px 0 0", fontSize: 13 }}>
+                    Why this matters: {r.reasons.join(" · ")}
+                  </p>
+                )}
+                <RecActions rec={r} status={statusOf(r)} onStatus={setStatus} />
+              </div>
             ))}
           </div>
-        );
-      })}
-
-      {!empty && emptyCategories.length > 0 && (
-        <div className="card">
-          <p className="muted-strong" style={{ margin: 0, fontSize: 14 }}>
-            We also looked for {emptyCategories.map(categoryLabel).join(", ").toLowerCase()} resources,
-            but nothing matched your case yet. Adding a bit more detail, like
-            your region or the date this happened, can open those up.
-          </p>
-        </div>
-      )}
-
-      {hiddenRecs.length > 0 && (
-        <div className="card">
-          <div className="row" style={{ alignItems: "center" }}>
-            <span className="muted-strong" style={{ fontSize: 14 }}>
-              {hiddenRecs.length} suggestion{hiddenRecs.length === 1 ? "" : "s"} hidden
-            </span>
-            <span className="spacer" />
-            <button className="secondary" onClick={() => setShowHidden((v) => !v)}>
-              {showHidden ? "Collapse" : "Show"}
-            </button>
-          </div>
-          {showHidden && hiddenRecs.map((r) => (
-            <div key={`hidden-${r.id}`} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
-              <span className="muted-strong" style={{ fontSize: 14 }}>{r.title}</span>
-              <span className="spacer" />
-              <button className="secondary" onClick={() => setStatus(r, "suggested")}>
-                Bring back
+          {moreCount > 0 && (
+            <div className="row no-print" style={{ justifyContent: "center", margin: "16px 0" }}>
+              <button className="secondary" onClick={() => setShowFull(true)}>
+                Show my full plan ({moreCount} more suggestion{moreCount === 1 ? "" : "s"})
               </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
-      {id && <IntakeQuestions caseId={id} onPlanRefresh={load} />}
+      {/* Full plan */}
+      {!empty && (showFull || focusList.length === 0) && (
+        <>
+          {showFull && (
+            <div className="row no-print" style={{ margin: "8px 0" }}>
+              <button className="secondary" onClick={() => setShowFull(false)}>
+                ← Back to just the next steps
+              </button>
+            </div>
+          )}
+
+          {todo.length > 0 && (
+            <div className="card info-card">
+              <h3 style={{ marginTop: 0 }}>Your to-do list</h3>
+              <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 13 }}>
+                The steps that matter most right now, with anything deadline-bound
+                at the top. Check them off as you go.
+              </p>
+              {todo
+                .filter((r) => statusOf(r) !== "dismissed")
+                .map((r, i) => {
+                  const done = statusOf(r) === "done";
+                  return (
+                    <div key={`todo-${r.id}`} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
+                      <span style={{ fontSize: 15, opacity: done ? 0.6 : 1 }}>
+                        <strong style={done ? { textDecoration: "line-through" } : undefined}>
+                          {i + 1}. {r.title}
+                        </strong>
+                        {r.days_until_deadline != null && !done && (
+                          <span className="badge" style={{ marginLeft: 8 }}>
+                            {deadlineBadge(r.days_until_deadline)}
+                          </span>
+                        )}
+                      </span>
+                      <span className="spacer" />
+                      {r.rec_id && (
+                        <button
+                          className="secondary"
+                          style={{ whiteSpace: "nowrap" }}
+                          onClick={() => setStatus(r, done ? "suggested" : "done")}
+                        >
+                          {done ? "Not done yet" : "Mark as done"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
+          {topPick && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed" && (
+            <div className="card ok-card">
+              <h3 style={{ marginTop: 0 }}>Start here</h3>
+              <strong>{topPick.title}</strong>
+              {topPick.body && <p style={{ margin: "8px 0", fontSize: 15 }}>{topPick.body}</p>}
+              {topPick.reasons?.length > 0 && (
+                <p className="muted-strong" style={{ margin: "6px 0 0", fontSize: 13 }}>
+                  Why this matters: {topPick.reasons.join(" · ")}
+                </p>
+              )}
+              <RecActions rec={topPick} status={statusOf(topPick)} onStatus={setStatus} />
+            </div>
+          )}
+
+          {savedRecs.length > 0 && (
+            <div className="rec-group">
+              <h2>Saved for later</h2>
+              {savedRecs.map((r) => (
+                <RecCard key={`saved-${r.id}`} rec={r} status="saved" onStatus={setStatus} />
+              ))}
+            </div>
+          )}
+
+          {orderedGroups.map(([category, recs]) => {
+            const shown = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed");
+            if (shown.length === 0) return null;
+            return (
+              <details key={category} className="rec-group rec-accordion">
+                <summary>
+                  <h2>{categoryLabel(category)}</h2>
+                  <span className="badge">{shown.length}</span>
+                </summary>
+                {shown.map((r) => (
+                  <RecCard key={r.id} rec={r} status={statusOf(r)} onStatus={setStatus} />
+                ))}
+              </details>
+            );
+          })}
+
+          {emptyCategories.length > 0 && (
+            <div className="card">
+              <p className="muted-strong" style={{ margin: 0, fontSize: 14 }}>
+                We also looked for {emptyCategories.map(categoryLabel).join(", ").toLowerCase()} resources,
+                but nothing matched your case yet. Adding a bit more detail, like
+                your region or the date this happened, can open those up.
+              </p>
+            </div>
+          )}
+
+          {hiddenRecs.length > 0 && (
+            <div className="card no-print">
+              <div className="row" style={{ alignItems: "center" }}>
+                <span className="muted-strong" style={{ fontSize: 14 }}>
+                  {hiddenRecs.length} suggestion{hiddenRecs.length === 1 ? "" : "s"} hidden
+                </span>
+                <span className="spacer" />
+                <button className="secondary" onClick={() => setShowHidden((v) => !v)}>
+                  {showHidden ? "Collapse" : "Show"}
+                </button>
+              </div>
+              {showHidden && hiddenRecs.map((r) => (
+                <div key={`hidden-${r.id}`} className="row" style={{ alignItems: "center", margin: "8px 0" }}>
+                  <span className="muted-strong" style={{ fontSize: 14 }}>{r.title}</span>
+                  <span className="spacer" />
+                  <button className="secondary" onClick={() => setStatus(r, "suggested")}>
+                    Bring back
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {!empty && hasIntake !== false && personalize}
+      {empty && personalize}
     </div>
   );
 }
@@ -348,16 +418,8 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
               : "You're making real progress."}
         </span>
       </div>
-      <div style={{ background: "#e6e2da", borderRadius: 6, height: 8, marginTop: 8 }}>
-        <div
-          style={{
-            width: `${pct}%`,
-            background: "#3a7d44",
-            borderRadius: 6,
-            height: 8,
-            transition: "width 200ms ease",
-          }}
-        />
+      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+        <div className="meter-fill" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -374,7 +436,7 @@ function RecActions({
 }) {
   const canUpdate = Boolean(rec.rec_id);
   return (
-    <div className="row" style={{ marginTop: 10, gap: 8, flexWrap: "wrap" }}>
+    <div className="row no-print" style={{ marginTop: 10, gap: 8, flexWrap: "wrap" }}>
       {rec.url && (
         <a href={rec.url} target="_blank" rel="noreferrer">
           <button className="secondary">Open</button>
@@ -452,33 +514,52 @@ function RecCard({
   );
 }
 
+// Empty plans get a gentle, explicitly ordered set of first steps — one
+// decision at a time, every one skippable.
 function EmptyChecklist({ caseId }: { caseId?: string }) {
+  const steps = [
+    {
+      n: 1,
+      title: "Add your insurance policy",
+      body: "This unlocks deadline tracking and coverage gap analysis.",
+      to: "/documents",
+    },
+    {
+      n: 2,
+      title: "Take a few photos",
+      body: "One room at a time. We'll list what's in each photo for you.",
+      to: caseId ? `/cases/${caseId}/inventory` : "/dashboard",
+    },
+    {
+      n: 3,
+      title: "Save the helpful numbers",
+      body: "Crisis lines, 211 Alberta, and the Red Cross, kept one tap away.",
+      to: "/emergency",
+    },
+    {
+      n: 4,
+      title: "Add any claims you've started",
+      body: "If you've already filed something, upload the paperwork.",
+      to: "/documents",
+    },
+  ];
   return (
     <>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Let's get started together</h3>
         <p className="muted-strong">
-          We need a little more to tailor your plan. Here are the next things
-          that will help, and you can do them in any order.
+          We need a little more to tailor your plan. Here are the first steps
+          that help most — in order, but skip any of them. Start with step 1
+          if you're not sure.
         </p>
       </div>
       <div className="grid grid-2">
-        <Link to="/documents" className="tile">
-          <h3>Add your insurance policy</h3>
-          <p>This unlocks deadline tracking and coverage gap analysis.</p>
-        </Link>
-        <Link to={caseId ? `/cases/${caseId}/inventory` : "/dashboard"} className="tile">
-          <h3>Take a few photos</h3>
-          <p>One room at a time. We'll list what's in each photo for you.</p>
-        </Link>
-        <Link to="/emergency" className="tile">
-          <h3>Save the helpful numbers</h3>
-          <p>Crisis lines, FEMA, and Red Cross, all kept one tap away.</p>
-        </Link>
-        <Link to="/documents" className="tile">
-          <h3>Add any claims you've started</h3>
-          <p>If you've already filed something, upload the paperwork.</p>
-        </Link>
+        {steps.map((s) => (
+          <Link key={s.n} to={s.to} className="tile">
+            <h3><span className="step-num">Step {s.n}</span> {s.title}</h3>
+            <p>{s.body}</p>
+          </Link>
+        ))}
       </div>
     </>
   );

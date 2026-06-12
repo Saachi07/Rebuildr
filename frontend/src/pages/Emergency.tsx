@@ -1,14 +1,19 @@
 import { Link } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
+import { useAuth } from "../auth/AuthContext";
 
 type Contact = {
   name: string;
   phone?: string;
+  phoneLabel?: string;
   url?: string;
   detail: string;
   urgent?: boolean;
 };
 
+// Rebuildr currently serves Alberta, Canada — every line here must actually
+// pick up for an Albertan. (US numbers like FEMA were removed: a dead-end
+// phone call is the last thing someone in crisis needs.)
 const CONTACTS: Contact[] = [
   {
     name: "911",
@@ -17,40 +22,53 @@ const CONTACTS: Contact[] = [
     urgent: true,
   },
   {
-    name: "Disaster Distress Helpline",
-    phone: "1-800-985-5990",
-    detail: "24/7 crisis counseling for disaster survivors. Free and confidential. Text TalkWithUs to 66746.",
+    name: "988 Suicide Crisis Helpline",
+    phone: "988",
+    phoneLabel: "Call or text 988",
+    detail: "24/7 crisis support across Canada. Free and confidential. It's okay to call just to talk.",
     urgent: true,
   },
   {
-    name: "FEMA Disaster Assistance",
-    phone: "1-800-621-3362",
-    url: "https://www.disasterassistance.gov",
-    detail: "Federal disaster aid, temporary housing, individual assistance.",
+    name: "211 Alberta",
+    phone: "211",
+    url: "https://ab.211.ca",
+    detail: "24/7 help finding shelter, food, financial aid, and local disaster support. Free, confidential, in 170+ languages.",
+    urgent: true,
   },
   {
-    name: "American Red Cross",
-    phone: "1-800-733-2767",
-    url: "https://www.redcross.org/get-help.html",
-    detail: "Shelter, food, emergency supplies, family reconnection.",
+    name: "Alberta Mental Health Help Line",
+    phone: "1-877-303-2642",
+    detail: "24/7 confidential support for stress, anxiety, and crisis after a disaster.",
   },
   {
-    name: "Poison Control",
-    phone: "1-800-222-1222",
-    detail: "Exposure to smoke, chemicals, contaminated water.",
+    name: "Canadian Red Cross",
+    phone: "1-800-863-6582",
+    url: "https://www.redcross.ca/how-we-help/emergencies-and-disasters-in-canada",
+    detail: "Emergency shelter, food, supplies, and family reunification after disasters.",
   },
   {
-    name: "Salvation Army Emergency Disaster Services",
-    phone: "1-800-725-2769",
-    url: "https://www.salvationarmyusa.org/usn/provide-disaster-relief/",
-    detail: "Food, shelter, emotional and spiritual care.",
+    name: "Alberta Supports",
+    phone: "1-877-644-9992",
+    url: "https://www.alberta.ca/alberta-supports",
+    detail: "Government programs — emergency financial assistance, income support, housing help.",
+  },
+  {
+    name: "Poison & Drug Information Service (PADIS)",
+    phone: "1-800-332-1414",
+    detail: "Exposure to smoke, chemicals, or contaminated water. 24/7 for Alberta.",
+  },
+  {
+    name: "Alberta Emergency Alerts",
+    url: "https://www.alberta.ca/alberta-emergency-alert",
+    detail: "Live provincial alerts — evacuations, wildfires, floods, road closures.",
   },
 ];
 
 export default function Emergency() {
+  const { user } = useAuth();
   return (
     <div className="container">
-      <BackButton label="Back" />
+      <BackButton to={user ? "/dashboard" : "/"} label={user ? "Dashboard" : "Home"} />
       <div style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Get help now</h1>
       </div>
@@ -67,14 +85,14 @@ export default function Emergency() {
             {c.phone && (
               <a href={`tel:${c.phone.replace(/[^0-9+]/g, "")}`}>
                 <button className={c.urgent ? "danger big" : "big"} style={{ marginBottom: 8 }}>
-                  Call {c.phone}
+                  {c.phoneLabel ?? `Call ${c.phone}`}
                 </button>
               </a>
             )}
             <p className="muted-strong" style={{ margin: "4px 0 8px", fontSize: 14 }}>{c.detail}</p>
             {c.url && (
               <a href={c.url} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: "var(--focus)", textDecoration: "underline" }}>
-                {c.url.replace(/^https?:\/\//, "")}
+                {c.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
               </a>
             )}
           </div>
@@ -82,8 +100,21 @@ export default function Emergency() {
       </div>
 
       <p className="muted-strong" style={{ marginTop: 24, fontSize: 14 }}>
-        When you're safe, <Link to="/login" style={{ textDecoration: "underline", color: "var(--focus)" }}>sign in</Link> to start
-        documenting what happened and building your plan.
+        {user ? (
+          <>
+            When you're safe, head back to{" "}
+            <Link to="/dashboard" style={{ textDecoration: "underline", color: "var(--focus)" }}>
+              your dashboard
+            </Link>{" "}
+            to keep documenting what happened.
+          </>
+        ) : (
+          <>
+            When you're safe,{" "}
+            <Link to="/login" style={{ textDecoration: "underline", color: "var(--focus)" }}>sign in</Link>{" "}
+            to start documenting what happened and building your plan.
+          </>
+        )}
       </p>
     </div>
   );

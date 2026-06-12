@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useDismissable } from "../lib/useDismissable";
+
+// On touch devices the browser fires synthetic mouseenter before click,
+// which used to open-then-immediately-toggle the bubble closed. Only wire
+// hover behavior when the device actually supports hovering.
+const CAN_HOVER =
+  typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(hover: hover)").matches
+    : true;
 
 export function Hint({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  useDismissable(ref, open, () => setOpen(false));
 
   return (
     <span className="hint-wrap" ref={ref}>
@@ -18,10 +21,9 @@ export function Hint({ text }: { text: string }) {
         type="button"
         className="hint-btn"
         aria-label={`Help: ${text}`}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
+        aria-expanded={open}
+        onMouseEnter={CAN_HOVER ? () => setOpen(true) : undefined}
+        onMouseLeave={CAN_HOVER ? () => setOpen(false) : undefined}
         onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
       >
         ?
