@@ -87,6 +87,13 @@ MISSING, UNRELIABLE_DATA, ACTION_REQUIRED, WARNING. Always check for and flag wh
   this for a policy document that simply lists overland flooding as an excluded
   peril in its exclusions section — that information already belongs in warnings.
   When this is flagged in flagged_issues, do NOT also add it to warnings.
+  IMPORTANT: Do NOT apply this rule when the stated cause of loss is wildfire,
+  wind, hail, earthquake, or any non-water peril — even if water was used in
+  firefighting suppression or is mentioned incidentally. Only flag it when the
+  primary cause of loss is itself a water-entry event (flooding, backup, intrusion).
+  IMPORTANT: Do NOT apply this rule for auto insurance, life insurance, or health
+  insurance claim documents — the Overland Water endorsement only exists on home,
+  property, condominium, and tenant/renter insurance policies.
 When multiple required documents of the same type are missing or incomplete
 (e.g., receipts absent across several damage categories), consolidate them into
 a SINGLE MISSING flag rather than listing each category separately. If a MISSING
@@ -112,6 +119,11 @@ insurance, (2) coverage sub-limits per category, (3) the total loss or damage
 amount, and (4) the net amount after deductible. Do NOT include "Amount Claimed
 Under This Policy" as a separate entry when it equals the "Total Loss or Damage"
 — that is a duplicate of the same figure under a different field label.
+For claim adjustment or settlement letters: use the insurer's approved or
+adjusted amount for each coverage category, not the amount originally claimed
+by the policyholder. Where both figures appear, the approved amount is what the
+user will receive and is the correct value to report. Always include the total
+approved settlement net of deductible.
 
 REQUIRED ACTIONS — specific steps the user still needs to take to maintain coverage,
 comply with the policy, resolve the claim, or meet the program's requirements. Include:
@@ -122,13 +134,18 @@ comply with the policy, resolve the claim, or meet the program's requirements. I
   access additional assistance programs)
 • Regulatory or municipal requirements the user must confirm before taking action
   (e.g. updated building codes before rebuilding)
+• In claim adjustment or settlement letters: each response option presented to the
+  user is a required action — include every option explicitly (e.g. accept and sign
+  the release form, submit additional documentation, request an independent appraisal,
+  file a complaint with the regulator). These are distinct choices the user must
+  actively decide on and act upon.
 For adjuster or damage assessment reports: if the report's recommendations require
 action by the insured or policyholder, include those as required_actions entries —
 do NOT leave insured-directed actions only in warnings. Items that are purely the
 insurer's internal process (e.g. "approve ALE continuation", "coordinate with
 mortgagee") belong in warnings, not required_actions.
 Start each required_actions entry with an imperative verb (Submit, Contact, Arrange,
-Confirm, Review, Provide, Commission, Retain).
+Confirm, Review, Provide, Commission, Retain, Sign, Accept, Request, File).
 Do NOT include generic administrative document-retention notes such as "Keep a copy
 for your records", "Retain this form with your policy documents", or similar — these
 are not meaningful user actions.
@@ -584,7 +601,7 @@ def _local_summary(text: str, *, use_nlp: bool = True, nlp_analysis: Any = None)
 def summarize_document(
     text: str,
     *,
-    summarizer: GeminiSummarizer | None = None,
+    summarizer: Any | None = None,
     prefer_gemini: bool = True,
     use_nlp: bool = True,
     nlp_analysis: Any = None,
