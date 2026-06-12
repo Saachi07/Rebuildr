@@ -190,6 +190,13 @@ export type UserDocument = {
   gemini_analysis?: GeminiAnalysis | null;
 };
 
+export type BoundingBox = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
+
 export type ScannedItem = {
   name: string;
   category: string;
@@ -198,6 +205,7 @@ export type ScannedItem = {
   visible_brand?: string;
   approximate_size: string;
   canadian_retail_estimate_cad: { low: number; high: number };
+  bounding_box?: BoundingBox;
 };
 
 export type RoomScan = {
