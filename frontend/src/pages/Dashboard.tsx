@@ -31,7 +31,7 @@ export default function Dashboard() {
           <h2>Your recovery plan</h2>
           <p>
             {latestCase
-              ? `Your next steps for ${latestCase.case_name} — what to do and when.`
+              ? `Your next steps for ${latestCase.case_name}, what to do and when.`
               : "Start a case and we'll suggest the next steps that matter most."}
           </p>
         </Link>
@@ -46,13 +46,13 @@ export default function Dashboard() {
           <p>
             {latestCase
               ? `List and photograph what was damaged, room by room.`
-              : "List what was damaged — we'll help estimate values for your claim."}
+              : "List what was damaged and we'll help estimate values for your claim."}
           </p>
         </Link>
 
         <Link to="/emergency" className="card tile big-tile">
           <h2>Emergency contacts</h2>
-          <p>911, crisis lines, FEMA, Red Cross — one tap to call.</p>
+          <p>911, crisis lines, Red Cross, one tap to call.</p>
         </Link>
       </div>
 
