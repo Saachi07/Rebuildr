@@ -45,6 +45,7 @@ For each item include:
 - Brand if visible on the item
 - Approximate size
 - Canadian retail price estimate in CAD (realistic low and high range, as if buying new today)
+- bounding_box: the item's bounding box as normalized coordinates (x1, y1, x2, y2) where 0.0 is the left/top edge and 1.0 is the right/bottom edge of the image. If you cannot determine the bounding box, omit the field.
 
 Be thorough. Include all significant items — furniture, appliances, electronics, decor.
 If the item is destroyed beyond recognition, still record it with condition "damaged"."""
@@ -62,6 +63,7 @@ For each item include:
 - Brand if visible on the item
 - Approximate size
 - Canadian retail price estimate in CAD (realistic low and high range, as if buying new today)
+- bounding_box: the item's bounding box as normalized coordinates (x1, y1, x2, y2) where 0.0 is the left/top edge and 1.0 is the right/bottom edge of the image. If you cannot determine the bounding box, omit the field.
 
 Be thorough. Include all significant items — furniture, appliances, electronics, decor."""
 
@@ -80,6 +82,7 @@ For each item include:
 - Brand if visible on the item
 - Approximate size
 - Canadian retail price estimate in CAD (realistic low and high range, as if buying new today)
+- bounding_box: the item's bounding box as normalized coordinates (x1, y1, x2, y2) where 0.0 is the left/top edge and 1.0 is the right/bottom edge of the image. If you cannot determine the bounding box, omit the field.
 
 Be thorough. Include all significant items — furniture, appliances, electronics, decor."""
 
@@ -87,6 +90,13 @@ Be thorough. Include all significant items — furniture, appliances, electronic
 class PriceRange(BaseModel):
     low: int
     high: int
+
+
+class BoundingBox(BaseModel):
+    x1: float  # normalized 0.0–1.0 from left edge
+    y1: float  # normalized 0.0–1.0 from top edge
+    x2: float
+    y2: float
 
 
 class InventoryItem(BaseModel):
@@ -97,6 +107,7 @@ class InventoryItem(BaseModel):
     visible_brand: Optional[str] = None
     approximate_size: Literal["small", "medium", "large"]
     canadian_retail_estimate_cad: PriceRange
+    bounding_box: Optional[BoundingBox] = None
 
 
 class RoomAnalysis(BaseModel):

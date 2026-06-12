@@ -112,6 +112,8 @@ export default function Inventory() {
   // Default damage type, inferred from the case's disaster type (#1).
   const [defaultDamage, setDefaultDamage] = useState("fire");
 
+  const [scannedFile, setScannedFile] = useState<File | null>(null);
+
   // Manual entry — photos aren't always possible when the photos burned too.
   const [showManual, setShowManual] = useState(false);
 
@@ -203,6 +205,7 @@ export default function Inventory() {
   }
 
   async function scanFile(file: File) {
+    setScannedFile(file);
     setScanBusy(true);
     setScanErr(null);
     setScanEmpty(false);
@@ -276,6 +279,7 @@ export default function Inventory() {
     setDrafts([]);
     setScan(null);
     setScanEmpty(false);
+    setScannedFile(null);
     if (queue.length > 0) scanNextInQueue();
   }
 
@@ -287,13 +291,72 @@ export default function Inventory() {
     });
   }
 
+  async function cropAndUpload(
+    file: File,
+    bbox: { x1: number; y1: number; x2: number; y2: number },
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        const sx = bbox.x1 * w;
+        const sy = bbox.y1 * h;
+        const sw = (bbox.x2 - bbox.x1) * w;
+        const sh = (bbox.y2 - bbox.y1) * h;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(sw));
+        canvas.height = Math.max(1, Math.round(sh));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("canvas unavailable")); return; }
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(async (blob) => {
+          if (!blob) { reject(new Error("canvas toBlob failed")); return; }
+          const cropped = new File([blob], "crop.jpg", { type: "image/jpeg" });
+          try {
+            const { url } = await api.uploadItemImage(cropped);
+            resolve(url);
+          } catch (e) {
+            reject(e);
+          }
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("image failed to load for crop"));
+      };
+      img.src = objectUrl;
+    });
+  }
+
   async function saveAllDrafts() {
     if (!id || drafts.length === 0) return;
     setBusy(true);
     setScanErr(null);
     try {
-      // One request for the whole batch — faster and atomic (#2).
       const count = drafts.length;
+      const imageKey = kind === "pre" ? "before_url" : "after_url";
+
+      // Crop + upload in parallel for every draft that has a bounding box.
+      // Promise.allSettled so a single failed crop never aborts the whole save.
+      const urlMap = new Map<string, string>();
+      if (scannedFile) {
+        const targets = drafts.filter((d) => d.bounding_box);
+        const results = await Promise.allSettled(
+          targets.map((d) =>
+            cropAndUpload(scannedFile, d.bounding_box!).then((url) => ({
+              draft_id: d.draft_id,
+              url,
+            })),
+          ),
+        );
+        for (const r of results) {
+          if (r.status === "fulfilled") urlMap.set(r.value.draft_id, r.value.url);
+        }
+      }
+
       await api.createItemsBulk(
         id,
         drafts.map((d) => ({
@@ -302,12 +365,16 @@ export default function Inventory() {
           damage_type: d.damage_type,
           damage_severity: d.damage_severity,
           estimated_value: d.estimated_value,
-          description: [d.visible_brand, d.approximate_size, `x${d.count}`].filter(Boolean).join(" · "),
+          description: [d.visible_brand, d.approximate_size, `x${d.count}`]
+            .filter(Boolean)
+            .join(" · "),
           room: batchRoom,
+          ...(urlMap.has(d.draft_id) ? { [imageKey]: urlMap.get(d.draft_id) } : {}),
         })),
       );
       setDrafts([]);
       setScan(null);
+      setScannedFile(null);
       load();
       toast.show(`Saved ${count} item${count === 1 ? "" : "s"} to your inventory.`);
       if (queue.length > 0) scanNextInQueue();
