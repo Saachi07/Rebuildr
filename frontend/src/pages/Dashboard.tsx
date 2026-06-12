@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, Case, Terms } from "../api";
+import { api, Terms } from "../api";
 import { SkeletonList } from "../components/Skeleton";
+import { useCases } from "../lib/CasesContext";
 
 export default function Dashboard() {
-  const [cases, setCases] = useState<Case[] | null>(null);
+  const { cases, latest, refresh } = useCases();
   const [err, setErr] = useState<string | null>(null);
   const [terms, setTerms] = useState<Terms | null>(null);
 
   useEffect(() => {
-    api.listCases().then((r) => setCases(r.cases)).catch((e) => setErr(String(e)));
+    refresh().catch((e) => setErr(e.message ?? String(e)));
     api.getTerms().then(setTerms).catch(() => {});
-  }, []);
+  }, [refresh]);
 
-  const latestCase = cases && cases.length > 0 ? cases[0] : null;
+  const latestCase = latest;
   const inventoryHref = latestCase ? `/cases/${latestCase.id}/inventory` : "/cases/new";
   const recommendationsHref = latestCase ? `/cases/${latestCase.id}/recommendations` : "/cases/new";
 
@@ -37,7 +38,7 @@ export default function Dashboard() {
 
         <Link to="/documents" className="card tile big-tile">
           <h2>Documents</h2>
-          <p>Your insurance, ID, and claim papers — all in one safe place.</p>
+          <p>Your insurance, ID, and claim papers. All in one safe place.</p>
         </Link>
 
         <Link to={inventoryHref} className="card tile big-tile">

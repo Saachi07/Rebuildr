@@ -3,16 +3,55 @@ import { Link } from "react-router-dom";
 import { api, GeminiAnalysis, RichAnalysis, UserDocument } from "../api";
 import { Spinner } from "../components/Skeleton";
 import { BackButton } from "../components/BackButton";
+import { Modal, ConfirmDialog } from "../components/Modal";
+import { useToast } from "../components/Toast";
+import { useCases } from "../lib/CasesContext";
+
+// Phone photos are the default format of a disaster survivor's paperwork —
+// PDFs are accepted alongside JPG/PNG/WebP/HEIC.
+const ACCEPTED = "application/pdf,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif";
+const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+const ACCEPTED_EXT = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"];
+
+const DOC_TYPES: { value: string; label: string }[] = [
+  { value: "insurance_policy", label: "Insurance policy" },
+  { value: "claim", label: "Claim" },
+  { value: "id", label: "ID document" },
+  { value: "deed", label: "Deed" },
+  { value: "receipt", label: "Receipt" },
+  { value: "invoice", label: "Invoice" },
+  { value: "estimate", label: "Estimate" },
+  { value: "correspondence", label: "Letter / correspondence" },
+  { value: "other", label: "Something else" },
+];
+
+function isAccepted(file: File): boolean {
+  const type = (file.type || "").toLowerCase();
+  if (ACCEPTED_TYPES.includes(type)) return true;
+  const name = file.name.toLowerCase();
+  return ACCEPTED_EXT.some((ext) => name.endsWith(ext));
+}
+
+function richOf(d: UserDocument): RichAnalysis {
+  return d.gemini_analysis?.analysis ?? {};
+}
 
 export default function Documents() {
+  const toast = useToast();
+  const { latest } = useCases();
   const [docs, setDocs] = useState<UserDocument[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [analyzingNew, setAnalyzingNew] = useState(false);
+  const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [opening, setOpening] = useState<string | null>(null);
   const [summaryFor, setSummaryFor] = useState<UserDocument | null>(null);
+  const [editFor, setEditFor] = useState<UserDocument | null>(null);
+  const [deleteFor, setDeleteFor] = useState<UserDocument | null>(null);
 
   function load() {
-    api.listMyDocuments().then((r) => setDocs(r.documents)).catch((e) => setErr(String(e)));
+    api.listMyDocuments().then((r) => setDocs(r.documents)).catch((e) => setErr(e.message ?? String(e)));
   }
 
   useEffect(load, []);
@@ -21,25 +60,48 @@ export default function Documents() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setErr("Only PDF files are supported.");
+    if (!isAccepted(file)) {
+      setErr(
+        "That file type isn't supported yet. You can upload a PDF or a photo " +
+        "(JPG, PNG, HEIC) — a clear phone photo of the document works great.",
+      );
       return;
     }
     setUploading(true);
+    setProgress(0);
     setErr(null);
     try {
-      const { document } = await api.uploadDocument(file);
+      const { document } = await api.uploadDocument(file, setProgress);
       // Auto-analyze. Don't fail the whole upload if analysis fails — the doc is saved.
+      setAnalyzingNew(true);
+      load();
       try {
         await api.analyzeDocument(document.id);
       } catch (e: any) {
-        setErr(`Saved, but analysis didn't finish: ${e.message ?? e}`);
+        setErr(`Your document is saved, but we couldn't read it just now: ${e.message ?? e}. You can try "Analyze" on it again in a minute.`);
+      } finally {
+        setAnalyzingNew(false);
       }
       load();
     } catch (e: any) {
       setErr(e.message ?? String(e));
     } finally {
       setUploading(false);
+      setProgress(0);
+    }
+  }
+
+  async function reanalyze(id: string) {
+    setAnalyzing(id);
+    setErr(null);
+    try {
+      await api.analyzeDocument(id);
+      load();
+      toast.show("We've read the document and pulled out the important bits.");
+    } catch (e: any) {
+      setErr(e.message ?? String(e));
+    } finally {
+      setAnalyzing(null);
     }
   }
 
@@ -55,42 +117,63 @@ export default function Documents() {
     }
   }
 
-  async function remove(id: string) {
-    if (!confirm("Delete this document? This can't be undone.")) return;
+  async function confirmDelete() {
+    if (!deleteFor) return;
+    const doc = deleteFor;
+    setDeleteFor(null);
     try {
-      await api.deleteDocument(id);
+      await api.deleteDocument(doc.id);
       load();
+      toast.show(`Deleted "${doc.name}".`);
     } catch (e: any) {
       setErr(e.message ?? String(e));
     }
   }
 
-  const latestCaseHref = "/dashboard";
+  const inventoryHref = latest ? `/cases/${latest.id}/inventory` : "/cases/new";
+  const planHref = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
 
   return (
     <div className="container">
-      <BackButton />
+      <BackButton to="/dashboard" label="Dashboard" />
       <div className="row" style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Your documents</h1>
       </div>
       <p className="warm-note" style={{ marginTop: 8 }}>
         Upload your insurance policy, claims, ID, deeds — anything you might
-        need to reference. We'll read each one and pull out the important bits.
+        need to reference. A PDF or a clear phone photo both work. We'll read
+        each one and pull out the important bits.
       </p>
 
-      <div className="card">
+      <div className="card no-print">
         <h3 style={{ marginTop: 0 }}>Add a document</h3>
         <p className="muted-strong" style={{ marginTop: 0, fontSize: 14 }}>
-          Pick a PDF. We'll save it and analyze it automatically — no extra
-          steps. You'll see a Summary button on the document when it's ready.
+          Pick a PDF or a photo of the document. We'll save it and analyze it
+          automatically — no extra steps.
         </p>
         <input
           type="file"
-          accept="application/pdf,.pdf"
+          accept={ACCEPTED}
           onChange={onUpload}
-          disabled={uploading}
+          disabled={uploading || analyzingNew}
+          aria-label="Choose a document to upload"
         />
-        {uploading && <p className="muted-strong" style={{ marginTop: 10 }}>Saving and reading your document…</p>}
+        {uploading && (
+          <div style={{ marginTop: 10 }}>
+            <p className="muted-strong" style={{ margin: "0 0 6px" }} role="status">
+              {progress < 100 ? `Uploading… ${progress}%` : "Upload complete — saving…"}
+            </p>
+            <div className="meter">
+              <div className="meter-fill" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        )}
+        {analyzingNew && (
+          <p className="muted-strong" style={{ marginTop: 10 }} role="status">
+            Saved. Now reading your document — this can take a minute, and it's
+            safe to keep using the app while we work.
+          </p>
+        )}
         {err && <div className="error">{err}</div>}
       </div>
 
@@ -100,55 +183,107 @@ export default function Documents() {
         <p className="muted-strong">Nothing here yet. Upload one above to get started.</p>
       )}
       {docs && docs.length > 0 && (
-        <table className="tbl">
+        <table className="tbl tbl-cards">
           <thead>
             <tr>
               <th>Name</th>
               <th>Type</th>
+              <th>What we found</th>
               <th>Uploaded</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {docs.map((d) => (
-              <tr key={d.id}>
-                <td>{d.name}</td>
-                <td>{d.doc_type ? <span className="badge">{prettyDocType(d.doc_type)}</span> : <span className="muted">analyzing…</span>}</td>
-                <td className="muted-strong">{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : "—"}</td>
-                <td className="actions">
-                  <button
-                    className="secondary"
-                    onClick={() => openDoc(d.id)}
-                    disabled={opening === d.id}
-                  >
-                    {opening === d.id ? "Opening…" : "Open"}
-                  </button>{" "}
-                  <button
-                    className="secondary"
-                    onClick={() => setSummaryFor(d)}
-                    disabled={!d.gemini_analysis}
-                    title={d.gemini_analysis ? "View the extracted summary" : "Summary not ready yet"}
-                  >
-                    Summary
-                  </button>{" "}
-                  <button className="secondary" onClick={() => remove(d.id)}>Delete</button>
-                </td>
-              </tr>
-            ))}
+            {docs.map((d) => {
+              const rich = richOf(d);
+              const deadlineCount = rich.deadlines?.length ?? 0;
+              const flaggedCount = rich.flagged_issues?.length ?? 0;
+              return (
+                <tr key={d.id}>
+                  <td data-label="Name">{d.name}</td>
+                  <td data-label="Type">
+                    {d.doc_type
+                      ? <span className="badge">{prettyDocType(d.doc_type)}</span>
+                      : analyzing === d.id || analyzingNew
+                        ? <span className="muted">reading…</span>
+                        : <span className="muted">not read yet</span>}
+                  </td>
+                  <td data-label="What we found">
+                    {deadlineCount > 0 && (
+                      <span className="chip chip-warn">{deadlineCount} deadline{deadlineCount === 1 ? "" : "s"}</span>
+                    )}
+                    {flaggedCount > 0 && (
+                      <span className="chip chip-danger">{flaggedCount} issue{flaggedCount === 1 ? "" : "s"}</span>
+                    )}
+                    {deadlineCount === 0 && flaggedCount === 0 && <span className="muted">—</span>}
+                  </td>
+                  <td data-label="Uploaded" className="muted-strong">{d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : "—"}</td>
+                  <td className="actions">
+                    <button
+                      className="secondary"
+                      onClick={() => openDoc(d.id)}
+                      disabled={opening === d.id}
+                    >
+                      {opening === d.id ? "Opening…" : "Open"}
+                    </button>{" "}
+                    {d.gemini_analysis ? (
+                      <button
+                        className="secondary"
+                        onClick={() => setSummaryFor(d)}
+                        title="View the extracted summary"
+                      >
+                        Summary
+                      </button>
+                    ) : (
+                      <button
+                        className="secondary"
+                        onClick={() => reanalyze(d.id)}
+                        disabled={analyzing === d.id}
+                        title="Read this document and extract deadlines and key details"
+                      >
+                        {analyzing === d.id ? "Reading…" : "Analyze"}
+                      </button>
+                    )}{" "}
+                    <button className="secondary" onClick={() => setEditFor(d)}>Edit</button>{" "}
+                    <button className="secondary" onClick={() => setDeleteFor(d)}>Delete</button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
 
-      <div className="row" style={{ marginTop: 32 }}>
+      <div className="row no-print" style={{ marginTop: 32 }}>
         <span className="spacer" />
-        <Link to="/dashboard"><button className="secondary">Inventory →</button></Link>
-        <Link to={latestCaseHref} style={{ marginLeft: 8 }}>
+        <Link to={inventoryHref}><button className="secondary">Inventory →</button></Link>
+        <Link to={planHref} style={{ marginLeft: 8 }}>
           <button>See your plan →</button>
         </Link>
       </div>
 
       {summaryFor && (
-        <SummaryModal doc={summaryFor} onClose={() => setSummaryFor(null)} />
+        <SummaryModal
+          doc={summaryFor}
+          onClose={() => setSummaryFor(null)}
+          onFixType={() => { setEditFor(summaryFor); setSummaryFor(null); }}
+        />
+      )}
+      {editFor && (
+        <EditDocModal
+          doc={editFor}
+          onClose={() => setEditFor(null)}
+          onSaved={() => { setEditFor(null); load(); toast.show("Document updated."); }}
+        />
+      )}
+      {deleteFor && (
+        <ConfirmDialog
+          title={`Delete "${deleteFor.name}"?`}
+          body="This removes the file from your library. If you might need it for a claim, keep it — storage is no problem."
+          confirmLabel="Delete document"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteFor(null)}
+        />
       )}
     </div>
   );
@@ -156,35 +291,109 @@ export default function Documents() {
 
 function prettyDocType(t: string): string {
   if (!t) return "";
-  return t.replace(/_/g, " ");
+  const known = DOC_TYPES.find((d) => d.value === t);
+  return known ? known.label : t.replace(/_/g, " ");
 }
 
-function SummaryModal({ doc, onClose }: { doc: UserDocument; onClose: () => void }) {
+// Misclassification shouldn't silently degrade the plan: users can correct
+// the type (and fix the meaningless phone-scan filename) themselves.
+function EditDocModal({
+  doc,
+  onClose,
+  onSaved,
+}: {
+  doc: UserDocument;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [name, setName] = useState(doc.name);
+  const [docType, setDocType] = useState(doc.doc_type ?? "other");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.updateDocument(doc.id, {
+        name: name.trim() || doc.name,
+        doc_type: docType,
+      });
+      onSaved();
+    } catch (e: any) {
+      setErr(e.message ?? String(e));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal onClose={onClose} label="Edit document" maxWidth={460}>
+      <h3 style={{ marginTop: 0 }}>Edit document</h3>
+      <form onSubmit={save}>
+        <label htmlFor="doc-name">Name</label>
+        <input
+          id="doc-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Home insurance policy 2026"
+        />
+        <label htmlFor="doc-type">
+          What is this document?
+        </label>
+        <select id="doc-type" value={docType} onChange={(e) => setDocType(e.target.value)}>
+          {DOC_TYPES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+        </select>
+        <p className="muted-strong" style={{ fontSize: 13, marginTop: 6 }}>
+          We guessed the type automatically — if we got it wrong, correcting it
+          here makes sure the document counts toward your plan.
+        </p>
+        {err && <div className="error">{err}</div>}
+        <div className="row" style={{ marginTop: 16 }}>
+          <span className="spacer" />
+          <button type="button" className="secondary" onClick={onClose} disabled={busy}>Cancel</button>
+          <button type="submit" disabled={busy}>{busy ? "Saving…" : "Save"}</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function SummaryModal({
+  doc,
+  onClose,
+  onFixType,
+}: {
+  doc: UserDocument;
+  onClose: () => void;
+  onFixType: () => void;
+}) {
   const analysis = doc.gemini_analysis;
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="row">
-          <h2 style={{ margin: 0 }}>{doc.name}</h2>
-          <span className="spacer" />
-          <button className="ghost" onClick={onClose} aria-label="Close">×</button>
-        </div>
-        {doc.doc_type && (
-          <p>
-            <span className="badge">{prettyDocType(doc.doc_type)}</span>
-          </p>
-        )}
-        {!analysis && <p className="muted-strong">No summary yet.</p>}
-        {analysis && <AnalysisView analysis={analysis} />}
-        {doc.doc_type === "other" && (
-          <div className="notice" style={{ marginTop: 12 }}>
-            This doesn't look like an insurance or disaster-recovery
-            document, so we won't use it when generating your plan. It's still
-            safely saved.
-          </div>
-        )}
+    <Modal onClose={onClose} label={`Summary of ${doc.name}`}>
+      <div className="row">
+        <h2 style={{ margin: 0 }}>{doc.name}</h2>
+        <span className="spacer" />
+        <button className="ghost" onClick={onClose} aria-label="Close">×</button>
       </div>
-    </div>
+      {doc.doc_type && (
+        <p>
+          <span className="badge">{prettyDocType(doc.doc_type)}</span>
+        </p>
+      )}
+      {!analysis && <p className="muted-strong">No summary yet.</p>}
+      {analysis && <AnalysisView analysis={analysis} />}
+      {doc.doc_type === "other" && (
+        <div className="notice" style={{ marginTop: 12 }}>
+          This doesn't look like an insurance or disaster-recovery
+          document, so we won't use it when generating your plan. It's still
+          safely saved.{" "}
+          <button className="link-btn" onClick={onFixType}>
+            Did we get that wrong? Set the correct type.
+          </button>
+        </div>
+      )}
+    </Modal>
   );
 }
 

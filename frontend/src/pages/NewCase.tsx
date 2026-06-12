@@ -4,18 +4,28 @@ import { api } from "../api";
 import { BackButton } from "../components/BackButton";
 import { Hint } from "../components/Hint";
 import { LocationAutocomplete } from "../components/LocationAutocomplete";
+import { useCases } from "../lib/CasesContext";
 
+// Big tappable cards instead of a dropdown: every option visible at once,
+// no fine motor control needed. Text only — no emoji.
 const DISASTERS = [
-  { value: "wildfire", label: "Wildfire / smoke" },
-  { value: "flood", label: "Flood / water" },
-  { value: "hurricane", label: "Hurricane / wind" },
-  { value: "tornado", label: "Tornado" },
-  { value: "earthquake", label: "Earthquake" },
-  { value: "other", label: "Something else" },
+  { value: "wildfire", label: "Wildfire / smoke", detail: "Fire, smoke, or ash damage" },
+  { value: "flood", label: "Flood / water", detail: "Flooding, sewer backup, burst pipes" },
+  { value: "hurricane", label: "Hurricane / wind", detail: "Severe wind or storm damage" },
+  { value: "tornado", label: "Tornado", detail: "Tornado or funnel-cloud damage" },
+  { value: "earthquake", label: "Earthquake", detail: "Structural or shaking damage" },
+  { value: "other", label: "Something else", detail: "Hail, winter storm, or anything else" },
 ];
+
+function isoDaysAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
 
 export default function NewCase() {
   const nav = useNavigate();
+  const { refresh } = useCases();
   const [form, setForm] = useState({
     case_name: "",
     disaster_type: "wildfire",
@@ -29,12 +39,24 @@ export default function NewCase() {
     setForm({ ...form, [k]: v });
   }
 
+  // Naming a case is a creative task nobody in crisis needs. Suggest one
+  // from what we already know; the user can change it any time.
+  function suggestedName(): string {
+    const label = DISASTERS.find((d) => d.value === form.disaster_type)?.label ?? "Recovery";
+    const place = form.location ? form.location.split(",")[0].trim() : "";
+    const when = (form.incident_date ? new Date(form.incident_date + "T00:00:00") : new Date())
+      .toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    return [label.split(" /")[0], place, when].filter(Boolean).join(" — ");
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
     setBusy(true);
     try {
-      const res = await api.createCase(form);
+      const payload = { ...form, case_name: form.case_name.trim() || suggestedName() };
+      const res = await api.createCase(payload);
+      refresh();
       nav(`/cases/${res.case.id}/recommendations`);
     } catch (e: any) {
       setErr(e.message ?? String(e));
@@ -45,28 +67,29 @@ export default function NewCase() {
 
   return (
     <div className="container" style={{ maxWidth: 620 }}>
-      <BackButton />
+      <BackButton to="/dashboard" label="Dashboard" />
       <h1 style={{ marginTop: 16 }}>Tell us what happened</h1>
       <p className="warm-note">
         Just the basics for now. You can add photos and documents in the next step.
       </p>
       <div className="card">
         <form onSubmit={submit}>
-          <label>
-            What would you like to call this?{" "}
-            <Hint text="Just a name to find it later — e.g. 'Our house fire' or 'June flood'. You can change it anytime." />
-          </label>
-          <input
-            value={form.case_name}
-            placeholder="e.g. Our house fire"
-            onChange={(e) => update("case_name", e.target.value)}
-            required
-          />
-
-          <label>What kind of disaster was it?</label>
-          <select value={form.disaster_type} onChange={(e) => update("disaster_type", e.target.value)}>
-            {DISASTERS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-          </select>
+          <label id="disaster-label">What kind of disaster was it?</label>
+          <div className="choice-grid" role="radiogroup" aria-labelledby="disaster-label">
+            {DISASTERS.map((d) => (
+              <button
+                key={d.value}
+                type="button"
+                role="radio"
+                aria-checked={form.disaster_type === d.value}
+                className={`choice-card${form.disaster_type === d.value ? " selected" : ""}`}
+                onClick={() => update("disaster_type", d.value)}
+              >
+                <span className="choice-title">{d.label}</span>
+                <span className="choice-detail">{d.detail}</span>
+              </button>
+            ))}
+          </div>
 
           <label>
             Where did it happen?{" "}
@@ -79,12 +102,34 @@ export default function NewCase() {
 
           <label>
             When did it happen?{" "}
-            <Hint text="Optional — but it helps us flag insurance deadlines that are coming up soon." />
+            <Hint text="Optional - an estimate is fine. It helps us flag insurance deadlines that are coming up soon." />
           </label>
+          <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(0))}>
+              Today
+            </button>
+            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(1))}>
+              Yesterday
+            </button>
+            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(7))}>
+              About a week ago
+            </button>
+          </div>
           <input
             type="date"
             value={form.incident_date}
+            aria-label="Date of the incident"
             onChange={(e) => update("incident_date", e.target.value)}
+          />
+
+          <label>
+            Name for this case (optional){" "}
+            <Hint text="Just a label to find it later. We'll pick a sensible one if you leave this blank, and you can change it anytime." />
+          </label>
+          <input
+            value={form.case_name}
+            placeholder={suggestedName()}
+            onChange={(e) => update("case_name", e.target.value)}
           />
 
           {err && <div className="error">{err}</div>}

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -18,6 +18,10 @@ import { TermsGate } from "./components/TermsGate";
 import { Spinner } from "./components/Skeleton";
 import { HelpFooter } from "./components/HelpFooter";
 import { CasePicker } from "./components/CasePicker";
+import { OfflineBanner } from "./components/OfflineBanner";
+import { ToastProvider } from "./components/Toast";
+import { CasesProvider, useCases } from "./lib/CasesContext";
+import { useDismissable } from "./lib/useDismissable";
 import { api } from "./api";
 import { isAlertRelevantToLocation } from "./lib/regionMapping";
 
@@ -29,9 +33,37 @@ type DerivedNotif = {
   unread: boolean;
 };
 
-function useDerivedNotifications(): DerivedNotif[] {
+// Read/dismissed state for derived notifications, persisted locally so the
+// red badge actually goes away once the user has seen things. A permanently
+// red badge is a low-grade stressor for an already anxious user.
+const SEEN_KEY = "rebuildr.notifs.seen";
+const DISMISSED_KEY = "rebuildr.notifs.dismissed";
+
+function readIdSet(key: string): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(key) ?? "[]") as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeIdSet(key: string, ids: Set<string>) {
+  try {
+    localStorage.setItem(key, JSON.stringify(Array.from(ids).slice(-200)));
+  } catch {
+    /* storage full or unavailable — fine, this is best-effort */
+  }
+}
+
+function useDerivedNotifications(): {
+  notifs: DerivedNotif[];
+  markSeen: (id: string) => void;
+  dismiss: (id: string) => void;
+} {
   const { user } = useAuth();
   const [notifs, setNotifs] = useState<DerivedNotif[]>([]);
+  const [seen, setSeen] = useState<Set<string>>(() => readIdSet(SEEN_KEY));
+  const [dismissed, setDismissed] = useState<Set<string>>(() => readIdSet(DISMISSED_KEY));
 
   useEffect(() => {
     if (!user) { setNotifs([]); return; }
@@ -85,7 +117,6 @@ function useDerivedNotifications(): DerivedNotif[] {
           });
         } else {
           const latest = cases[0];
-          // Crude "inventory empty?" check — we don't list items here to keep this cheap.
           out.push({
             id: `recs-${latest.id}`,
             title: "Your recovery plan is ready",
@@ -102,7 +133,7 @@ function useDerivedNotifications(): DerivedNotif[] {
               out.push({
                 id: `inventory-missing-${latest.id}`,
                 title: "Complete your home inventory",
-                body: "A detailed home inventory helps document losses — add photos and items now.",
+                body: "A detailed home inventory helps document your losses. Adding photos and items now makes everything easier later.",
                 to: `/cases/${latest.id}/inventory`,
                 unread: true,
               });
@@ -138,7 +169,7 @@ function useDerivedNotifications(): DerivedNotif[] {
             const insuranceAppend = !hasPolicy ? "\n\nPlease upload your insurance documents to prepare for potential claims." : "";
             out.push({
               id: `alert-${a.id}`,
-              title: `${high ? '⚠️ ' : ''}${String(a.title || 'Weather alert')}`,
+              title: `${high ? "Important: " : ""}${String(a.title || "Weather alert")}`,
               body: `${msg}${insuranceAppend}`,
               to: "/emergency",
               unread: true,
@@ -157,32 +188,51 @@ function useDerivedNotifications(): DerivedNotif[] {
     return () => { cancelled = true; };
   }, [user]);
 
-  return notifs;
+  const visible = notifs
+    .filter((n) => !dismissed.has(n.id))
+    .map((n) => ({ ...n, unread: n.unread && !seen.has(n.id) }));
+
+  function markSeen(id: string) {
+    setSeen((prev) => {
+      const next = new Set(prev).add(id);
+      writeIdSet(SEEN_KEY, next);
+      return next;
+    });
+  }
+
+  function dismiss(id: string) {
+    setDismissed((prev) => {
+      const next = new Set(prev).add(id);
+      writeIdSet(DISMISSED_KEY, next);
+      return next;
+    });
+    markSeen(id);
+  }
+
+  return { notifs: visible, markSeen, dismiss };
 }
 
 function NotificationsButton() {
-  const notifs = useDerivedNotifications();
+  const { notifs, markSeen, dismiss } = useDerivedNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
   const unreadCount = notifs.filter((n) => n.unread).length;
 
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  useDismissable(ref, open, () => setOpen(false));
 
   return (
     <div className="nav-pop" ref={ref}>
       <button
         className="icon-btn"
-        aria-label="Notifications"
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span aria-hidden>🔔</span>
+        <svg aria-hidden viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+        </svg>
         {unreadCount > 0 && <span className="dot-badge">{unreadCount}</span>}
       </button>
       {open && (
@@ -195,10 +245,24 @@ function NotificationsButton() {
             <div
               key={n.id}
               className={`notif-item${n.unread ? " unread" : ""}${n.to ? " actionable" : ""}`}
-              onClick={() => { if (n.to) { setOpen(false); nav(n.to); } }}
+              onClick={() => {
+                markSeen(n.id);
+                if (n.to) { setOpen(false); nav(n.to); }
+              }}
             >
-              <div className="notif-title">{n.title}</div>
-              <div className="notif-body">{n.body}</div>
+              <div className="row" style={{ gap: 6, flexWrap: "nowrap", alignItems: "flex-start" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="notif-title">{n.title}</div>
+                  <div className="notif-body">{n.body}</div>
+                </div>
+                <button
+                  className="close-x"
+                  aria-label={`Dismiss "${n.title}"`}
+                  onClick={(e) => { e.stopPropagation(); dismiss(n.id); }}
+                >
+                  ×
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -213,13 +277,7 @@ function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
+  useDismissable(ref, open, () => setOpen(false));
 
   const initial = (user?.email ?? "?").trim().charAt(0).toUpperCase();
 
@@ -228,6 +286,7 @@ function ProfileMenu() {
       <button
         className="avatar-btn"
         aria-label="Profile menu"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
         {initial}
@@ -259,6 +318,24 @@ function ProfileMenu() {
   );
 }
 
+// Persistent links to the main sections — previously these were only
+// reachable through dashboard tiles, so users lost their way constantly.
+function SectionLinks({ className }: { className: string }) {
+  const { latest } = useCases();
+  const planTo = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
+  const inventoryTo = latest ? `/cases/${latest.id}/inventory` : "/cases/new";
+  return (
+    <nav className={className} aria-label="Main sections">
+      <NavLink to={planTo} className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
+      <NavLink to={inventoryTo} className={({ isActive }) => (isActive ? "active" : "")}>Inventory</NavLink>
+      <NavLink to="/documents" className={({ isActive }) => (isActive ? "active" : "")}>Documents</NavLink>
+      <NavLink to="/emergency" className={({ isActive }) => (isActive ? "active urgent-link" : "urgent-link")}>
+        Get help
+      </NavLink>
+    </nav>
+  );
+}
+
 function Nav() {
   const { user } = useAuth();
   return (
@@ -267,16 +344,30 @@ function Nav() {
       <div className="row">
         {user ? (
           <>
-            <Link to="/dashboard">Dashboard</Link>
+            <SectionLinks className="nav-links" />
+            <Link to="/dashboard" className="nav-dashboard">Dashboard</Link>
             <NotificationsButton />
             <ProfileMenu />
           </>
         ) : (
-          <Link to="/login"><button>Sign in</button></Link>
+          <>
+            <Link to="/emergency" className="urgent-link">Get help now</Link>
+            <Link to="/login"><button>Sign in</button></Link>
+          </>
         )}
       </div>
     </div>
   );
+}
+
+// Bottom tab bar on phones: the four places a stressed user needs, always
+// one thumb-tap away — including emergency help.
+function MobileTabBar() {
+  const { user } = useAuth();
+  const loc = useLocation();
+  if (!user) return null;
+  if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
+  return <SectionLinks className="tabbar" />;
 }
 
 function ActionBar() {
@@ -302,25 +393,31 @@ function Private({ children }: { children: JSX.Element }) {
 
 export default function App() {
   return (
-    <TermsGate>
-      <Nav />
-      <ActionBar />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/emergency" element={<Emergency />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/legal/terms" element={<Terms />} />
-        <Route path="/legal/privacy" element={<Privacy />} />
-        <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
-        <Route path="/profile" element={<Private><Profile /></Private>} />
-        <Route path="/documents" element={<Private><Documents /></Private>} />
-        <Route path="/cases/new" element={<Private><NewCase /></Private>} />
-        <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />
-        <Route path="/cases/:id/inventory" element={<Private><Inventory /></Private>} />
-        <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <HelpFooter />
-    </TermsGate>
+    <CasesProvider>
+      <ToastProvider>
+        <TermsGate>
+          <OfflineBanner />
+          <Nav />
+          <ActionBar />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/emergency" element={<Emergency />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/legal/terms" element={<Terms />} />
+            <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
+            <Route path="/profile" element={<Private><Profile /></Private>} />
+            <Route path="/documents" element={<Private><Documents /></Private>} />
+            <Route path="/cases/new" element={<Private><NewCase /></Private>} />
+            <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />
+            <Route path="/cases/:id/inventory" element={<Private><Inventory /></Private>} />
+            <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <HelpFooter />
+          <MobileTabBar />
+        </TermsGate>
+      </ToastProvider>
+    </CasesProvider>
   );
 }

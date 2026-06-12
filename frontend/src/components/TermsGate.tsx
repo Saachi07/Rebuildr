@@ -51,7 +51,7 @@ export function TermsGate({ children }: { children: React.ReactNode }) {
       {children}
       {showGate && (
         <div className="modal-backdrop">
-          <div className="modal">
+          <div className="modal" role="dialog" aria-modal="true" aria-label="Review our terms">
             <h2 style={{ marginTop: 0 }}>Please review our terms</h2>
             <p className="muted">
               Before continuing, please accept the latest Terms of Service

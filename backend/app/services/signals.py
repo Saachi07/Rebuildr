@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from typing import Iterable, Optional
 
 # Worst-first ordering for case_items.damage_severity values.
@@ -54,6 +54,13 @@ _MONTHS = {m: i + 1 for i, m in enumerate(
      "july", "august", "september", "october", "november", "december")
 )}
 
+# Dollar amounts inside coverage-limit strings ("Contents: $40,000 CAD").
+_MONEY = re.compile(r"\$\s?([\d][\d,]*(?:\.\d{1,2})?)")
+
+# A deadline that recently closed is still worth surfacing ("call and ask
+# about an extension") rather than silently hiding.
+PAST_DUE_GRACE_DAYS = 14
+
 
 @dataclass
 class InventorySignals:
@@ -77,6 +84,9 @@ class DocumentSignals:
     deadlines: list[DocumentDeadline] = field(default_factory=list)
     denial_flag: bool = False
     tags: set[str] = field(default_factory=set)
+    # Largest dollar figure found in coverage_limits strings; compared
+    # against the inventory's total estimated value by the recommender.
+    coverage_limit_cad: Optional[float] = None
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +184,7 @@ def document_signals_from_documents(
 
     sig = DocumentSignals()
     ref = today or date.today()
+    earliest_kept = ref - timedelta(days=PAST_DUE_GRACE_DAYS)
     for row in analyzed:
         analysis = row["gemini_analysis"]
         doc_name = row.get("name") or "document"
@@ -190,7 +201,7 @@ def document_signals_from_documents(
                 sig.extracted_insurer = value.strip() or None
             if _DEADLINE_FIELD_LABELS.search(label):
                 due = parse_date_loose(value)
-                if due and due >= ref:
+                if due and due >= earliest_kept:
                     sig.deadlines.append(
                         DocumentDeadline(source_doc=doc_name, label=label, due_date=due)
                     )
@@ -203,7 +214,7 @@ def document_signals_from_documents(
         for dl in rich.get("deadlines") or []:
             task = str(dl.get("task") or "").strip()
             due = parse_date_loose(str(dl.get("date") or ""))
-            if due and due >= ref:
+            if due and due >= earliest_kept:
                 sig.deadlines.append(
                     DocumentDeadline(
                         source_doc=doc_name,
@@ -211,6 +222,14 @@ def document_signals_from_documents(
                         due_date=due,
                     )
                 )
+        for limit in rich.get("coverage_limits") or []:
+            for m in _MONEY.finditer(str(limit)):
+                try:
+                    amount = float(m.group(1).replace(",", ""))
+                except ValueError:
+                    continue
+                if sig.coverage_limit_cad is None or amount > sig.coverage_limit_cad:
+                    sig.coverage_limit_cad = amount
         rich_text = " ".join(
             [str(rich.get("plain_language_summary") or "")]
             + [str(f.get("message") or "") for f in rich.get("flagged_issues") or []]

@@ -53,7 +53,7 @@ export default function Profile() {
 
   return (
     <div className="container" style={{ maxWidth: 720 }}>
-      <BackButton />
+      <BackButton to="/dashboard" label="Dashboard" />
       <h1 style={{ marginTop: 16 }}>Your profile</h1>
       <p className="warm-note" style={{ marginTop: 8 }}>
         A little about you, so we can tailor the help to your situation.
