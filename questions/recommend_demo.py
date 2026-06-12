@@ -86,14 +86,16 @@ SCENARIOS = [
 ]
 
 
-CATEGORY_ORDER = ["shelter", "health", "financial", "policy", "documents", "community"]
+CATEGORY_ORDER = ["shelter", "health", "financial", "insurance", "policy", "documents", "community", "rebuild"]
 CATEGORY_LABELS = {
     "shelter": "Shelter & safety",
     "health": "Health & medical",
     "financial": "Financial / insurance",
+    "insurance": "Insurance help",
     "policy": "Government programs",
     "documents": "Document replacement",
     "community": "Community supports",
+    "rebuild": "Cleanup & rebuilding",
 }
 
 
