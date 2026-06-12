@@ -38,7 +38,7 @@ export default function Dashboard() {
 
         <Link to="/documents" className="card tile big-tile">
           <h2>Documents</h2>
-          <p>Your insurance, ID, and claim papers — all in one safe place.</p>
+          <p>Your insurance, ID, and claim papers. All in one safe place.</p>
         </Link>
 
         <Link to={inventoryHref} className="card tile big-tile">
