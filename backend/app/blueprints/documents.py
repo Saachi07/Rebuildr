@@ -20,15 +20,28 @@ phone photos of their paperwork, not scans.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from flask import Blueprint, current_app, g, jsonify, request
 
 from ..auth import require_auth
 from ..extensions import service_client, user_client
-from ..services.document_pipeline import PipelineUnavailable, analyze_document_rich
+from ..services.document_pipeline import (
+    PipelineUnavailable,
+    analyze_document_rich,
+    analyze_image_rich,
+)
 from ..services.gemini_documents import analyze_document
+from ..services.upload_validation import HEADER_LENGTH, sniff_mime
+
+try:
+    # Shared per-user rate limiter. Created alongside this module; if it is
+    # not deployed yet we fail open rather than blocking every analysis.
+    from ..services.rate_limit import check_rate_limit
+except ImportError:  # pragma: no cover - transitional until rate_limit ships
+    def check_rate_limit(user_id: str, key: str, max_per_minute: int) -> bool:
+        return True
 
 bp = Blueprint("documents", __name__, url_prefix="/documents")
 
@@ -134,6 +147,20 @@ def upload_document():
     if size_bytes == 0:
         return jsonify({"error": "empty file"}), 400
 
+    # Magic-number check: the extension and the browser-reported mime are
+    # both user-controlled, so verify the actual file content. This blocks
+    # renamed executables / html masquerading as documents.
+    sniffed = sniff_mime(blob[:HEADER_LENGTH])
+    if sniffed is None:
+        return jsonify({
+            "error": "this file does not look like a PDF or a photo inside. "
+                     "Please upload the original PDF or a clear phone photo "
+                     "(JPG, PNG, WebP, HEIC) of the document"
+        }), 415
+    # Trust the sniffed type over the declared one; a .jpg that is really a
+    # PNG should still work, just stored under its true type.
+    mime = sniffed
+
     storage_path = f"{g.user_id}/{uuid.uuid4()}.{ALLOWED_MIME[mime]}"
     svc = service_client()
     svc.storage.from_(BUCKET).upload(
@@ -182,35 +209,93 @@ def update_document(document_id: str):
         return jsonify({"error": "nothing to update"}), 400
 
     sb = user_client(g.access_token)
+
+    # Changing the type invalidates the stored analysis: a policy analyzed
+    # as a receipt would keep showing receipt-shaped findings. Clear it so
+    # the UI prompts for a fresh analysis under the corrected type.
+    if "doc_type" in patch:
+        current = (
+            sb.table("user_documents")
+            .select("doc_type")
+            .eq("id", document_id)
+            .maybe_single()
+            .execute()
+        )
+        if not current.data:
+            return jsonify({"error": "not found"}), 404
+        if current.data.get("doc_type") != patch["doc_type"]:
+            patch["gemini_analysis"] = None
+            patch["analyzed_at"] = None
+
     res = sb.table("user_documents").update(patch).eq("id", document_id).execute()
     if not res.data:
         return jsonify({"error": "not found"}), 404
     return jsonify({"document": _serialize(res.data[0])})
 
 
+# How long a soft-deleted document stays restorable. After this window the
+# deleted list stops showing it (a cleanup job can reap the blob later).
+RESTORE_WINDOW_DAYS = 30
+
+
 @bp.delete("/<document_id>")
 @require_auth
 def delete_document(document_id: str):
+    """Soft delete: mark the row deleted but keep the storage blob.
+
+    Survivors deleting the wrong policy PDF mid-crisis is a real failure
+    mode, so deletion is reversible for RESTORE_WINDOW_DAYS via
+    POST /documents/<id>/restore."""
     sb = user_client(g.access_token)
-    fetch = (
+    res = (
         sb.table("user_documents")
-        .select("storage_path")
+        .update({"deleted_at": datetime.now(timezone.utc).isoformat()})
         .eq("id", document_id)
-        .maybe_single()
+        .is_("deleted_at", "null")
         .execute()
     )
-    if not fetch.data:
-        return jsonify({"error": "not found"}), 404
-
-    res = sb.table("user_documents").delete().eq("id", document_id).execute()
     if not res.data:
         return jsonify({"error": "not found"}), 404
-
-    try:
-        service_client().storage.from_(BUCKET).remove([fetch.data["storage_path"]])
-    except Exception:
-        pass
     return jsonify({"ok": True})
+
+
+@bp.get("/deleted")
+@require_auth
+def list_deleted_documents():
+    """List documents soft-deleted within the restore window."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=RESTORE_WINDOW_DAYS)
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("user_documents")
+        .select("id, name, doc_type, mime_type, size_bytes, uploaded_at, analyzed_at, gemini_analysis, deleted_at")
+        .not_.is_("deleted_at", "null")
+        .gte("deleted_at", cutoff.isoformat())
+        .order("deleted_at", desc=True)
+        .execute()
+    )
+    documents = []
+    for row in res.data or []:
+        doc = _serialize(row)
+        doc["deleted_at"] = row.get("deleted_at")
+        documents.append(doc)
+    return jsonify({"documents": documents})
+
+
+@bp.post("/<document_id>/restore")
+@require_auth
+def restore_document(document_id: str):
+    """Undo a soft delete; the blob never left storage."""
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("user_documents")
+        .update({"deleted_at": None})
+        .eq("id", document_id)
+        .not_.is_("deleted_at", "null")
+        .execute()
+    )
+    if not res.data:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"document": _serialize(res.data[0])})
 
 
 @bp.get("/<document_id>/url")
@@ -243,6 +328,14 @@ def analyze_document_endpoint(document_id: str):
     if not api_key:
         return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
 
+    # Each analysis is at least one Gemini call (two for PDFs); cap per-user
+    # throughput so a stuck retry loop or abuse cannot drain the API quota.
+    if not check_rate_limit(g.user_id, "documents.analyze", 10):
+        return jsonify({
+            "error": "you are analyzing documents very quickly. Please wait "
+                     "a minute and try again"
+        }), 429
+
     sb = user_client(g.access_token)
     fetched = (
         sb.table("user_documents")
@@ -270,20 +363,25 @@ def analyze_document_endpoint(document_id: str):
     analysis = result.model_dump()
 
     # For documents that are actually disaster-recovery related, run the richer
-    # pipeline (text extraction → spaCy NLP → structured Gemini summary) and
-    # merge its findings — deadlines, flagged issues, coverage limits, required
-    # actions, warnings — into the stored analysis. "other" documents are
-    # skipped: they don't feed the plan, so the extra work isn't worth it.
-    # The rich pipeline is PDF-text based, so photo uploads skip it too —
-    # they still get the classifier summary above.
-    if analysis.get("doc_type") != "other" and mime == "application/pdf":
+    # analysis (deadlines, flagged issues, coverage limits, glossary, coverage
+    # scope, deductible, all with verbatim citations) and merge its findings
+    # into the stored analysis. "other" documents are skipped: they don't feed
+    # the plan, so the extra work isn't worth it.
+    # PDFs go through local extraction, spaCy NLP, then a structured Gemini
+    # summary with quote verification against the extracted text. Photos have
+    # no local text, so they go straight to Gemini's image path; their quotes
+    # are unverifiable (verified=None, verification.checked=False).
+    if analysis.get("doc_type") != "other":
         try:
-            rich = analyze_document_rich(blob, api_key)
+            if mime == "application/pdf":
+                rich = analyze_document_rich(blob, api_key)
+            else:
+                rich = analyze_image_rich(blob, api_key, mime)
             # The richer plain-language summary supersedes the one-line classifier
             # blurb for display, but we keep the classifier `summary` too because
             # the recommender's signal extraction reads it.
             analysis["analysis"] = rich
-        except PipelineUnavailable as exc:  # degrade — classification still stands
+        except PipelineUnavailable as exc:  # degrade, classification still stands
             current_app.logger.warning("rich document pipeline skipped: %s", exc)
 
     update = {

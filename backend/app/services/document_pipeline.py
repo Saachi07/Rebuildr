@@ -69,6 +69,49 @@ def analyze_document_rich(pdf_bytes: bytes, api_key: str) -> dict[str, Any]:
     return _shape(result)
 
 
+def analyze_image_rich(image_bytes: bytes, api_key: str, mime_type: str) -> dict[str, Any]:
+    """Run the rich structured analysis on a document photo.
+
+    Photos have no locally extractable text, so the structured summary runs
+    directly on the image bytes via Gemini, and quote verification is
+    impossible: every verified flag is None and verification.checked is
+    False. The returned dict matches :func:`analyze_document_rich` so the
+    frontend renders both paths identically.
+    """
+    if not api_key:
+        raise PipelineUnavailable("GEMINI_API_KEY not configured")
+
+    from .gemini_documents import analyze_image_rich as _gemini_image_rich
+
+    try:
+        analysis = _gemini_image_rich(image_bytes, api_key, mime_type)
+    except Exception as exc:  # noqa: BLE001 - any failure degrades to classifier-only
+        raise PipelineUnavailable(str(exc)) from exc
+
+    return {
+        "plain_language_summary": analysis.get("plain_language_summary"),
+        "flagged_issues": analysis.get("flagged_issues") or [],
+        "deadlines": analysis.get("deadlines") or [],
+        "coverage_limits": analysis.get("coverage_limits") or [],
+        "required_actions": analysis.get("required_actions") or [],
+        "warnings": analysis.get("warnings") or [],
+        "glossary": analysis.get("glossary") or [],
+        "coverage_scope": analysis.get("coverage_scope") or [],
+        "deductible": analysis.get("deductible"),
+        "verification": analysis.get("verification")
+        or {"checked": False, "total": 0, "verified_count": 0},
+        "summary_provider": "gemini-image",
+        # No local extraction runs for photos; keep the blocks present so
+        # consumers do not need to special-case the image path.
+        "nlp": {"dates": [], "money": [], "organizations": [], "provider": None},
+        "extraction_meta": {
+            "page_count": None,
+            "ocr_pages": None,
+            "character_count": None,
+        },
+    }
+
+
 def _shape(result: dict[str, Any]) -> dict[str, Any]:
     """Flatten the pipeline result into the fields we persist + render."""
     summary: dict[str, Any] = result.get("summary") or {}
@@ -82,6 +125,11 @@ def _shape(result: dict[str, Any]) -> dict[str, Any]:
         "coverage_limits": summary.get("coverage_limits") or [],
         "required_actions": summary.get("required_actions") or [],
         "warnings": summary.get("warnings") or [],
+        "glossary": summary.get("glossary") or [],
+        "coverage_scope": summary.get("coverage_scope") or [],
+        "deductible": summary.get("deductible"),
+        "verification": summary.get("verification")
+        or {"checked": False, "total": 0, "verified_count": 0},
         "summary_provider": summary.get("provider"),
         "nlp": {
             "dates": nlp.get("dates") or [],

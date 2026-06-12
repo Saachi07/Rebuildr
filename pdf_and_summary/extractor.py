@@ -31,6 +31,21 @@ def _read_pdf(source: bytes | bytearray | PathLike[str] | BinaryIO) -> bytes:
     raise InvalidPDFError("The uploaded document must be a PDF file.")
 
 
+def annotate_pages(page_texts: list[str]) -> str:
+    """Join per-page texts with [PAGE n] markers for the Gemini prompt.
+
+    The summarizer asks Gemini to report the page number each verbatim quote
+    came from; these markers are the only page-number signal it gets. Pages
+    without extractable text are skipped entirely so the model never cites an
+    empty page.
+    """
+    parts = []
+    for index, page_text in enumerate(page_texts):
+        if page_text.strip():
+            parts.append(f"[PAGE {index + 1}]\n{page_text.strip()}")
+    return "\n\n".join(parts)
+
+
 def _clean_page_text(text: str) -> str:
     text = text.replace("\x00", "").replace("\r\n", "\n").replace("\r", "\n")
     text = re.sub(r"[^\S\n]+", " ", text)
@@ -76,6 +91,9 @@ def extract_text_from_pdf(
             raise InvalidPDFError(f"The PDF exceeds the {max_pages}-page limit.")
 
         pages = []
+        # One entry per physical page (empty string when nothing extractable)
+        # so page_texts indexes stay aligned with page numbers.
+        page_texts: list[str] = []
         pages_with_text = 0
         native_text_pages = 0
         ocr_pages = 0
@@ -108,6 +126,7 @@ def extract_text_from_pdf(
                 pages.append(f"--- Page {index + 1} ({page_source}) ---\n{cleaned}")
             else:
                 warnings.append(f"Page {index + 1} contains no extractable text.")
+            page_texts.append(cleaned)
 
         if pages_with_text == 0:
             warnings.append(
@@ -134,6 +153,7 @@ def extract_text_from_pdf(
             ocr_pages=ocr_pages,
             ocr_engine=active_ocr_engine.name if ocr_pages else None,
             warnings=warnings,
+            page_texts=page_texts,
         )
     finally:
         document.close()

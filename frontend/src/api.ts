@@ -55,20 +55,48 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+// Transient failures (model overloaded, rate limited, brief network blip)
+// resolve themselves within seconds. Retrying quietly spares a stressed user
+// from seeing an error they would only respond to by clicking retry anyway.
+// GETs always retry; mutating calls only when the caller opts in.
+const RETRY_DELAYS_MS = [800, 2000];
+const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
+
+type RequestOptions = RequestInit & { retryTransient?: boolean };
+
+async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
+  const { retryTransient, ...fetchInit } = init;
+  const method = (fetchInit.method ?? "GET").toUpperCase();
+  const shouldRetry = retryTransient ?? method === "GET";
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(await authHeaders()),
-    ...(init.headers ?? {}),
+    ...(fetchInit.headers ?? {}),
   };
-  let res: Response;
-  try {
-    res = await fetch(`${BASE}${path}`, { ...init, headers });
-  } catch {
-    throw new ApiError(OFFLINE_MESSAGE);
+  const maxAttempts = shouldRetry ? RETRY_DELAYS_MS.length + 1 : 1;
+  let lastError: ApiError | null = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}${path}`, { ...fetchInit, headers });
+    } catch {
+      lastError = new ApiError(OFFLINE_MESSAGE);
+      continue;
+    }
+    if (!res.ok) {
+      const err = await toApiError(res);
+      if (RETRYABLE_STATUSES.has(res.status)) {
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+    return res.json() as Promise<T>;
   }
-  if (!res.ok) throw await toApiError(res);
-  return res.json() as Promise<T>;
+  throw lastError ?? new ApiError(OFFLINE_MESSAGE);
 }
 
 // Multipart upload with progress reporting. fetch() can't report upload
@@ -111,6 +139,28 @@ async function uploadWithProgress<T>(
   });
 }
 
+// Where the insurance claim stands. Mirrors the validation list in
+// backend/app/blueprints/cases.py; the UI renders friendly labels.
+export type ClaimStage =
+  | "not_started"
+  | "reported"
+  | "adjuster_assigned"
+  | "estimate_received"
+  | "settlement_offer"
+  | "payout"
+  | "closed"
+  | "denied";
+
+// A coverage the user declined, added, or is unsure about. Survivors lose
+// disputes because there is no record of what was offered and declined at
+// signup, so we let them write it down while they still remember.
+export type CoverageDecision = {
+  coverage: string;
+  decision: "declined" | "added" | "unsure";
+  noted_on?: string | null;
+  note?: string | null;
+};
+
 export type Case = {
   id: string;
   case_name: string;
@@ -119,8 +169,48 @@ export type Case = {
   location?: string | null;
   incident_date?: string | null;
   status?: string | null;
+  claim_stage?: ClaimStage | null;
+  checklist_state?: Record<string, boolean> | null;
+  coverage_decisions?: CoverageDecision[] | null;
   intake_answers?: Record<string, unknown> | null;
   derived_tags?: string[] | null;
+  created_at?: string;
+  deleted_at?: string | null;
+};
+
+export type CommChannel = "phone" | "email" | "in_person" | "mail" | "other";
+export type CommKind = "note" | "call" | "email" | "meeting" | "discrepancy";
+
+// One entry in the claim communications log: who the user talked to, when,
+// and what was said. The `discrepancy` kind pairs `insurer_statement` (what
+// they were told) with `summary` (what the policy or user says happened).
+export type Communication = {
+  id: string;
+  case_id: string;
+  occurred_at: string;
+  contact_name?: string | null;
+  organization?: string | null;
+  channel?: CommChannel | null;
+  kind: CommKind;
+  summary: string;
+  insurer_statement?: string | null;
+  follow_up?: string | null;
+  created_at?: string;
+};
+
+export type AleCategory = "hotel" | "meals" | "transport" | "storage" | "pets" | "other";
+
+// An additional living expense the insurer may reimburse while the user is
+// displaced. Keeping receipts organized is what gets ALE paid out fastest.
+export type AleExpense = {
+  id: string;
+  case_id: string;
+  category: AleCategory;
+  vendor?: string | null;
+  amount: number;
+  expense_date?: string | null;
+  receipt_url?: string | null;
+  notes?: string | null;
   created_at?: string;
 };
 
@@ -139,18 +229,58 @@ export type Item = {
   after_url?: string;
 };
 
-export type FlaggedIssue = { issue_type: string; message: string };
-export type Deadline = { task: string; date: string };
+// Every extracted fact carries the exact sentence it came from plus the page
+// it appears on, so the UI can show the contract's own words next to our
+// plain-language version. `verified` is set server-side by checking the quote
+// against the locally extracted text: true = found verbatim, false = not
+// found (show as unverified), null = nothing to check against (photo uploads).
+export type SourceCited = {
+  source_quote?: string | null;
+  page_number?: number | null;
+  verified?: boolean | null;
+};
 
-// Output of the rich pdf_and_summary pipeline (text extraction → spaCy NLP →
-// structured Gemini summary), merged under `analysis` on relevant documents.
+export type FlaggedIssue = { issue_type: string; message: string } & SourceCited;
+export type Deadline = { task: string; date: string } & SourceCited;
+export type CoverageLimit = { text: string } & SourceCited;
+export type GlossaryTerm = {
+  term: string;
+  definition: string;
+  source_quote?: string | null;
+  page_number?: number | null;
+};
+export type CoverageScopeStatus = "covered" | "not_covered" | "conditional" | "unclear";
+export type CoverageScopeEntry = {
+  item: string;
+  status: CoverageScopeStatus;
+  detail?: string | null;
+} & SourceCited;
+export type Deductible = {
+  amount?: string | null;
+  type: "fixed" | "percentage" | "unknown";
+  detail?: string | null;
+} & SourceCited;
+export type Verification = {
+  checked: boolean;
+  total: number;
+  verified_count: number;
+};
+
+// Output of the rich pdf_and_summary pipeline (text extraction, spaCy NLP,
+// then a structured Gemini summary), merged under `analysis` on relevant
+// documents. coverage_limits accepts plain strings too because analyses
+// stored before the citations change are still in that older shape.
 export type RichAnalysis = {
   plain_language_summary?: string | null;
   flagged_issues?: FlaggedIssue[];
   deadlines?: Deadline[];
-  coverage_limits?: string[];
+  coverage_limits?: (string | CoverageLimit)[];
   required_actions?: string[];
   warnings?: string[];
+  glossary?: GlossaryTerm[];
+  coverage_scope?: CoverageScopeEntry[];
+  deductible?: Deductible | null;
+  verification?: Verification | null;
   summary_provider?: string | null;
   nlp?: {
     dates?: string[];
@@ -262,6 +392,20 @@ export type Profile = {
   location?: string | null;
   region?: string | null;
   language?: string | null;
+  policy_reviewed_at?: string | null;
+};
+
+// Everything the user owns, in one JSON file. Built for users who need their
+// records outside the app, especially during a coverage dispute.
+export type DataExport = {
+  exported_at: string;
+  profile: Profile;
+  cases: Case[];
+  items: Item[];
+  documents: UserDocument[];
+  communications: Communication[];
+  ale_expenses: AleExpense[];
+  recommendations: unknown[];
 };
 
 export type ReadinessCheck = { key: string; done: boolean };
@@ -305,6 +449,47 @@ export const api = {
     }),
   deleteItem: (caseId: string, itemId: string) =>
     request<{ ok: true }>(`/cases/${caseId}/items/${itemId}`, { method: "DELETE" }),
+  deleteCase: (id: string) =>
+    request<{ ok: true }>(`/cases/${id}`, { method: "DELETE" }),
+  listDeletedCases: () => request<{ cases: Case[] }>("/cases/deleted"),
+  restoreCase: (id: string) =>
+    request<{ case: Case }>(`/cases/${id}/restore`, { method: "POST" }),
+
+  // Claim communications log
+  listCommunications: (caseId: string) =>
+    request<{ communications: Communication[] }>(`/cases/${caseId}/communications`),
+  createCommunication: (caseId: string, body: Partial<Communication>) =>
+    request<{ communication: Communication }>(`/cases/${caseId}/communications`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateCommunication: (id: string, body: Partial<Communication>) =>
+    request<{ communication: Communication }>(`/communications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteCommunication: (id: string) =>
+    request<{ ok: true }>(`/communications/${id}`, { method: "DELETE" }),
+
+  // Additional living expenses
+  listAleExpenses: (caseId: string) =>
+    request<{ expenses: AleExpense[]; total: number }>(`/cases/${caseId}/ale-expenses`),
+  createAleExpense: (caseId: string, body: Partial<AleExpense>) =>
+    request<{ expense: AleExpense }>(`/cases/${caseId}/ale-expenses`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateAleExpense: (id: string, body: Partial<AleExpense>) =>
+    request<{ expense: AleExpense }>(`/ale-expenses/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteAleExpense: (id: string) =>
+    request<{ ok: true }>(`/ale-expenses/${id}`, { method: "DELETE" }),
+
+  getDamageMapping: () =>
+    request<{ mapping: Record<string, string> }>("/meta/damage-mapping"),
+
   getRecommendations: (caseId: string, _topK = 5) =>
     request<RecommendResponse>(
       `/cases/${caseId}/recommendations`,
@@ -325,7 +510,16 @@ export const api = {
   getDocumentUrl: (id: string) =>
     request<{ url: string; ttl_seconds: number }>(`/documents/${id}/url`),
   analyzeDocument: (id: string) =>
-    request<{ document: UserDocument }>(`/documents/${id}/analyze`, { method: "POST" }),
+    // Gemini occasionally returns 503 under load; the retry usually saves
+    // the user from having to click analyze twice.
+    request<{ document: UserDocument }>(`/documents/${id}/analyze`, {
+      method: "POST",
+      retryTransient: true,
+    }),
+  listDeletedDocuments: () =>
+    request<{ documents: UserDocument[] }>("/documents/deleted"),
+  restoreDocument: (id: string) =>
+    request<{ document: UserDocument }>(`/documents/${id}/restore`, { method: "POST" }),
   updateDocument: (id: string, patch: { name?: string; doc_type?: string }) =>
     request<{ document: UserDocument }>(`/documents/${id}`, {
       method: "PATCH",
@@ -392,6 +586,12 @@ export const api = {
   getMe: () => request<MeResponse>("/me"),
   updateMe: (patch: Partial<Profile>) =>
     request<MeResponse>("/me", { method: "PATCH", body: JSON.stringify(patch) }),
+  exportMyData: () => request<DataExport>("/me/export"),
+  deleteAccount: () =>
+    request<{ ok: true; warnings?: string[] }>("/me", {
+      method: "DELETE",
+      body: JSON.stringify({ confirm: "DELETE" }),
+    }),
 
   getTerms: () => request<Terms>("/terms"),
   getTermsStatus: () => request<TermsStatus>("/terms/status"),
