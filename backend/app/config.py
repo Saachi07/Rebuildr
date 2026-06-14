@@ -2,10 +2,10 @@
 
 Persistence is delegated to Supabase. Two keys are needed server-side:
 
-* ``SUPABASE_ANON_KEY`` — used for sign-up / sign-in / password reset and for
+* ``SUPABASE_ANON_KEY``, used for sign-up / sign-in / password reset and for
   per-user calls where we want RLS to apply (we attach the user's access
   token to the client before each call).
-* ``SUPABASE_SERVICE_ROLE_KEY`` — used for server-side maintenance work that
+* ``SUPABASE_SERVICE_ROLE_KEY``, used for server-side maintenance work that
   must bypass RLS (e.g. writing into shared catalog tables). Never expose
   this to a browser.
 

@@ -36,7 +36,7 @@ export default function Terms() {
         You must notify Rebuildr immediately of any unauthorized access.
       </p>
 
-      <h2>YOUR CONTENT – OWNERSHIP AND LICENSE</h2>
+      <h2>YOUR CONTENT - OWNERSHIP AND LICENSE</h2>
       <p>
         You retain ownership of your Content. You grant Rebuildr a limited license to host,
         store, transmit, display, copy, and analyze your Content solely to operate and maintain

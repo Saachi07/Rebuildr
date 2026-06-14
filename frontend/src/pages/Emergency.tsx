@@ -11,14 +11,14 @@ type Contact = {
   urgent?: boolean;
 };
 
-// Rebuildr currently serves Alberta, Canada — every line here must actually
+// Rebuildr currently serves Alberta, Canada, every line here must actually
 // pick up for an Albertan. (US numbers like FEMA were removed: a dead-end
 // phone call is the last thing someone in crisis needs.)
 const CONTACTS: Contact[] = [
   {
     name: "911",
     phone: "911",
-    detail: "Life-threatening emergencies — fire, medical, immediate danger.",
+    detail: "Life-threatening emergencies, fire, medical, immediate danger.",
     urgent: true,
   },
   {
@@ -50,7 +50,7 @@ const CONTACTS: Contact[] = [
     name: "Alberta Supports",
     phone: "1-877-644-9992",
     url: "https://www.alberta.ca/alberta-supports",
-    detail: "Government programs — emergency financial assistance, income support, housing help.",
+    detail: "Government programs, emergency financial assistance, income support, housing help.",
   },
   {
     name: "Poison & Drug Information Service (PADIS)",
@@ -60,7 +60,7 @@ const CONTACTS: Contact[] = [
   {
     name: "Alberta Emergency Alerts",
     url: "https://www.alberta.ca/alberta-emergency-alert",
-    detail: "Live provincial alerts — evacuations, wildfires, floods, road closures.",
+    detail: "Live provincial alerts, evacuations, wildfires, floods, road closures.",
   },
 ];
 

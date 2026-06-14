@@ -277,6 +277,12 @@ def recommend(
             _add_inventory_reasons(r, tags, reasons)
         if documents is not None and documents.denial_flag and r["id"] == "gio-ombud":
             reasons.append("your insurance documents look like a denial, and this is a good place to turn next")
+        # A denial makes every legal-escalation resource (lawyer referral,
+        # ombudsman, public adjuster) jump the queue.
+        if documents is not None and documents.denial_flag and r.get("type") == "legal":
+            score += W_URGENCY
+            if not any("denial" in reason for reason in reasons):
+                reasons.append("because your documents mention a denial, knowing your escalation options matters now")
 
         if not reasons:
             reasons.append("generally helpful in situations like yours")

@@ -1,4 +1,4 @@
-"""Auth endpoints — thin wrappers over Supabase Auth.
+"""Auth endpoints, thin wrappers over Supabase Auth.
 
 The frontend talks to these endpoints, which in turn call Supabase Auth. We
 could also have the frontend hit Supabase directly with the JS SDK; routing

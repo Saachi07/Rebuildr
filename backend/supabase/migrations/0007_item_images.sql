@@ -2,11 +2,11 @@
 --
 -- Adds before/after image columns on case_items and a storage bucket to hold
 -- the blobs. Mirrors the documents bucket setup (0004) but is public-read so
--- the frontend can render thumbnails with a plain <img src> — the stored value
+-- the frontend can render thumbnails with a plain <img src>, the stored value
 -- is the object's public URL. Writes are restricted to the backend service role.
 --
---   before_url — photo of the item before the damage
---   after_url  — photo of the item after the damage
+--   before_url, photo of the item before the damage
+--   after_url , photo of the item after the damage
 
 alter table public.case_items
     add column if not exists before_url text,

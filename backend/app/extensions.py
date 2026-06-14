@@ -2,10 +2,10 @@
 
 Two flavours:
 
-* ``anon_client()`` — uses the public anon key, suitable for auth flows
+* ``anon_client()``, uses the public anon key, suitable for auth flows
   (``sign_up``, ``sign_in_with_password``) and per-user data calls after
   the caller's access token has been attached via ``postgrest.auth(token)``.
-* ``service_client()`` — uses the service-role key and bypasses RLS.
+* ``service_client()``, uses the service-role key and bypasses RLS.
   Reserved for trusted server-side jobs (catalog seeding, admin tools).
 """
 

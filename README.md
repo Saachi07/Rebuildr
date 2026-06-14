@@ -1,7 +1,7 @@
 # Rebuildr
 AI4Good Lab Project
 
-## Backend — local setup
+## Backend, local setup
 
 Requirements: Python 3.11+ (verified on 3.14). All commands assume PowerShell from the repo root.
 
@@ -15,10 +15,10 @@ Copy-Item .env.example .env   # then edit .env
 
 ### Database modes
 
-- **Supabase / Postgres** — set `DATABASE_URL` in `.env` to the Postgres URI from
+- **Supabase / Postgres**, set `DATABASE_URL` in `.env` to the Postgres URI from
   Supabase (Project Settings → Database → Connection string → URI). The app
   rewrites `postgres://` to `postgresql+psycopg://` automatically.
-- **SQLite fallback** — leave `DATABASE_URL` empty. The app writes to
+- **SQLite fallback**, leave `DATABASE_URL` empty. The app writes to
   `backend/instance/rebuildr.db`. Use this if Supabase migrations are flaky
   (see `roadmap.md` → Alternatives).
 

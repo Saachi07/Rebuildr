@@ -8,7 +8,7 @@ from .config import Config
 def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_class)
-    # Gzip JSON responses — the documents/cases lists are the hot paths and
+    # Gzip JSON responses, the documents/cases lists are the hot paths and
     # compress well. flask-compress only kicks in above ~500 bytes by default.
     Compress(app)
     CORS(app, supports_credentials=True)
@@ -23,6 +23,9 @@ def create_app(config_class: type = Config) -> Flask:
     from .blueprints.ml import bp as ml_bp
     from .blueprints.terms import bp as terms_bp
     from .blueprints.me import bp as me_bp
+    from .blueprints.communications import bp as communications_bp
+    from .blueprints.ale import bp as ale_bp
+    from .blueprints.meta import bp as meta_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(auth_bp)
@@ -35,6 +38,13 @@ def create_app(config_class: type = Config) -> Flask:
     app.register_blueprint(ml_bp)
     app.register_blueprint(terms_bp)
     app.register_blueprint(me_bp)
+    app.register_blueprint(communications_bp)
+    app.register_blueprint(ale_bp)
+    app.register_blueprint(meta_bp)
+
+    from .commands import register_commands
+
+    register_commands(app)
 
     # The resources catalog rarely changes; let the browser cache it. Other
     # endpoints stay no-store because they're per-user and mutate often.
@@ -43,8 +53,21 @@ def create_app(config_class: type = Config) -> Flask:
         from flask import request as _req
         if _req.path.startswith("/recommendations/resources"):
             response.headers.setdefault("Cache-Control", "private, max-age=300")
+        elif _req.path.startswith("/meta/"):
+            # Static lookup data; safe to cache for an hour.
+            response.headers.setdefault("Cache-Control", "private, max-age=3600")
         else:
             response.headers.setdefault("Cache-Control", "no-store")
+        return response
+
+    # Defense-in-depth headers. This is a JSON API, so the CSP can be
+    # maximally strict: nothing here should ever execute in a browser.
+    @app.after_request
+    def _security_headers(response):
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Content-Security-Policy", "default-src 'none'")
         return response
 
     @app.errorhandler(404)

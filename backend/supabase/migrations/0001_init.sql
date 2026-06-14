@@ -11,7 +11,7 @@
 create extension if not exists "pgcrypto";
 
 -- ---------------------------------------------------------------------------
--- profiles — extends auth.users with app-specific fields
+-- profiles, extends auth.users with app-specific fields
 -- ---------------------------------------------------------------------------
 create table if not exists public.profiles (
     id           uuid primary key references auth.users(id) on delete cascade,
@@ -43,7 +43,7 @@ create trigger on_auth_user_created
     for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
--- recovery_cases — one per disaster event a user is recovering from
+-- recovery_cases, one per disaster event a user is recovering from
 -- ---------------------------------------------------------------------------
 create table if not exists public.recovery_cases (
     id                       uuid primary key default gen_random_uuid(),
@@ -67,7 +67,7 @@ create index if not exists recovery_cases_user_idx on public.recovery_cases(user
 create index if not exists recovery_cases_status_idx on public.recovery_cases(status);
 
 -- ---------------------------------------------------------------------------
--- case_items — damaged items in a recovery case (manual + ML-detected)
+-- case_items, damaged items in a recovery case (manual + ML-detected)
 -- ---------------------------------------------------------------------------
 create table if not exists public.case_items (
     id               uuid primary key default gen_random_uuid(),
@@ -88,7 +88,7 @@ create table if not exists public.case_items (
 create index if not exists case_items_case_idx on public.case_items(case_id);
 
 -- ---------------------------------------------------------------------------
--- resources — recommender catalog (gov programs, shelters, etc.)
+-- resources, recommender catalog (gov programs, shelters, etc.)
 -- Shared across users; not row-protected.
 -- ---------------------------------------------------------------------------
 create table if not exists public.resources (
@@ -136,7 +136,7 @@ create trigger resources_set_search_text
     for each row execute function public.resources_set_search_text();
 
 -- ---------------------------------------------------------------------------
--- recommendations — per-case ranked output of the content-based filter
+-- recommendations, per-case ranked output of the content-based filter
 -- ---------------------------------------------------------------------------
 create table if not exists public.recommendations (
     id            uuid primary key default gen_random_uuid(),
@@ -153,7 +153,7 @@ create table if not exists public.recommendations (
 create index if not exists recommendations_case_idx on public.recommendations(case_id);
 
 -- ---------------------------------------------------------------------------
--- document_summaries — output of the PDF/summary pipeline
+-- document_summaries, output of the PDF/summary pipeline
 -- ---------------------------------------------------------------------------
 create table if not exists public.document_summaries (
     id          uuid primary key default gen_random_uuid(),

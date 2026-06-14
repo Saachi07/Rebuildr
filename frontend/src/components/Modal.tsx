@@ -74,7 +74,7 @@ export function Modal({
   );
 }
 
-// Small styled confirm dialog — replaces window.confirm, which is jarring
+// Small styled confirm dialog, replaces window.confirm, which is jarring
 // and easy to mis-tap for someone under stress.
 export function ConfirmDialog({
   title,

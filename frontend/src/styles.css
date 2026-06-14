@@ -1,56 +1,61 @@
+/* Warm, calm, reassuring palette for people rebuilding after a disaster.
+   Soft sand/cream background, warm charcoal-brown text, a steady warm-teal
+   accent, and a soft terracotta for destructive actions. Calm green for "ok",
+   warm amber for warnings (never alarm-red). Contrast meets WCAG AA. */
 :root {
-  --bg: #0f1115;
-  --panel: #1a1d24;
-  --panel-2: #232733;
-  --text: #f1f3f9;
-  --muted: #b3bbcc;
-  --muted-strong: #d4d9e6;
-  --accent: #2f7d63;
-  --accent-2: #1f5a47;
-  --accent-soft: rgba(47, 125, 99, 0.16);
-  --danger: #d75058;
-  --danger-text: #ff8a92;
-  --danger-soft: rgba(215, 80, 88, 0.1);
-  --danger-border: rgba(215, 80, 88, 0.4);
-  --warn: #e0a13a;
-  --ok: #6fd6ad;
-  --info: #7ea4d0;
-  --border: #313749;
-  --focus: #6fb097;
-  --meter-track: #2c3140;
-  --status-damaged-bg: rgba(215, 80, 88, 0.2);
-  --status-damaged-text: #ff97a0;
-  --status-ok-bg: rgba(47, 125, 99, 0.25);
-  --status-ok-text: #6fd6ad;
+  --bg: #faf6ef;            /* soft warm cream */
+  --panel: #fffdf9;         /* near-white warm panel */
+  --panel-2: #f1e8da;       /* warm sand for inset surfaces */
+  --text: #3a3027;          /* warm dark brown, ~13:1 on bg */
+  --muted: #8a7d6c;         /* warm taupe */
+  --muted-strong: #5f5446;  /* stronger warm taupe, AA on bg */
+  --accent: #1f7a6b;        /* reassuring warm teal */
+  --accent-2: #155c50;      /* deeper teal for hover */
+  --accent-soft: rgba(31, 122, 107, 0.12);
+  --danger: #c25a3f;        /* soft terracotta, not alarm-red */
+  --danger-text: #a8452e;
+  --danger-soft: rgba(194, 90, 63, 0.1);
+  --danger-border: rgba(194, 90, 63, 0.35);
+  --warn: #b5791f;          /* calm amber */
+  --ok: #2f7d5b;            /* calm green */
+  --info: #3f6f97;          /* warm-leaning blue */
+  --border: #e5d9c6;        /* warm sand border */
+  --focus: #155c50;         /* deep teal focus ring */
+  --meter-track: #ece1d0;
+  --status-damaged-bg: rgba(194, 90, 63, 0.14);
+  --status-damaged-text: #a8452e;
+  --status-ok-bg: rgba(47, 125, 91, 0.16);
+  --status-ok-text: #2f7d5b;
 }
 
-/* Light theme — dark-only UIs are hard to read outdoors (at a damaged
-   property, in daylight) and for many older users. */
-@media (prefers-color-scheme: light) {
+/* The warm theme reads well in daylight (at a damaged property, outdoors) and
+   for older users, so it is the single theme for both color-scheme settings.
+   Kept as an explicit block in case a future dark variant is added. */
+@media (prefers-color-scheme: dark) {
   :root {
-    --bg: #f6f4ef;
-    --panel: #ffffff;
-    --panel-2: #edeae2;
-    --text: #21252d;
-    --muted: #5d6573;
-    --muted-strong: #424a58;
-    --accent: #2c7059;
-    --accent-2: #1f5a47;
-    --accent-soft: rgba(44, 112, 89, 0.12);
-    --danger: #b8434b;
-    --danger-text: #a02e36;
-    --danger-soft: rgba(184, 67, 75, 0.08);
-    --danger-border: rgba(184, 67, 75, 0.35);
-    --warn: #9a6b17;
-    --ok: #1f6b4c;
-    --info: #335f8f;
-    --border: #d9d4c9;
-    --focus: #1f5a47;
-    --meter-track: #ddd9cf;
-    --status-damaged-bg: rgba(184, 67, 75, 0.12);
-    --status-damaged-text: #a02e36;
-    --status-ok-bg: rgba(44, 112, 89, 0.14);
-    --status-ok-text: #1f6b4c;
+    --bg: #faf6ef;
+    --panel: #fffdf9;
+    --panel-2: #f1e8da;
+    --text: #3a3027;
+    --muted: #8a7d6c;
+    --muted-strong: #5f5446;
+    --accent: #1f7a6b;
+    --accent-2: #155c50;
+    --accent-soft: rgba(31, 122, 107, 0.12);
+    --danger: #c25a3f;
+    --danger-text: #a8452e;
+    --danger-soft: rgba(194, 90, 63, 0.1);
+    --danger-border: rgba(194, 90, 63, 0.35);
+    --warn: #b5791f;
+    --ok: #2f7d5b;
+    --info: #3f6f97;
+    --border: #e5d9c6;
+    --focus: #155c50;
+    --meter-track: #ece1d0;
+    --status-damaged-bg: rgba(194, 90, 63, 0.14);
+    --status-damaged-text: #a8452e;
+    --status-ok-bg: rgba(47, 125, 91, 0.16);
+    --status-ok-text: #2f7d5b;
   }
 }
 
@@ -201,7 +206,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .rec-card { display: flex; gap: 12px; align-items: flex-start; }
 .rec-card .score { color: var(--muted); font-size: 13px; }
 
-/* Collapsible category groups — a stressed reader opens only what they need */
+/* Collapsible category groups, a stressed reader opens only what they need */
 .rec-accordion { border: 1px solid var(--border); border-radius: 14px; padding: 0 16px; margin-top: 16px; background: var(--panel); }
 .rec-accordion summary { cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 14px 4px; list-style: none; }
 .rec-accordion summary::-webkit-details-marker { display: none; }
@@ -239,7 +244,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .tbl td.actions button { padding: 6px 12px; font-size: 13px; min-height: 32px; }
 
 .modal-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  position: fixed; inset: 0; background: rgba(58, 48, 39, 0.45);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000; padding: 20px;
 }
@@ -324,7 +329,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   min-width: 300px; max-width: 360px;
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 12px; padding: 8px; z-index: 200;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 40px rgba(58, 48, 39, 0.16);
 }
 .popover-header {
   font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
@@ -364,7 +369,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .row-menu {
   position: absolute; right: 0; top: 100%; z-index: 10; margin-top: 4px; min-width: 200px;
   background: var(--panel); border: 1px solid var(--border);
-  border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); padding: 6px; text-align: left;
+  border-radius: 8px; box-shadow: 0 6px 20px rgba(58, 48, 39, 0.12); padding: 6px; text-align: left;
 }
 
 .dashboard-tiles { margin-top: 16px; }
@@ -393,7 +398,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 8px; padding: 10px 12px; font-size: 13px;
   color: var(--text); width: 240px; line-height: 1.5;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 28px rgba(58, 48, 39, 0.16);
   z-index: 50; font-weight: 400;
 }
 
@@ -435,7 +440,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 10px; padding: 12px 14px; font-size: 14px;
   display: flex; align-items: center; gap: 10px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  box-shadow: 0 12px 32px rgba(58, 48, 39, 0.16);
 }
 .toast span:first-child { flex: 1; }
 .toast-action {
@@ -460,7 +465,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 10px; max-height: 240px; overflow-y: auto;
-  z-index: 50; box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  z-index: 50; box-shadow: 0 16px 40px rgba(58, 48, 39, 0.16);
 }
 .autocomplete-item {
   padding: 10px 14px; cursor: pointer; font-size: 15px;
@@ -565,7 +570,22 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   .rec-accordion summary::after { display: none; }
   a { text-decoration: underline; }
   .container { padding: 0; max-width: none; }
+
+  /* Inventory becomes an insurer-ready report: drop the interactive columns
+     (photo upload tiles, the row action menu) and show all rows as a clean
+     printed table even on narrow screens. */
+  .tbl-cards td[data-label="Photos"],
+  .tbl-cards td.actions { display: none !important; }
+  .tbl-cards, .tbl-cards thead, .tbl-cards tbody, .tbl-cards tr, .tbl-cards td {
+    display: revert; background: white; color: black; border-color: #999;
+  }
+  .tbl-cards td[data-label]::before { content: none; }
+  .room-group h3 { color: black; }
+  .print-only { display: block !important; }
 }
+
+/* Hidden on screen, revealed only when printing (e.g. report header). */
+.print-only { display: none; }
 
 /* ---- Mobile niceties ---- */
 @media (max-width: 700px) {
@@ -576,7 +596,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   .help-footer { display: none; }
   .container { padding: 20px 16px 130px; }
 
-  /* Tables become stacked cards — 7 columns can't fit a phone. */
+  /* Tables become stacked cards, 7 columns can't fit a phone. */
   .tbl-cards { border: none; background: transparent; display: block; }
   .tbl-cards thead { display: none; }
   .tbl-cards tbody { display: block; }

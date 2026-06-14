@@ -12,6 +12,8 @@ import Emergency from "./pages/Emergency";
 import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import Prepare from "./pages/Prepare";
+import Settings from "./pages/Settings";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import { TermsGate } from "./components/TermsGate";
@@ -51,7 +53,7 @@ function writeIdSet(key: string, ids: Set<string>) {
   try {
     localStorage.setItem(key, JSON.stringify(Array.from(ids).slice(-200)));
   } catch {
-    /* storage full or unavailable — fine, this is best-effort */
+    /* storage full or unavailable, fine, this is best-effort */
   }
 }
 
@@ -303,8 +305,8 @@ function ProfileMenu() {
           <button className="menu-item" onClick={() => { setOpen(false); nav("/profile"); }}>
             View profile
           </button>
-          <button className="menu-item" onClick={() => { setOpen(false); nav("/documents"); }}>
-            Documents
+          <button className="menu-item" onClick={() => { setOpen(false); nav("/settings"); }}>
+            Settings
           </button>
           <button
             className="menu-item danger-text"
@@ -318,16 +320,21 @@ function ProfileMenu() {
   );
 }
 
-// Persistent links to the main sections — previously these were only
+// Persistent links to the main sections, previously these were only
 // reachable through dashboard tiles, so users lost their way constantly.
 function SectionLinks({ className }: { className: string }) {
   const { latest } = useCases();
+  // With an active case, the two links resolve to that case's recommendations
+  // and inventory. With no case yet, they must stay distinct and must never
+  // both highlight as active: Plan starts a case, Inventory goes to the
+  // preparedness flow (pre-loss inventory lives there). Pointing them at the
+  // same path made the nav read as broken.
   const planTo = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
-  const inventoryTo = latest ? `/cases/${latest.id}/inventory` : "/cases/new";
+  const inventoryTo = latest ? `/cases/${latest.id}/inventory` : "/prepare";
   return (
     <nav className={className} aria-label="Main sections">
-      <NavLink to={planTo} className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
-      <NavLink to={inventoryTo} className={({ isActive }) => (isActive ? "active" : "")}>Inventory</NavLink>
+      <NavLink to={planTo} end className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
+      <NavLink to={inventoryTo} end className={({ isActive }) => (isActive ? "active" : "")}>Inventory</NavLink>
       <NavLink to="/documents" className={({ isActive }) => (isActive ? "active" : "")}>Documents</NavLink>
       <NavLink to="/emergency" className={({ isActive }) => (isActive ? "active urgent-link" : "urgent-link")}>
         Get help
@@ -361,7 +368,7 @@ function Nav() {
 }
 
 // Bottom tab bar on phones: the four places a stressed user needs, always
-// one thumb-tap away — including emergency help.
+// one thumb-tap away, including emergency help.
 function MobileTabBar() {
   const { user } = useAuth();
   const loc = useLocation();
@@ -407,6 +414,8 @@ export default function App() {
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
             <Route path="/profile" element={<Private><Profile /></Private>} />
+            <Route path="/prepare" element={<Private><Prepare /></Private>} />
+            <Route path="/settings" element={<Private><Settings /></Private>} />
             <Route path="/documents" element={<Private><Documents /></Private>} />
             <Route path="/cases/new" element={<Private><NewCase /></Private>} />
             <Route path="/cases/:id" element={<Private><CaseHub /></Private>} />

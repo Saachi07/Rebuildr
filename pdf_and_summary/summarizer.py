@@ -68,41 +68,41 @@ The result will appear in a Documents Page with a Document Summary card, a
 Flagged Issues section, and a Deadlines table. Use these rules to decide where
 each piece of information goes:
 
-DEADLINES — every time-bound obligation or coverage fact stated in the document, including:
+DEADLINES, every time-bound obligation or coverage fact stated in the document, including:
 • Fixed calendar deadlines (e.g. "June 1, 2024")
 • Event-triggered durations (e.g. "within 90 days of the loss", "within 20 days")
 • Coverage or benefit periods (e.g. "June 1, 2024 to June 1, 2025")
 • Maximum entitlement durations (e.g. "up to 24 months")
 • Recurring obligations or recommended review cycles (e.g. "annually", "every three years")
 Reproduce the date or duration exactly as written. If no time limit is stated at
-all, do not invent one — the absence of a deadline is not a flagged issue.
-A step with any stated time limit belongs in deadlines — do not move it to flagged_issues.
-The "date" field must always contain a time expression — a calendar date, a duration
+all, do not invent one, the absence of a deadline is not a flagged issue.
+A step with any stated time limit belongs in deadlines, do not move it to flagged_issues.
+The "date" field must always contain a time expression, a calendar date, a duration
 ("within 90 days"), a coverage period, or a recurring cycle. NEVER put a dollar amount,
-percentage, or monetary limit in the "date" field — those belong in coverage_limits.
+percentage, or monetary limit in the "date" field, those belong in coverage_limits.
 Do NOT include in deadlines:
 • Dates that merely record when a past event occurred (e.g. loss date, disaster date,
-  letter date, claim filing date, policy issue date, evacuation order date) — these are
+  letter date, claim filing date, policy issue date, evacuation order date), these are
   historical facts, not obligations
 • Discount qualification criteria or eligibility thresholds (e.g. "5+ years claims-free",
-  "built within 10 years") — these describe conditions for a discount, not time-bound obligations
-• Near-identical duplicates — if the same obligation has already been listed with
+  "built within 10 years"), these describe conditions for a discount, not time-bound obligations
+• Near-identical duplicates, if the same obligation has already been listed with
   essentially the same task description, do not add it again. However, if a relative
   duration ("within 90 days") and its corresponding fixed calendar date ("October 17,
   2024") appear as complementary information in different sentences or clauses, include
   BOTH as separate entries. Exception: if the document parenthetically equates them in
   a single clause such as "within 30 days of this letter (by September 28, 2024)",
-  produce exactly ONE combined entry — do not create two separate entries for the same action.
+  produce exactly ONE combined entry, do not create two separate entries for the same action.
 • Context dates describing when a situation began rather than a deadline to act
   (e.g. "living expenses incurred since July 18" states a start date, not a deadline)
 
-FLAGGED ISSUES — conditions or clauses that need the user's attention but are
+FLAGGED ISSUES, conditions or clauses that need the user's attention but are
 not themselves time-bound obligations. The only valid issue_type values are:
 MISSING, UNRELIABLE_DATA, ACTION_REQUIRED, WARNING. Always check for and flag when present:
 - A vacancy clause or a policy condition that requires the insured to have or maintain
   a specific physical installation (e.g. a backwater valve required for sewer backup
   coverage) or valid inspection certificate (e.g. WETT certification for a wood-burning
-  appliance) — flag as ACTION_REQUIRED and also include in required_actions. This rule
+  appliance), flag as ACTION_REQUIRED and also include in required_actions. This rule
   is for ongoing physical maintenance conditions only, not document submissions.
 - A coinsurance or underinsurance clause that can reduce claim payouts if
   coverage is below replacement cost (WARNING)
@@ -111,11 +111,11 @@ MISSING, UNRELIABLE_DATA, ACTION_REQUIRED, WARNING. Always check for and flag wh
   as incomplete, partial, or missing in the document (MISSING)
 - A specific monetary amount, settlement figure, coverage total, or quantitative
   value that is explicitly marked "not yet determined", "TBD", "pending", or
-  similarly unknown because an assessment has not been completed — flag as
+  similarly unknown because an assessment has not been completed, flag as
   UNRELIABLE_DATA only when the document itself marks the value as unknown. Do
   NOT flag narrative unknowns (e.g. "return date unknown pending structural
   assessment"), the absence of explicit deadlines, or inherently open-ended
-  situations — these are not unreliable data
+  situations, these are not unreliable data
 - If the document is a completed Proof of Loss form, claim submission form, or
   claim adjustment letter (NOT a standard insurance policy document that lists
   covered or excluded perils) and the insured's stated cause of loss or damage
@@ -124,14 +124,14 @@ MISSING, UNRELIABLE_DATA, ACTION_REQUIRED, WARNING. Always check for and flag wh
   policy explicitly includes an Overland Water or water-backup endorsement, as
   standard home insurance policies commonly exclude these perils. Do NOT flag
   this for a policy document that simply lists overland flooding as an excluded
-  peril in its exclusions section — that information already belongs in warnings.
+  peril in its exclusions section, that information already belongs in warnings.
   When this is flagged in flagged_issues, do NOT also add it to warnings.
   IMPORTANT: Do NOT apply this rule when the stated cause of loss is wildfire,
-  wind, hail, earthquake, or any non-water peril — even if water was used in
+  wind, hail, earthquake, or any non-water peril, even if water was used in
   firefighting suppression or is mentioned incidentally. Only flag it when the
   primary cause of loss is itself a water-entry event (flooding, backup, intrusion).
   IMPORTANT: Do NOT apply this rule for auto insurance, life insurance, or health
-  insurance claim documents — the Overland Water endorsement only exists on home,
+  insurance claim documents, the Overland Water endorsement only exists on home,
   property, condominium, and tenant/renter insurance policies.
 When multiple required documents of the same type are missing or incomplete
 (e.g., receipts absent across several damage categories), consolidate them into
@@ -139,7 +139,7 @@ a SINGLE MISSING flag rather than listing each category separately. If a MISSING
 flag describes an action the user still needs to take (e.g., provide or submit
 incomplete documents), also include that action in required_actions.
 Do NOT duplicate something already in deadlines as a flagged issue.
-Do NOT flag risks that the form already shows are handled — if the form states
+Do NOT flag risks that the form already shows are handled, if the form states
 that damaged property has NOT been removed, or emergency repairs have NOT been
 made, do not flag those as risks needing attention.
 
@@ -148,23 +148,23 @@ string (e.g. "Fire and water damage up to $50,000 CAD"). List only aggregate
 coverage amounts, policy sub-limits, and net settlement or claim totals. A
 "Schedule of Loss" means a detailed per-item product list where each individual
 possession (e.g., a specific television, appliance, sofa) has its own row with
-original and replacement cost — do NOT include those per-item product costs.
+original and replacement cost, do NOT include those per-item product costs.
 Aggregate damage category estimates (e.g., "$195,000 for primary residence
 structural damage") are NOT Schedule of Loss items and SHOULD be included. Do
-not list two entries for the same dollar amount — if the same figure appears
+not list two entries for the same dollar amount, if the same figure appears
 under multiple labels, include it once with the most informative label. For a
 Proof of Loss form specifically: include only (1) the total policy amount of
 insurance, (2) coverage sub-limits per category, (3) the total loss or damage
 amount, and (4) the net amount after deductible. Do NOT include "Amount Claimed
 Under This Policy" as a separate entry when it equals the "Total Loss or Damage"
-— that is a duplicate of the same figure under a different field label.
+,  that is a duplicate of the same figure under a different field label.
 For claim adjustment or settlement letters: use the insurer's approved or
 adjusted amount for each coverage category, not the amount originally claimed
 by the policyholder. Where both figures appear, the approved amount is what the
 user will receive and is the correct value to report. Always include the total
 approved settlement net of deductible.
 
-REQUIRED ACTIONS — specific steps the user still needs to take to maintain coverage,
+REQUIRED ACTIONS, specific steps the user still needs to take to maintain coverage,
 comply with the policy, resolve the claim, or meet the program's requirements. Include:
 • Documents, forms, or evidence the user must submit or provide
 • Assessments or inspections the user must arrange (e.g. structural engineer review,
@@ -174,19 +174,19 @@ comply with the policy, resolve the claim, or meet the program's requirements. I
 • Regulatory or municipal requirements the user must confirm before taking action
   (e.g. updated building codes before rebuilding)
 • In claim adjustment or settlement letters: each response option presented to the
-  user is a required action — include every option explicitly (e.g. accept and sign
+  user is a required action, include every option explicitly (e.g. accept and sign
   the release form, submit additional documentation, request an independent appraisal,
   file a complaint with the regulator). These are distinct choices the user must
   actively decide on and act upon.
 For adjuster or damage assessment reports: if the report's recommendations require
-action by the insured or policyholder, include those as required_actions entries —
+action by the insured or policyholder, include those as required_actions entries , 
 do NOT leave insured-directed actions only in warnings. Items that are purely the
 insurer's internal process (e.g. "approve ALE continuation", "coordinate with
 mortgagee") belong in warnings, not required_actions.
 Start each required_actions entry with an imperative verb (Submit, Contact, Arrange,
 Confirm, Review, Provide, Commission, Retain, Sign, Accept, Request, File).
 Do NOT include generic administrative document-retention notes such as "Keep a copy
-for your records", "Retain this form with your policy documents", or similar — these
+for your records", "Retain this form with your policy documents", or similar, these
 are not meaningful user actions.
 
 For warnings, list every meaningful exclusion the policyholder should know about,
@@ -237,7 +237,7 @@ you pay before insurance pays").
 Some personal identifiers in the document may have been replaced with
 placeholders such as [PERSON_1], [ADDRESS_1], or [POLICY_NUMBER_1]. Treat
 each placeholder as if it were the real value and use it naturally in your
-output — do not comment on or flag the placeholders themselves. In
+output, do not comment on or flag the placeholders themselves. In
 plain_language_summary write naturally in prose; do not echo structural
 field labels from the source document (such as "Mailing Address", "Named
 Insured", or "Property Address").
@@ -447,7 +447,7 @@ def _build_nlp_hint(nlp_analysis: Any) -> str:
     if not (dates or money or percentages):
         return ""
 
-    lines = ["[NLP PRE-SCAN — use as a completeness checklist for your output]"]
+    lines = ["[NLP PRE-SCAN, use as a completeness checklist for your output]"]
     if dates:
         lines.append("Dates / durations found: " + ", ".join(dates))
     if money:
@@ -456,8 +456,8 @@ def _build_nlp_hint(nlp_analysis: Any) -> str:
         lines.append("Percentages found: " + ", ".join(percentages))
     lines.append(
         "Use monetary amounts above as a completeness checklist for coverage_limits "
-        "(still apply the coverage_limits rules — do not include per-item Schedule of Loss costs). "
-        "Use dates and durations above as a completeness checklist for deadlines — still apply "
+        "(still apply the coverage_limits rules, do not include per-item Schedule of Loss costs). "
+        "Use dates and durations above as a completeness checklist for deadlines, still apply "
         "the DEADLINES exclusion rules: historical event dates (loss date, disaster designation "
         "date, letter date, claim filing date, evacuation order date) do NOT belong in deadlines "
         "even if they appear here. "

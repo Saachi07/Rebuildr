@@ -1,8 +1,8 @@
-"""Case-item CRUD — damaged objects in a user's library.
+"""Case-item CRUD, damaged objects in a user's library.
 
 Originally items belonged to a single case (case_items.case_id NOT NULL).
 After migration 0006 they're a per-user library that can optionally be
-linked to a case — see the SQL for the new RLS policies.
+linked to a case, see the SQL for the new RLS policies.
 
 Routes:
     /items                         user-scoped CRUD (the library)
@@ -66,7 +66,7 @@ def _insert_item(sb, row):
     """
     try:
         res = sb.table("case_items").insert(row).execute()
-    except Exception as exc:  # noqa: BLE001 — surface the real cause to the client
+    except Exception as exc:  # noqa: BLE001, surface the real cause to the client
         return None, (jsonify({"error": f"could not save item: {exc}"}), 500)
     if not res.data:
         return None, (jsonify({"error": "item was not saved"}), 500)
@@ -132,7 +132,7 @@ def create_items_bulk(case_id: str):
     sb = user_client(g.access_token)
     try:
         res = sb.table("case_items").insert(rows).execute()
-    except Exception as exc:  # noqa: BLE001 — surface the real cause
+    except Exception as exc:  # noqa: BLE001, surface the real cause
         return jsonify({"error": f"could not save items: {exc}"}), 500
     return jsonify({"items": res.data or []}), 201
 
@@ -232,13 +232,23 @@ def upload_item_image():
     if not blob:
         return jsonify({"error": "empty image"}), 400
 
+    # Check the actual bytes, not just the declared type: a renamed file
+    # must not end up in the public image bucket.
+    from ..services.upload_validation import HEADER_LENGTH, sniff_mime
+
+    sniffed = sniff_mime(blob[:HEADER_LENGTH])
+    if sniffed not in {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}:
+        return jsonify({
+            "error": "That file does not look like a photo we can read. Please upload a JPG, PNG, WebP, or HEIC image."
+        }), 415
+
     storage_path = f"{g.user_id}/{uuid.uuid4()}{IMAGE_EXT[mime]}"
     svc = service_client()
     try:
         svc.storage.from_(IMAGE_BUCKET).upload(
             storage_path, blob, {"content-type": mime, "upsert": "false"}
         )
-    except Exception as exc:  # noqa: BLE001 — surface the real cause
+    except Exception as exc:  # noqa: BLE001, surface the real cause
         return jsonify({"error": f"upload failed: {exc}"}), 500
 
     public_url = svc.storage.from_(IMAGE_BUCKET).get_public_url(storage_path)
@@ -302,7 +312,7 @@ def attach_item_to_case(item_id: str, case_id: str):
 @lib_bp.post("/<item_id>/detach")
 @require_auth
 def detach_item(item_id: str):
-    """Remove the case link — the item stays in the user's library."""
+    """Remove the case link, the item stays in the user's library."""
     sb = user_client(g.access_token)
     res = (
         sb.table("case_items")

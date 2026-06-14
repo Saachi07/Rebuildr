@@ -73,7 +73,7 @@ export default function Recommendations() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
-  // Stress narrows working memory — show only the next few steps by
+  // Stress narrows working memory, show only the next few steps by
   // default, with the full plan one tap away.
   const [showFull, setShowFull] = useState(false);
   const [hasIntake, setHasIntake] = useState<boolean | null>(null);
@@ -220,7 +220,7 @@ export default function Recommendations() {
               )}
               {r.days_until_deadline != null && r.days_until_deadline < 0 && (
                 <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
-                  Missed deadlines often still have options — exceptions and
+                  Missed deadlines often still have options, exceptions and
                   late applications exist. It's worth calling them to ask.
                 </span>
               )}
@@ -362,11 +362,19 @@ export default function Recommendations() {
 
           {emptyCategories.length > 0 && (
             <div className="card">
-              <p className="muted-strong" style={{ margin: 0, fontSize: 14 }}>
-                We also looked for {emptyCategories.map(categoryLabel).join(", ").toLowerCase()} resources,
-                but nothing matched your case yet. Adding a bit more detail, like
-                your region or the date this happened, can open those up.
+              <h3 style={{ marginTop: 0 }}>More help, once we know a little more</h3>
+              <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 14 }}>
+                We have room here for {emptyCategories.map(categoryLabel).join(", ").toLowerCase()}.
+                Add your photos or upload your policy to unlock programs here.
               </p>
+              <div className="row no-print" style={{ gap: 8 }}>
+                <Link to={id ? `/cases/${id}/inventory` : "/dashboard"}>
+                  <button className="secondary">Add photos</button>
+                </Link>
+                <Link to="/documents">
+                  <button className="secondary">Upload your policy</button>
+                </Link>
+              </div>
             </div>
           )}
 
@@ -514,7 +522,7 @@ function RecCard({
   );
 }
 
-// Empty plans get a gentle, explicitly ordered set of first steps — one
+// Empty plans get a gentle, explicitly ordered set of first steps, one
 // decision at a time, every one skippable.
 function EmptyChecklist({ caseId }: { caseId?: string }) {
   const steps = [
@@ -549,7 +557,7 @@ function EmptyChecklist({ caseId }: { caseId?: string }) {
         <h3 style={{ marginTop: 0 }}>Let's get started together</h3>
         <p className="muted-strong">
           We need a little more to tailor your plan. Here are the first steps
-          that help most — in order, but skip any of them. Start with step 1
+          that help most, in order, but skip any of them. Start with step 1
           if you're not sure.
         </p>
       </div>

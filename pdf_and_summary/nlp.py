@@ -264,7 +264,7 @@ def _rank_sentences(docs: list[Any], top_n: int) -> list[str]:
             score += 1.0 if contains_deadline_term(text) else 0.0
             score += 1.0 if contains_coverage_term(text) else 0.0
             score += 1.0 if contains_action_term(text) else 0.0
-            # Bonus for sentences in the first third — policy tables and key terms tend to appear early.
+            # Bonus for sentences in the first third, policy tables and key terms tend to appear early.
             if position / total < 0.33:
                 score += 0.5
             if score > 0:

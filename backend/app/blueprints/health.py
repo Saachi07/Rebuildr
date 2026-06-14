@@ -1,4 +1,4 @@
-"""Health probe — verifies the app is up and that Supabase is reachable."""
+"""Health probe, verifies the app is up and that Supabase is reachable."""
 
 from __future__ import annotations
 

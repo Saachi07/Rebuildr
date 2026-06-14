@@ -34,7 +34,7 @@ ENCRYPTION_NOTICE = (
 
 @bp.get("")
 def get_terms():
-    """Public — the frontend hits this before showing the consent screen."""
+    """Public, the frontend hits this before showing the consent screen."""
     return jsonify({
         "current_version": CURRENT_TERMS_VERSION,
         "privacy_url": PRIVACY_URL,
@@ -70,7 +70,7 @@ def accept_terms():
     body = request.get_json(silent=True) or {}
     # Lock acceptance to the server's current version. Clients can pass
     # `version` to confirm they saw the same one (mostly a sanity check
-    # — we still store our own).
+    #, we still store our own).
     if body.get("version") and body["version"] != CURRENT_TERMS_VERSION:
         return jsonify({
             "error": "stale terms version",

@@ -1,6 +1,6 @@
 """Map raw intake answers to semantic tags used by the content filter.
 
-Adapted from the ``questions`` branch — kept as a pure function so it can
+Adapted from the ``questions`` branch, kept as a pure function so it can
 be reused by both the case-write path (which persists ``derived_tags``) and
 the recommender (which mixes them into the query vector).
 """

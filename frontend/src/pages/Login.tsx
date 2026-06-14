@@ -11,7 +11,7 @@ type Mode = "signin" | "signup" | "magic" | "reset";
 function friendlyAuthError(raw: string): string {
   const lower = raw.toLowerCase();
   if (lower.includes("invalid login credentials")) {
-    return "That email and password don't match our records. Double-check them, or use \"Forgot your password?\" below — no shame in it.";
+    return "That email and password don't match our records. Double-check them, or use \"Forgot your password?\" below, no shame in it.";
   }
   if (lower.includes("email not confirmed")) {
     return "Your email hasn't been confirmed yet. Check your inbox (and spam folder) for our confirmation link.";
@@ -41,7 +41,7 @@ const TITLES: Record<Mode, string> = {
 const NOTES: Record<Mode, string> = {
   signin: "Sign in to pick up where you left off.",
   signup: "It only takes a moment. We'll keep your data private and encrypted.",
-  magic: "We'll email you a one-time sign-in link. No password needed — useful if yours was lost along with everything else.",
+  magic: "We'll email you a one-time sign-in link. No password needed, useful if yours was lost along with everything else.",
   reset: "Tell us your email and we'll send you a link to choose a new password.",
 };
 
@@ -108,7 +108,7 @@ export default function Login() {
         const { needsConfirmation } = await signUp(email, password);
         if (needsConfirmation) {
           setInfo(
-            "Almost there — check your email for a confirmation link. " +
+            "Almost there, check your email for a confirmation link. " +
             "Once you've clicked it, come back here and sign in.",
           );
         } else {
@@ -117,10 +117,10 @@ export default function Login() {
         }
       } else if (mode === "magic") {
         await sendMagicLink(email);
-        setInfo("Check your email — we sent you a sign-in link. It may take a minute to arrive.");
+        setInfo("Check your email, we sent you a sign-in link. It may take a minute to arrive.");
       } else {
         await sendPasswordReset(email);
-        setInfo("Check your email — we sent a link to reset your password. It may take a minute to arrive.");
+        setInfo("Check your email, we sent a link to reset your password. It may take a minute to arrive.");
       }
     } catch (e: any) {
       setErr(friendlyAuthError(e.message ?? String(e)));
@@ -170,7 +170,7 @@ export default function Login() {
               </div>
               {mode === "signup" && (
                 <p className="muted-strong" style={{ fontSize: 13, margin: "6px 0 0" }}>
-                  At least 6 characters. Pick something you'll remember — you can
+                  At least 6 characters. Pick something you'll remember, you can
                   always reset it later.
                 </p>
               )}

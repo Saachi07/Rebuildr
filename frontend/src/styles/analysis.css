@@ -1,0 +1,186 @@
+/* Styles for the document analysis views: sentence-level citations,
+   verified badges, disclaimer banner, coverage scope, glossary, and the
+   deductible card. Calm, non-alarming tones throughout. Falls back to
+   sensible neutrals if a theme variable is not defined. */
+
+.source-quote {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border, #ccc);
+  background: rgba(127, 127, 127, 0.06);
+  border-radius: 0 6px 6px 0;
+}
+
+.source-quote .source-quote-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted, #777);
+  margin-bottom: 4px;
+}
+
+.source-quote .source-quote-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted-strong, #444);
+  font-style: italic;
+}
+
+/* Verified badges */
+.verified-badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 6px;
+  border: 1px solid var(--border, #ccc);
+}
+
+.verified-badge.verified-yes {
+  color: var(--ok, #1f6b4c);
+  border-color: var(--ok, #1f6b4c);
+  background: rgba(111, 214, 173, 0.12);
+}
+
+.verified-badge.verified-no {
+  color: var(--warn, #9a6b17);
+  border-color: var(--warn, #9a6b17);
+  background: rgba(224, 161, 58, 0.12);
+}
+
+/* Disclaimer banner */
+.disclaimer-banner {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.06);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted-strong, #444);
+}
+
+.confirm-note {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted, #777);
+}
+
+.photo-note {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted, #777);
+}
+
+/* Coverage scope */
+.coverage-scope-intro {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted-strong, #444);
+}
+
+.coverage-scope-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #e2e2e2);
+}
+
+.coverage-scope-row:last-child {
+  border-bottom: none;
+}
+
+.coverage-scope-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.coverage-scope-item {
+  font-weight: 600;
+}
+
+.coverage-scope-detail {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.status-chip {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #ccc);
+  white-space: nowrap;
+}
+
+.status-chip.status-covered {
+  color: var(--ok, #1f6b4c);
+  border-color: var(--ok, #1f6b4c);
+  background: rgba(111, 214, 173, 0.12);
+}
+
+.status-chip.status-not_covered {
+  color: var(--muted-strong, #444);
+  border-color: var(--muted-strong, #888);
+  background: rgba(127, 127, 127, 0.1);
+}
+
+.status-chip.status-conditional {
+  color: var(--warn, #9a6b17);
+  border-color: var(--warn, #9a6b17);
+  background: rgba(224, 161, 58, 0.12);
+}
+
+.status-chip.status-unclear {
+  color: var(--muted, #777);
+  border-color: var(--border, #ccc);
+  background: rgba(127, 127, 127, 0.06);
+}
+
+/* Glossary */
+.glossary-list {
+  margin: 0;
+}
+
+.glossary-list dt {
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.glossary-list dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.glossary-toggle {
+  margin-bottom: 4px;
+}
+
+/* Deductible */
+.deductible-card .deductible-amount {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.deductible-card .deductible-type {
+  font-size: 13px;
+  color: var(--muted, #777);
+}
+
+.deductible-card .deductible-detail {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.deductible-card .deductible-detail.prominent {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(224, 161, 58, 0.12);
+  border: 1px solid var(--warn, #9a6b17);
+  color: var(--muted-strong, #444);
+  font-weight: 500;
+}

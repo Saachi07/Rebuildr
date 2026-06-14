@@ -1,15 +1,15 @@
 """Rich document analysis via the repo-root ``pdf_and_summary`` package.
 
 The cheap classifier (``gemini_documents.analyze_document``) tells us *what*
-a document is. This wrapper runs the heavier pipeline — local PyMuPDF text
-extraction, spaCy NLP entity pre-scan, then a structured Gemini summary — to
+a document is. This wrapper runs the heavier pipeline, local PyMuPDF text
+extraction, spaCy NLP entity pre-scan, then a structured Gemini summary, to
 lift the things a recovering user actually needs: deadlines, flagged issues,
 coverage limits, required actions, and plain-language warnings.
 
 ``pdf_and_summary`` lives at the repo root (a sibling of ``backend``), not on
 the backend's import path, so we add it here. Its heavy deps (PyMuPDF, spaCy,
 PaddleOCR) are imported lazily inside the package, so a missing dependency only
-fails when we actually call the pipeline — which we catch and degrade from.
+fails when we actually call the pipeline, which we catch and degrade from.
 
 OCR is intentionally disabled: native, text-based PDFs are the common case and
 Paddle is a very heavy optional install. PII redaction is on so personal
@@ -63,7 +63,7 @@ def analyze_document_rich(pdf_bytes: bytes, api_key: str) -> dict[str, Any]:
             use_nlp=True,
             redact_pii=True,
         )
-    except Exception as exc:  # noqa: BLE001 — any pipeline failure → degrade
+    except Exception as exc:  # noqa: BLE001, any pipeline failure → degrade
         raise PipelineUnavailable(str(exc)) from exc
 
     return _shape(result)

@@ -16,13 +16,13 @@ export function CasePicker() {
   if (cases.length === 0) return null;
 
   // Show which case the user is currently inside, so they always know
-  // where they are — "Open a case" alone gave no orientation.
+  // where they are, "Open a case" alone gave no orientation.
   const match = matchPath("/cases/:id/*", loc.pathname) ?? matchPath("/cases/:id", loc.pathname);
   const currentId = match?.params?.id;
   const current = currentId ? cases.find((c) => c.id === currentId) : null;
   const buttonLabel = current ? current.case_name : "Open a case";
 
-  // With a single case there's nothing to pick — show where you are, and
+  // With a single case there's nothing to pick, show where you are, and
   // only render a menu when there's an actual choice to make.
   if (cases.length === 1 && current) {
     return <span className="case-picker case-picker-static">{buttonLabel}</span>;

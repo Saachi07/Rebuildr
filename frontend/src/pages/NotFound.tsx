@@ -9,7 +9,7 @@ export default function NotFound() {
       <div className="not-found">
         <h1>404</h1>
         <p>
-          We couldn't find that page. Don't worry — everything you've saved is
+          We couldn't find that page. Don't worry, everything you've saved is
           safe. Let's get you back.
         </p>
         <Link to={home}>

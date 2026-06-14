@@ -9,7 +9,7 @@ the resources table. Idempotent at row level (skip if id exists) so
 re-running upgrade after a partial failure won't crash.
 
 If anyone later adds resources to the seed list, they should add a NEW
-migration that inserts those specific rows — don't re-run this one.
+migration that inserts those specific rows, don't re-run this one.
 """
 from __future__ import annotations
 

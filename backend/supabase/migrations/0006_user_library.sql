@@ -1,6 +1,6 @@
 -- Round 3 schema changes.
 --
--- 1. Decouple case_items from cases — they become a per-user library that
+-- 1. Decouple case_items from cases, they become a per-user library that
 --    can optionally be linked to a case. (#13)
 -- 2. Add a `room` column on items so users can group by room. (#18)
 -- 3. Add a `location` field on profiles so users can store their city
@@ -20,7 +20,7 @@ update public.case_items ci
  where ci.case_id = rc.id
    and ci.user_id is null;
 
--- case_id can now be null — items can live in the user's library without
+-- case_id can now be null, items can live in the user's library without
 -- belonging to a specific case.
 alter table public.case_items
     alter column case_id drop not null;

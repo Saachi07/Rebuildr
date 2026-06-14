@@ -25,7 +25,7 @@ branch_labels = None
 depends_on = None
 
 
-# Ids introduced by this migration — everything in questions/resources.py
+# Ids introduced by this migration, everything in questions/resources.py
 # that postdates the 0003 seed.
 NEW_IDS = [
     "team-rubicon-canada",
@@ -128,7 +128,7 @@ def upgrade():
     if rows:
         op.bulk_insert(resources_tbl, rows)
 
-    # Enriched EMAP body — residents don't apply directly; coordinated
+    # Enriched EMAP body, residents don't apply directly; coordinated
     # through the band office / community.
     emap = seed.get("isc-emap")
     if emap and "isc-emap" in existing_ids:

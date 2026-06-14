@@ -1,19 +1,19 @@
 """User document library.
 
 Documents (insurance policies, claims, IDs, deeds, receipts) live in a
-per-user library. They are no longer attached to cases — the library
+per-user library. They are no longer attached to cases, the library
 stands on its own.
 
 Blob storage goes to a private Supabase ``documents`` bucket via the
 service role; clients get short-lived signed URLs on demand via
-``GET /documents/<id>/url`` (not eagerly per-row at list time — that was
+``GET /documents/<id>/url`` (not eagerly per-row at list time, that was
 the dominant page-load cost).
 
 Save is cheap: upload only stores the blob + a row. Classification +
 extraction runs separately via ``POST /documents/<id>/analyze`` so the
 user can choose to skip analysis or re-run it later.
 
-Accepts PDFs and photos (JPEG/PNG/WebP/HEIC) — survivors usually have
+Accepts PDFs and photos (JPEG/PNG/WebP/HEIC), survivors usually have
 phone photos of their paperwork, not scans.
 """
 
@@ -110,7 +110,7 @@ def _serialize(row: dict[str, Any]) -> dict[str, Any]:
 @bp.get("")
 @require_auth
 def list_my_documents():
-    """List the caller's documents. Does NOT generate signed URLs — clients
+    """List the caller's documents. Does NOT generate signed URLs, clients
     call /documents/<id>/url only when actually opening a file. Cuts the
     list latency from O(n) storage roundtrips to one DB query."""
     sb = user_client(g.access_token)
@@ -127,7 +127,7 @@ def list_my_documents():
 @bp.post("")
 @require_auth
 def upload_document():
-    """Save a PDF or document photo. Does not run Gemini — call
+    """Save a PDF or document photo. Does not run Gemini, call
     /documents/<id>/analyze for that."""
     if "file" not in request.files:
         return jsonify({"error": "file is required"}), 400
@@ -138,7 +138,7 @@ def upload_document():
     mime = _resolve_mime(f)
     if mime is None:
         return jsonify({
-            "error": "we support PDFs and photos (JPG, PNG, WebP, HEIC) — "
+            "error": "we support PDFs and photos (JPG, PNG, WebP, HEIC), "
                      "a clear phone photo of the document works great"
         }), 415
 
@@ -302,7 +302,7 @@ def restore_document(document_id: str):
 @require_auth
 def document_url(document_id: str):
     """Issue a short-lived signed URL for one document. Called on click,
-    not on list — keeps the list endpoint snappy."""
+    not on list, keeps the list endpoint snappy."""
     sb = user_client(g.access_token)
     res = (
         sb.table("user_documents")

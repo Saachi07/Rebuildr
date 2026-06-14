@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 
 // Cache the app shell so the Emergency contacts page works with no signal.
-// Production only — a SW caching dev-server modules is pure confusion.
+// Production only, a SW caching dev-server modules is pure confusion.
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker

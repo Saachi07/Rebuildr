@@ -166,7 +166,7 @@ export default function Profile() {
                 </p>
               )}
               <div style={{ marginTop: 18 }}>
-                <button type="submit" disabled={busy}>{busy ? "Saving…" : "Save"}</button>
+                <button type="submit" disabled={busy}>{busy ? "Saving..." : "Save"}</button>
               </div>
             </form>
           </div>

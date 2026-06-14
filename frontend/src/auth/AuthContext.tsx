@@ -10,7 +10,7 @@ type AuthValue = {
   // Returns whether the account still needs email confirmation (no session yet).
   signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
   signOut: () => Promise<void>;
-  // Passwordless options — disaster survivors often lose devices and
+  // Passwordless options, disaster survivors often lose devices and
   // password notes, so a password should never be the only way in.
   sendMagicLink: (email: string) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;

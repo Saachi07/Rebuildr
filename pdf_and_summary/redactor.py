@@ -11,7 +11,7 @@ from typing import Any
 class RedactionMap:
     """Bidirectional map between placeholders and original values.
 
-    The internal entries are never serialised into the pipeline result —
+    The internal entries are never serialised into the pipeline result , 
     only aggregate statistics are exposed so original PII stays out of logs.
     """
 
@@ -42,7 +42,7 @@ class RedactionMap:
         return text
 
     def stats(self) -> dict[str, Any]:
-        """Return aggregate statistics only — does not expose original values."""
+        """Return aggregate statistics only, does not expose original values."""
         categories: dict[str, int] = {}
         for ph in self._entries:
             # placeholder format: [CATEGORY_N]
@@ -57,12 +57,12 @@ class RedactionMap:
         return bool(self._entries)
 
 
-# Policy / claim numbers — five common formats:
-#   ASI-2024-00847     (letters – 4-digit year – 5+ digits)
-#   TD-HM-456789       (letters – letters – 5+ digits, e.g. TD Insurance)
-#   HOP-884-19A        (letters – digits – digits + letter suffix, e.g. Prairie Mutual)
-#   AUTO-74-39928-AB   (letters – 2–4 digits – 4–6 digits – 1–3 letters, e.g. auto policies)
-#   LIFE-T20-991204-BC (letters – letter+1–3 digits – 4–8 digits – 1–3 letters, e.g. life policies)
+# Policy / claim numbers, five common formats:
+#   ASI-2024-00847     (letters - 4-digit year - 5+ digits)
+#   TD-HM-456789       (letters - letters - 5+ digits, e.g. TD Insurance)
+#   HOP-884-19A        (letters - digits - digits + letter suffix, e.g. Prairie Mutual)
+#   AUTO-74-39928-AB   (letters - 2-4 digits - 4-6 digits - 1-3 letters, e.g. auto policies)
+#   LIFE-T20-991204-BC (letters - letter+1-3 digits - 4-8 digits - 1-3 letters, e.g. life policies)
 _POLICY_NUMBER_RE = re.compile(
     r"\b(?:"
     r"[A-Z]{2,5}-\d{4}-\d{5,}"
@@ -96,16 +96,16 @@ _LICENCE_NUMBER_RE = re.compile(
 # Email addresses
 _EMAIL_RE = re.compile(r"\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b")
 
-# Phone numbers — local/direct lines only; toll-free variants filtered by _is_tollfree
+# Phone numbers, local/direct lines only; toll-free variants filtered by _is_tollfree
 _PHONE_RE = re.compile(r"(?<!\d)\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}(?!\d)")
 _TOLLFREE_AREA_CODES = frozenset({"800", "877", "888", "866", "855", "844", "833"})
 
 # Addresses: extracted from labelled fields and c/o blocks.
 # Six branches:
-#   1. Standard labelled fields (colon optional) — Mailing Address, Permanent
+#   1. Standard labelled fields (colon optional), Mailing Address, Permanent
 #      Address, Property Address; table-layout PDFs omit the colon.
 #   2. c/o prefix.
-#   3. "Location of loss" (IBC claim forms) — colon optional; PyMuPDF table
+#   3. "Location of loss" (IBC claim forms), colon optional; PyMuPDF table
 #      extraction omits the colon when label and value are in separate cells.
 #   4. Bare "Address" label on its own line (IBC Proof of Loss table layout):
 #         Insured
@@ -115,7 +115,7 @@ _TOLLFREE_AREA_CODES = frozenset({"800", "877", "888", "866", "855", "844", "833
 #   5. "Location:" labeled address field.
 #   6. "Loss address" (property loss notice forms, e.g. Prairie Mutual HLN).
 _ADDRESS_FIELD_RE = re.compile(
-    # Standard labelled address fields — colon optional (table-layout PDFs omit it)
+    # Standard labelled address fields, colon optional (table-layout PDFs omit it)
     r"(?:(?:Current\s+)?(?:Mailing Address|Permanent Address|Property Address)\s*:?)[\n ]\s*(.+?)(?:\n|$)"
     r"|c/o[ \t]+(.+?)(?:\n|$)"
     r"|(?:Location of loss)\s*:?[\n ]\s*(.+?)(?:\n|$)"
@@ -149,7 +149,7 @@ _PERSON_FP_WORDS = frozenset({
     # value as a multi-token capitalized phrase (e.g. "Kitchen + pantry")
     "kitchen", "pantry", "bedroom", "bathroom", "garage", "basement",
     "hallway", "laundry",
-    # Organization-indicator words — guard against "Prepared by" / "Claimant"
+    # Organization-indicator words, guard against "Prepared by" / "Claimant"
     # labeled-field regex capturing an insurer or broker name as a person
     "insurance", "company",
     # Document-section heading fragments mis-tagged as PERSON
@@ -170,7 +170,7 @@ _PERSON_TRAILING_LABEL_RE = re.compile(
 )
 
 # Person names captured directly from labeled form fields (e.g. "Last Name: Johnson"
-# or "Last Name\nJohnson" — colon optional for table-layout forms where label and
+# or "Last Name\nJohnson", colon optional for table-layout forms where label and
 # value appear in adjacent cells with no colon separator).
 # "Claimant / Beneficiary" and "Beneficiary" variants catch life/health claim forms.
 _PERSON_FIELD_RE = re.compile(
@@ -258,7 +258,7 @@ class Redactor:
             for m in pattern.finditer(text):
                 spans.append((m.start(), m.end(), category, m.group(0)))
 
-        # Phone numbers — skip toll-free (organizational) numbers
+        # Phone numbers, skip toll-free (organizational) numbers
         for m in _PHONE_RE.finditer(text):
             if not _is_tollfree(m.group(0)):
                 spans.append((m.start(), m.end(), "PHONE", m.group(0)))
@@ -277,9 +277,9 @@ class Redactor:
         for addr in known_addresses:
             for m in re.finditer(re.escape(addr), text):
                 spans.append((m.start(), m.end(), "ADDRESS", addr))
-            # Use the street-number anchor (e.g. "4817 – 52") to find abbreviated
+            # Use the street-number anchor (e.g. "4817 - 52") to find abbreviated
             # occurrences regardless of "Ave" vs "Avenue" spelling variations.
-            number_m = re.match(r"(\d+\s*[–—\-]\s*\d+)", addr)
+            number_m = re.match(r"(\d+\s*[-, \-]\s*\d+)", addr)
             if number_m:
                 anchor = re.escape(number_m.group(1))
                 abbrev_re = re.compile(anchor + r"[^\n]+")
@@ -355,7 +355,7 @@ def _person_spans(text: str) -> list[tuple[int, int, str, str]]:
         # Strip leading non-alpha chars (bullets, punctuation) spaCy folds into entity bounds.
         clean = re.sub(r"^[^a-zA-Z]+", "", val)
 
-        # Strip leading tokens that appear in _PERSON_FP_WORDS — handles contact table rows
+        # Strip leading tokens that appear in _PERSON_FP_WORDS, handles contact table rows
         # where spaCy includes the job title in the entity span boundary.
         # Strategy: find the LAST FP-word token in the span and take everything after it.
         # "Disaster Health Adjuster Samira Cole" → last FP token = "Adjuster" → "Samira Cole"
@@ -406,7 +406,7 @@ def _merge_adjacent_persons(
             s2, e2, _, _ = sorted_persons[i + 1]
             between = text[e1:s2]
             # Connector may be between the two spans (normal case) or trailing
-            # inside span1 — spaCy sometimes includes '&' in the entity boundary
+            # inside span1, spaCy sometimes includes '&' in the entity boundary
             connector_between = re.match(r"^\s*(?:&|and)\s*$", between, re.IGNORECASE)
             connector_in_span1 = re.search(r"\s*\b(?:&|and)\s*$", text[s1:e1], re.IGNORECASE)
             if connector_between or connector_in_span1:

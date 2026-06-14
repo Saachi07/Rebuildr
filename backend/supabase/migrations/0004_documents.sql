@@ -6,7 +6,7 @@
 -- cases without re-uploading.
 
 -- ---------------------------------------------------------------------------
--- user_documents — files uploaded by a user, reusable across cases
+-- user_documents, files uploaded by a user, reusable across cases
 -- ---------------------------------------------------------------------------
 create table if not exists public.user_documents (
     id            uuid primary key default gen_random_uuid(),
@@ -23,7 +23,7 @@ create table if not exists public.user_documents (
 create index if not exists user_documents_user_idx on public.user_documents(user_id);
 
 -- ---------------------------------------------------------------------------
--- case_documents — many-to-many join between cases and user_documents
+-- case_documents, many-to-many join between cases and user_documents
 -- ---------------------------------------------------------------------------
 create table if not exists public.case_documents (
     case_id      uuid not null references public.recovery_cases(id) on delete cascade,
@@ -35,7 +35,7 @@ create table if not exists public.case_documents (
 create index if not exists case_documents_doc_idx on public.case_documents(document_id);
 
 -- ---------------------------------------------------------------------------
--- RLS — user_documents
+-- RLS, user_documents
 -- ---------------------------------------------------------------------------
 alter table public.user_documents enable row level security;
 
@@ -56,7 +56,7 @@ create policy "user_documents: delete own" on public.user_documents
     for delete using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
--- RLS — case_documents (a user can attach any of their docs to any of
+-- RLS, case_documents (a user can attach any of their docs to any of
 -- their cases; both sides of the join must be owned by them)
 -- ---------------------------------------------------------------------------
 alter table public.case_documents enable row level security;

@@ -86,11 +86,11 @@ export type ResolvedHint = {
 };
 
 // If someone tells us they need shelter tonight, the only right response is
-// immediate help — not "thanks, we've refreshed your plan".
+// immediate help, not "thanks, we've refreshed your plan".
 function ShelterEscalation() {
   return (
     <div className="shelter-panel" role="alert">
-      <strong>You said you need shelter right now — that comes first.</strong>
+      <strong>You said you need shelter right now, that comes first.</strong>
       <p style={{ margin: "8px 0" }}>
         These lines are free, 24/7, and can find you a safe place tonight:
       </p>
@@ -149,13 +149,13 @@ function QuestionStepper({
     <Modal onClose={onClose} label="Optional questions" maxWidth={520}>
       <div className="row" style={{ alignItems: "center" }}>
         <h3 style={{ margin: 0 }}>
-          {isFlagStep ? "Last one — your household" : `Question ${step + 1} of ${TOTAL_STEPS}`}
+          {isFlagStep ? "Last one, your household" : `Question ${step + 1} of ${TOTAL_STEPS}`}
         </h3>
         <span className="spacer" />
         <button className="ghost" onClick={onClose} aria-label="Close without finishing">×</button>
       </div>
       <p className="muted-strong" style={{ margin: "6px 0 14px", fontSize: 13 }}>
-        Every question is optional — skip anything you don't want to answer.
+        Every question is optional, skip anything you don't want to answer.
       </p>
 
       {q && (
@@ -314,7 +314,7 @@ export function PersonalizeCard({
       </div>
       <p className="muted-strong" style={{ margin: "8px 0 0", fontSize: 14 }}>
         If you have a few minutes, each answer helps us find more programs
-        that fit your situation. Skip anything — your plan works either way.
+        that fit your situation. Skip anything, your plan works either way.
       </p>
 
       {message && (

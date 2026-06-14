@@ -2,16 +2,16 @@
 
 Two upstream pipelines feed the recommender:
 
-* **Image classification** (``gemini_inventory.analyze_room_photo``) — its
+* **Image classification** (``gemini_inventory.analyze_room_photo``), its
   items land in ``case_items`` via the Inventory page. From those rows we
   derive an overall damage severity plus semantic tags (smoke_damage,
   appliances_lost, medication_visible, ...).
-* **NLP document analysis** (``gemini_documents.analyze_document``) — its
+* **NLP document analysis** (``gemini_documents.analyze_document``), its
   output is persisted as ``user_documents.gemini_analysis``. From those we
   lift the insurer name, hard deadlines, and denial signals.
 
 Both derivations are pure functions over already-persisted rows so the
-recommendations endpoint stays read-only and cheap — no Gemini call in the
+recommendations endpoint stays read-only and cheap, no Gemini call in the
 request path.
 
 The tag vocabulary deliberately matches ``questions/recommender.py`` and the
@@ -135,7 +135,7 @@ def inventory_signals_from_items(items: Iterable[dict]) -> Optional[InventorySig
             sig.tags.add("structural_damage")
         elif sig.damage_severity == "minor":
             sig.tags.add("cosmetic_only")
-        # moderate deliberately leaves no severity tag — resources gated on
+        # moderate deliberately leaves no severity tag, resources gated on
         # either cosmetic or structural shouldn't misfire.
     return sig
 
@@ -157,7 +157,7 @@ def parse_date_loose(value: str) -> Optional[date]:
         return _safe_date(int(m.group(3)), _MONTHS[m.group(1).lower()], int(m.group(2)))
     m = _SLASH_DATE.search(value)
     if m:
-        # Assume m/d/yyyy — the dominant format in our test PDFs.
+        # Assume m/d/yyyy, the dominant format in our test PDFs.
         return _safe_date(int(m.group(3)), int(m.group(1)), int(m.group(2)))
     return None
 

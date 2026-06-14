@@ -11,14 +11,14 @@ export class ApiError extends Error {
 }
 
 export const OFFLINE_MESSAGE =
-  "It looks like you're offline. Your information is safe — check your connection and try again.";
+  "It looks like you're offline. Your information is safe, check your connection and try again.";
 
 // Every error a user sees should be in plain language, never a status code
 // or a JSON blob. Server-provided `error` strings are already written for
 // humans, so we keep those; everything else gets translated.
 function friendlyMessage(status: number, serverText: string): string {
   if (status === 401) {
-    return "Your session timed out. Please sign in again — your work is saved.";
+    return "Your session timed out. Please sign in again, your work is saved.";
   }
   if (status === 403) {
     return "You don't have access to that. Signing out and back in usually fixes this.";
@@ -26,7 +26,7 @@ function friendlyMessage(status: number, serverText: string): string {
   if (status === 404) return "We couldn't find that. It may have been removed.";
   if (status === 413) return "That file is too large. Try a smaller one.";
   if (status >= 500) {
-    return "Something went wrong on our side — not your fault. Please try again in a moment.";
+    return "Something went wrong on our side, not your fault. Please try again in a moment.";
   }
   return serverText || "Something didn't work. Please try again in a moment.";
 }
@@ -39,7 +39,7 @@ async function errorText(res: Response): Promise<string> {
     const json = JSON.parse(text);
     if (json && typeof json.error === "string") return json.error;
   } catch {
-    /* not JSON — use the raw text */
+    /* not JSON, use the raw text */
   }
   return text;
 }
@@ -176,6 +176,7 @@ export type Case = {
   derived_tags?: string[] | null;
   created_at?: string;
   deleted_at?: string | null;
+  closed_at?: string | null;
 };
 
 export type CommChannel = "phone" | "email" | "in_person" | "mail" | "other";
@@ -327,6 +328,12 @@ export type BoundingBox = {
   y2: number;
 };
 
+// Whether an item is claimed as personal property (contents) or is part
+// of the building (dwelling coverage). Permanent fixtures like wall-to-wall
+// carpet, wallpaper, and built-in cabinets are building, not contents.
+export type ClaimClass = "contents" | "building" | "unclear";
+export type Salvageable = "likely" | "unlikely" | "needs_professional_assessment";
+
 export type ScannedItem = {
   name: string;
   category: string;
@@ -336,6 +343,10 @@ export type ScannedItem = {
   approximate_size: string;
   canadian_retail_estimate_cad: { low: number; high: number };
   bounding_box?: BoundingBox;
+  salvageable?: Salvageable | null;
+  salvage_note?: string | null;
+  claim_class?: ClaimClass | null;
+  claim_note?: string | null;
 };
 
 export type RoomScan = {
@@ -343,9 +354,13 @@ export type RoomScan = {
   items: ScannedItem[];
   notes: string;
   detected_phase?: "before" | "after" | null;
+  // Computed server-side: the estimate range counting only contents items,
+  // which is what a personal property claim can actually include.
+  contents_total_estimate_cad?: { low: number; high: number } | null;
+  building_items_present?: boolean;
 };
 
-// Flat shape returned by the new Flask blueprint —
+// Flat shape returned by the new Flask blueprint , 
 // see backend/app/blueprints/recommendations.py: Recommendation.to_dict().
 export type RecStatus = "suggested" | "saved" | "dismissed" | "done";
 
@@ -460,6 +475,10 @@ export const api = {
   deleteCase: (id: string) =>
     request<{ ok: true }>(`/cases/${id}`, { method: "DELETE" }),
   listDeletedCases: () => request<{ cases: Case[] }>("/cases/deleted"),
+  closeCase: (id: string) =>
+    request<{ case: Case }>(`/cases/${id}/close`, { method: "POST" }),
+  reopenCase: (id: string) =>
+    request<{ case: Case }>(`/cases/${id}/reopen`, { method: "POST" }),
   restoreCase: (id: string) =>
     request<{ case: Case }>(`/cases/${id}/restore`, { method: "POST" }),
 
@@ -581,7 +600,7 @@ export const api = {
     return res.json();
   },
 
-  // /items — user-wide library, independent of any case
+  // /items, user-wide library, independent of any case
   listMyItems: () => request<{ items: Item[] }>("/items"),
   createLibraryItem: (body: Partial<Item>) =>
     request<{ item: Item }>("/items", { method: "POST", body: JSON.stringify(body) }),
@@ -590,7 +609,7 @@ export const api = {
   detachItem: (itemId: string) =>
     request<{ item: Item }>(`/items/${itemId}/detach`, { method: "POST" }),
 
-  // /me — profile + readiness score
+  // /me, profile + readiness score
   getMe: () => request<MeResponse>("/me"),
   updateMe: (patch: Partial<Profile>) =>
     request<MeResponse>("/me", { method: "PATCH", body: JSON.stringify(patch) }),

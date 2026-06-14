@@ -7,7 +7,7 @@ import { LocationAutocomplete } from "../components/LocationAutocomplete";
 import { useCases } from "../lib/CasesContext";
 
 // Big tappable cards instead of a dropdown: every option visible at once,
-// no fine motor control needed. Text only — no emoji.
+// no fine motor control needed. Text only, no emoji.
 const DISASTERS = [
   { value: "wildfire", label: "Wildfire / smoke", detail: "Fire, smoke, or ash damage" },
   { value: "flood", label: "Flood / water", detail: "Flooding, sewer backup, burst pipes" },
@@ -46,7 +46,7 @@ export default function NewCase() {
     const place = form.location ? form.location.split(",")[0].trim() : "";
     const when = (form.incident_date ? new Date(form.incident_date + "T00:00:00") : new Date())
       .toLocaleDateString(undefined, { month: "long", year: "numeric" });
-    return [label.split(" /")[0], place, when].filter(Boolean).join(" — ");
+    return [label.split(" /")[0], place, when].filter(Boolean).join(", ");
   }
 
   async function submit(e: React.FormEvent) {

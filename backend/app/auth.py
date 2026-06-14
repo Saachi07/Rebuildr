@@ -55,7 +55,7 @@ def _verify(token: str) -> dict:
             raise RuntimeError("SUPABASE_JWT_SECRET is not configured")
         return jwt.decode(token, secret, algorithms=["HS256"], audience="authenticated")
 
-    # Asymmetric — verify against the project's JWKS.
+    # Asymmetric, verify against the project's JWKS.
     supabase_url = current_app.config.get("SUPABASE_URL")
     if not supabase_url:
         raise RuntimeError("SUPABASE_URL is not configured")

@@ -1,14 +1,64 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, Item, RoomScan, ScannedItem } from "../api";
+import { api, ClaimClass, Item, RoomScan, Salvageable, ScannedItem } from "../api";
 import { BackButton } from "../components/BackButton";
 import { Hint } from "../components/Hint";
 import { useToast } from "../components/Toast";
 import { useDismissable } from "../lib/useDismissable";
 
-const SEVERITIES = ["minor", "moderate", "severe", "destroyed"];
 const DAMAGE_TYPES = ["fire", "smoke", "water", "wind", "mold", "other"];
 const CATEGORIES = ["furniture", "appliance", "electronics", "clothing", "other"];
+
+// Friendly, human label for an item's claim class. Building items are usually
+// claimed under dwelling coverage, not personal-property (contents) coverage,
+// so we say so plainly rather than showing a raw enum value.
+export function claimClassLabel(c?: ClaimClass | null): string | null {
+  switch (c) {
+    case "contents":
+      return "Contents";
+    case "building":
+      return "Part of the building";
+    case "unclear":
+      return "Unclear";
+    default:
+      return null;
+  }
+}
+
+// Calm, never-a-promise label for whether a damaged item might be salvaged.
+export function salvageableLabel(s?: Salvageable | null): string | null {
+  switch (s) {
+    case "likely":
+      return "May be salvageable";
+    case "unlikely":
+      return "Likely a loss";
+    case "needs_professional_assessment":
+      return "Needs a professional look";
+    default:
+      return null;
+  }
+}
+
+// A contents claim should only include personal property, not fixtures like
+// flooring or wallpaper. We compute the contents-only subtotal so survivors do
+// not unknowingly overstate a contents claim, and report whether any building
+// items are mixed in (which changes how we present the totals).
+export function contentsBreakdown(items: { estimated_value?: number; claim_class?: ClaimClass | null }[]) {
+  let contents = 0;
+  let total = 0;
+  let buildingPresent = false;
+  for (const it of items) {
+    const v = it.estimated_value ?? 0;
+    total += v;
+    if (it.claim_class === "building") {
+      buildingPresent = true;
+    } else {
+      // contents and unclear both count toward the contents estimate
+      contents += v;
+    }
+  }
+  return { contents, total, buildingPresent };
+}
 
 // Default an item's damage type from the case's disaster, so the user doesn't
 // re-pick fire/water/wind on every single item (#1).
@@ -24,18 +74,19 @@ const DISASTER_TO_DAMAGE: Record<string, string> = {
 // The Gemini scan takes a while; an explained wait feels far shorter than a
 // silent one. These rotate while the request is in flight.
 const SCAN_STAGES = [
-  "Reading your photo…",
-  "Identifying the items in it…",
-  "Estimating replacement values…",
-  "Almost there — putting the list together…",
+  "Reading your photo...",
+  "Identifying the items in it...",
+  "Estimating replacement values...",
+  "Almost there, putting the list together...",
 ];
 
 type PrePost = "pre" | "post";
 
+type SortBy = "none" | "room" | "category" | "price";
+
 type Draft = ScannedItem & {
   draft_id: string;
   damage_type: string;
-  damage_severity: string;
   estimated_value: number;
 };
 
@@ -49,7 +100,6 @@ function toDraft(s: ScannedItem, i: number, kind: PrePost, defaultDamage: string
     ...s,
     draft_id: `${Date.now()}-${i}`,
     damage_type: kind === "post" ? defaultDamage : "other",
-    damage_severity: kind === "post" ? "moderate" : "minor",
     estimated_value: midPrice(s),
   };
 }
@@ -89,7 +139,7 @@ export default function Inventory() {
   const toast = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"none" | "room" | "category" | "status" | "price">("room");
+  const [sortBy, setSortBy] = useState<SortBy>("room");
 
   // Scan + draft-review state.
   const [kind, setKind] = useState<PrePost>("post");
@@ -101,10 +151,10 @@ export default function Inventory() {
   const [scanEmpty, setScanEmpty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [restored, setRestored] = useState(false);
-  // Photos picked but not yet scanned — people walk room to room and shoot
+  // Photos picked but not yet scanned, people walk room to room and shoot
   // several at once; we process them one at a time.
   const [queue, setQueue] = useState<File[]>([]);
-  // One room label for the whole batch — set once, applied to every item (#4).
+  // One room label for the whole batch, set once, applied to every item (#4).
   const [batchRoom, setBatchRoom] = useState("");
   // Per-item editing is collapsed by default; expand only what you want (#3/#6).
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -114,10 +164,10 @@ export default function Inventory() {
 
   const [scannedFile, setScannedFile] = useState<File | null>(null);
 
-  // Manual entry — photos aren't always possible when the photos burned too.
+  // Manual entry, photos aren't always possible when the photos burned too.
   const [showManual, setShowManual] = useState(false);
 
-  // Items the user has from other cases — offered as "attach to this case"
+  // Items the user has from other cases, offered as "attach to this case"
   // so they don't have to re-enter what they already documented elsewhere.
   const [library, setLibrary] = useState<Item[]>([]);
   const [attaching, setAttaching] = useState<string | null>(null);
@@ -125,7 +175,7 @@ export default function Inventory() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
-  // Distinct rooms already in use — offered as move targets in the row menu.
+  // Distinct rooms already in use, offered as move targets in the row menu.
   const allRooms = useMemo(
     () => Array.from(new Set(items.map((i) => i.room?.trim()).filter(Boolean) as string[])).sort(),
     [items],
@@ -211,7 +261,7 @@ export default function Inventory() {
     setScanEmpty(false);
     setRestored(false);
     try {
-      // Let Gemini decide before/after — the user only corrects it if wrong (#5).
+      // Let Gemini decide before/after, the user only corrects it if wrong (#5).
       const result = await api.analyzeRoomPhoto(file, "auto");
       const detected: PrePost = result.detected_phase === "before" ? "pre" : "post";
       if (!result.items || result.items.length === 0) {
@@ -238,7 +288,7 @@ export default function Inventory() {
     if (files.length === 0) return;
     const [first, ...rest] = files;
     if (drafts.length > 0 || scanBusy) {
-      // A batch is already in review — queue everything.
+      // A batch is already in review, queue everything.
       setQueue((q) => [...q, ...files]);
       return;
     }
@@ -262,7 +312,6 @@ export default function Inventory() {
       ds.map((d) => ({
         ...d,
         damage_type: next === "post" ? defaultDamage : "other",
-        damage_severity: next === "post" ? "moderate" : "minor",
       })),
     );
   }
@@ -363,7 +412,6 @@ export default function Inventory() {
           name: d.name,
           category: mapCategory(d.category),
           damage_type: d.damage_type,
-          damage_severity: d.damage_severity,
           estimated_value: d.estimated_value,
           description: [d.visible_brand, d.approximate_size, `x${d.count}`]
             .filter(Boolean)
@@ -385,7 +433,7 @@ export default function Inventory() {
     }
   }
 
-  // Deleting is immediate but reversible — kinder than a "can't be undone"
+  // Deleting is immediate but reversible, kinder than a "can't be undone"
   // confirm dialog for shaky hands on a phone.
   async function deleteWithUndo(item: Item) {
     if (!id) return;
@@ -393,7 +441,6 @@ export default function Inventory() {
       name: item.name,
       category: item.category,
       damage_type: item.damage_type,
-      damage_severity: item.damage_severity,
       estimated_value: item.estimated_value,
       description: item.description,
       room: item.room,
@@ -420,10 +467,10 @@ export default function Inventory() {
   }
 
   function exportCsv() {
-    const header = ["Name", "Room", "Category", "Damage type", "Severity", "Estimated value (CAD)", "Description"];
+    const header = ["Name", "Room", "Category", "Damage type", "Estimated value (CAD)", "Description"];
     const rows = items.map((it) => [
       it.name, it.room ?? "", it.category ?? "", it.damage_type ?? "",
-      it.damage_severity ?? "", it.estimated_value ?? "", it.description ?? "",
+      it.estimated_value ?? "", it.description ?? "",
     ]);
     // ﻿ byte-order mark so Excel opens the file with correct encoding.
     const csv = "﻿" + [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\r\n");
@@ -446,12 +493,19 @@ export default function Inventory() {
           <button>See your plan →</button>
         </Link>
       </div>
-      <p className="warm-note" style={{ marginTop: 8 }}>
-        Snap a photo of one room at a time — we'll list what we see, guess
+      <p className="warm-note no-print" style={{ marginTop: 8 }}>
+        Snap a photo of one room at a time, we'll list what we see, guess
         whether it's a before- or after-damage photo, and fill in the rest. You
         only review what you want before saving. No photos? You can add items
         by hand below.
       </p>
+
+      <div className="print-only" style={{ marginTop: 8 }}>
+        <h2 style={{ margin: "0 0 4px" }}>Home inventory report</h2>
+        <p style={{ margin: 0 }}>
+          Prepared with Rebuildr. {items.length} item{items.length === 1 ? "" : "s"} documented.
+        </p>
+      </div>
 
       <div className="card no-print">
         <h3 style={{ marginTop: 0 }}>Scan a room from a photo</h3>
@@ -485,7 +539,7 @@ export default function Inventory() {
         />
         {queue.length > 0 && (
           <p className="muted-strong" style={{ marginTop: 8, fontSize: 14 }}>
-            {queue.length} more photo{queue.length === 1 ? "" : "s"} waiting — we'll
+            {queue.length} more photo{queue.length === 1 ? "" : "s"} waiting, we'll
             scan the next one after you finish this batch.
           </p>
         )}
@@ -493,7 +547,7 @@ export default function Inventory() {
           <p className="muted-strong" style={{ marginTop: 8 }} role="status">
             {SCAN_STAGES[scanStage]}{" "}
             <span className="muted" style={{ fontSize: 13 }}>
-              This can take up to half a minute — keep this page open.
+              This can take up to half a minute, keep this page open.
             </span>
           </p>
         )}
@@ -510,7 +564,7 @@ export default function Inventory() {
             <strong>We couldn't pick out items in that photo.</strong>
             <span className="muted-strong" style={{ display: "block", marginTop: 4 }}>
               Try a wider shot of the room with more light, or add the items by
-              hand below — that works just as well.
+              hand below, that works just as well.
             </span>
           </div>
         )}
@@ -518,7 +572,7 @@ export default function Inventory() {
           <div className="notice" style={{ marginTop: 10 }}>
             <strong>We kept the items from your last photo.</strong>
             <span className="muted-strong" style={{ display: "block", marginTop: 4 }}>
-              Pick up where you left off — review them and save when ready.
+              Pick up where you left off, review them and save when ready.
             </span>
           </div>
         )}
@@ -534,7 +588,7 @@ export default function Inventory() {
                 Discard
               </button>
               <button onClick={saveAllDrafts} disabled={busy}>
-                {busy ? "Saving…" : `Looks good — save all ${drafts.length}`}
+                {busy ? "Saving..." : `Looks good, save all ${drafts.length}`}
               </button>
             </div>
 
@@ -553,7 +607,7 @@ export default function Inventory() {
               <div>
                 <label>
                   Before or after the damage?{" "}
-                  <Hint text="We guessed from the photo — change it if we got it wrong. This sets the damage defaults below." />
+                  <Hint text="We guessed from the photo, change it if we got it wrong. This sets the damage defaults below." />
                 </label>
                 <div className="toggle-group" role="tablist" aria-label="Photo type">
                   <button
@@ -580,6 +634,8 @@ export default function Inventory() {
 
             {scan.notes && <p className="muted-strong" style={{ fontSize: 14, marginTop: 8 }}>{scan.notes}</p>}
 
+            <DraftEstimate drafts={drafts} scan={scan} />
+
             <div className="grid grid-2" style={{ marginTop: 12 }}>
               {drafts.map((d) => {
                 const open = expanded.has(d.draft_id);
@@ -597,12 +653,21 @@ export default function Inventory() {
                     </p>
                     <div className="row" style={{ fontSize: 13 }}>
                       <span className="badge">{kind === "post" ? d.damage_type : "undamaged"}</span>
-                      {kind === "post" && <span className="badge">{d.damage_severity}</span>}
+                      <ClaimClassBadge claimClass={d.claim_class} />
                       <span className="spacer" />
                       <strong>${d.estimated_value}</strong>
                     </div>
+                    {d.claim_note && (
+                      <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>{d.claim_note}</p>
+                    )}
+                    {kind === "post" && d.salvageable && (
+                      <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                        <span className="badge" style={{ marginRight: 6 }}>{salvageableLabel(d.salvageable)}</span>
+                        {d.salvage_note}
+                      </p>
+                    )}
                     <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-                      Our estimate: ${est.low}–${est.high}
+                      Our estimate: ${est.low}-${est.high}
                     </p>
                     <div className="row" style={{ marginTop: 8 }}>
                       <button className="secondary" type="button" onClick={() => toggleExpand(d.draft_id)}>
@@ -623,15 +688,6 @@ export default function Inventory() {
                             onChange={(e) => updateDraft(d.draft_id, { damage_type: e.target.value })}
                           >
                             {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
-                          </select>
-                        </div>
-                        <div>
-                          <label>How bad?</label>
-                          <select
-                            value={d.damage_severity}
-                            onChange={(e) => updateDraft(d.draft_id, { damage_severity: e.target.value })}
-                          >
-                            {SEVERITIES.map((c) => <option key={c}>{c}</option>)}
                           </select>
                         </div>
                         <div>
@@ -683,7 +739,7 @@ export default function Inventory() {
           </button>
         </div>
         <p className="muted-strong" style={{ margin: "6px 0 0", fontSize: 14 }}>
-          For things you can't photograph — items that were destroyed, or
+          For things you can't photograph, items that were destroyed, or
           things you remember but can't see anymore. Only the name is required.
         </p>
         {showManual && id && (
@@ -704,7 +760,7 @@ export default function Inventory() {
           </h3>
           <p className="muted-strong" style={{ marginTop: 0, fontSize: 14 }}>
             Items you've already documented in other cases. Add any that
-            apply here too — no need to re-enter them.
+            apply here too, no need to re-enter them.
           </p>
           <table className="tbl tbl-cards">
             <thead>
@@ -722,15 +778,15 @@ export default function Inventory() {
                     <strong>{it.name}</strong>
                     {it.category && <span className="badge" style={{ marginLeft: 8 }}>{it.category}</span>}
                   </td>
-                  <td data-label="Room">{it.room || <span className="muted">—</span>}</td>
-                  <td data-label="Value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
+                  <td data-label="Room">{it.room || <span className="muted">-</span>}</td>
+                  <td data-label="Value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
                   <td className="actions">
                     <button
                       className="secondary"
                       disabled={attaching === it.id}
                       onClick={() => attachFromLibrary(it.id)}
                     >
-                      {attaching === it.id ? "Adding…" : "Add to this case"}
+                      {attaching === it.id ? "Adding..." : "Add to this case"}
                     </button>
                   </td>
                 </tr>
@@ -748,7 +804,7 @@ export default function Inventory() {
                 Total documented: ${totalValue.toLocaleString()}
               </strong>
               <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
-                across {items.length} item{items.length === 1 ? "" : "s"} — this is
+                across {items.length} item{items.length === 1 ? "" : "s"}, this is
                 the number your insurer will want.
               </span>
             </div>
@@ -770,14 +826,13 @@ export default function Inventory() {
             <select
               id="inv-sort"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              onChange={(e) => setSortBy(e.target.value as SortBy)}
               style={{ width: "auto" }}
             >
               <option value="room">Room</option>
               <option value="none">When added</option>
               <option value="category">Category</option>
-              <option value="status">Damage (worst first)</option>
-              <option value="price">Value (high → low)</option>
+              <option value="price">Value (high to low)</option>
             </select>
           </>
         )}
@@ -819,7 +874,6 @@ function ManualItemForm({
     room: "",
     category: "other",
     damage_type: defaultDamage,
-    damage_severity: "moderate",
     estimated_value: "",
   });
   const [busy, setBusy] = useState(false);
@@ -836,7 +890,6 @@ function ManualItemForm({
         room: form.room.trim() || undefined,
         category: form.category,
         damage_type: form.damage_type,
-        damage_severity: form.damage_severity,
         estimated_value: Number.isFinite(value) && value > 0 ? Math.round(value) : undefined,
       });
       setForm((f) => ({ ...f, name: "", estimated_value: "" }));
@@ -905,21 +958,11 @@ function ManualItemForm({
             {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
-        <div>
-          <label htmlFor="manual-severity">How bad?</label>
-          <select
-            id="manual-severity"
-            value={form.damage_severity}
-            onChange={(e) => setForm({ ...form, damage_severity: e.target.value })}
-          >
-            {SEVERITIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </div>
       </div>
       {err && <div className="error">{err}</div>}
       <div style={{ marginTop: 14 }}>
         <button type="submit" disabled={busy || !form.name.trim()}>
-          {busy ? "Adding…" : "Add item"}
+          {busy ? "Adding..." : "Add item"}
         </button>
       </div>
     </form>
@@ -959,35 +1002,26 @@ function ItemTable(
         <tr>
           <th>Item</th>
           <th>Category</th>
-          <th>Status</th>
-          <th>Severity</th>
+          <th>Damage</th>
           <th>Est. value</th>
           <th>Photos</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        {items.map((it) => {
-          const status = itemStatus(it);
-          return (
-            <tr key={it.id}>
-              <td data-label="Item">
-                <strong>{it.name}</strong>
-                {it.description && <div className="muted" style={{ fontSize: 13 }}>{it.description}</div>}
-              </td>
-              <td data-label="Category">{it.category ?? <span className="muted">—</span>}</td>
-              <td data-label="Status">
-                {status === "damaged" && <span className="status-damaged">Damaged</span>}
-                {status === "salvageable" && <span className="status-salvageable">Salvageable</span>}
-                {status === "unknown" && <span className="muted">—</span>}
-              </td>
-              <td data-label="Severity">{it.damage_severity ? <span className="badge">{it.damage_severity}</span> : <span className="muted">—</span>}</td>
-              <td data-label="Est. value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">—</span>}</td>
-              <td data-label="Photos"><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
-              <td className="actions"><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} /></td>
-            </tr>
-          );
-        })}
+        {items.map((it) => (
+          <tr key={it.id}>
+            <td data-label="Item">
+              <strong>{it.name}</strong>
+              {it.description && <div className="muted" style={{ fontSize: 13 }}>{it.description}</div>}
+            </td>
+            <td data-label="Category">{it.category ?? <span className="muted">-</span>}</td>
+            <td data-label="Damage">{it.damage_type ? <span className="badge">{it.damage_type}</span> : <span className="muted">-</span>}</td>
+            <td data-label="Est. value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
+            <td data-label="Photos"><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
+            <td className="actions"><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} /></td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );
@@ -1046,7 +1080,7 @@ function ItemActions(
           {!moving ? (
             <>
               <button className="menu-item" style={MENU_ITEM} onClick={() => setMoving(true)}>
-                Move to another room…
+                Move to another room...
               </button>
               <button
                 className="menu-item"
@@ -1058,7 +1092,7 @@ function ItemActions(
             </>
           ) : (
             <div style={{ padding: 4 }}>
-              <div className="muted" style={{ fontSize: 13, marginBottom: 4 }}>Move to…</div>
+              <div className="muted" style={{ fontSize: 13, marginBottom: 4 }}>Move to...</div>
               {otherRooms.map((r) => (
                 <button key={r} className="menu-item" style={MENU_ITEM} disabled={busy} onClick={() => moveTo(r)}>
                   {r}
@@ -1128,7 +1162,7 @@ function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; on
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
                   }}
                 >
-                  {busy === key ? "…" : "+"}
+                  {busy === key ? "..." : "+"}
                 </span>
               )}
               <span className="muted" style={{ fontSize: 11 }}>{label}</span>
@@ -1152,26 +1186,63 @@ function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; on
   );
 }
 
-type ItemStatus = "damaged" | "salvageable" | "unknown";
-
-function itemStatus(it: Item): ItemStatus {
-  if (!it.damage_severity && !it.damage_type) return "unknown";
-  if (it.damage_severity === "severe" || it.damage_severity === "destroyed") return "damaged";
-  return "salvageable";
-}
-
-function sortItems(items: Item[], by: "none" | "room" | "category" | "status" | "price"): Item[] {
+function sortItems(items: Item[], by: SortBy): Item[] {
   if (by === "none") return items;
   const copy = [...items];
   if (by === "category") {
     copy.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? ""));
-  } else if (by === "status") {
-    const rank: Record<ItemStatus, number> = { damaged: 0, salvageable: 1, unknown: 2 };
-    copy.sort((a, b) => rank[itemStatus(a)] - rank[itemStatus(b)]);
   } else if (by === "price") {
     copy.sort((a, b) => (b.estimated_value ?? 0) - (a.estimated_value ?? 0));
   }
   return copy;
+}
+
+function ClaimClassBadge({ claimClass }: { claimClass?: ClaimClass | null }) {
+  const label = claimClassLabel(claimClass);
+  if (!label) return null;
+  return <span className="badge">{label}</span>;
+}
+
+// Shows the contents-only claim value prominently and, when building items are
+// mixed in, the all-items total separately so survivors do not overstate a
+// contents claim with fixtures (flooring, wallpaper) that fall under dwelling
+// coverage. Uses the live drafts so edits and removals are reflected; falls
+// back to the server's contents_total_estimate_cad for the headline range.
+function DraftEstimate({ drafts, scan }: { drafts: Draft[]; scan: RoomScan }) {
+  const { contents, total, buildingPresent } = contentsBreakdown(drafts);
+  const serverContents = scan.contents_total_estimate_cad ?? null;
+
+  if (!buildingPresent) {
+    return (
+      <div className="card ok-card" style={{ margin: "12px 0 0" }}>
+        <strong style={{ fontSize: 16 }}>
+          Estimated value: ${contents.toLocaleString()}
+        </strong>
+        <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
+          Across {drafts.length} item{drafts.length === 1 ? "" : "s"} you can review and adjust below.
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card warn-card" style={{ margin: "12px 0 0" }}>
+      <strong style={{ fontSize: 18 }}>
+        Estimated contents claim value: ${contents.toLocaleString()}
+      </strong>
+      {serverContents && (
+        <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
+          Our scan range for contents: ${serverContents.low.toLocaleString()}-${serverContents.high.toLocaleString()}
+        </span>
+      )}
+      <p className="muted-strong" style={{ fontSize: 13, margin: "8px 0 0" }}>
+        All items, including the building: ${total.toLocaleString()}.
+        Some items here are part of the building (flooring, wallpaper, built-ins).
+        Those are usually claimed under your dwelling coverage, not personal
+        property (contents), so keep them out of a contents claim.
+      </p>
+    </div>
+  );
 }
 
 function mapCategory(geminiCategory: string): string {

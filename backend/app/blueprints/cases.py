@@ -1,7 +1,7 @@
 """Recovery-case CRUD endpoints.
 
 All access is gated by ``require_auth`` and goes through a per-user Supabase
-client, so Postgres row-level security enforces ownership — the server-side
+client, so Postgres row-level security enforces ownership, the server-side
 ``user_id`` filter below is belt-and-braces.
 """
 
@@ -24,7 +24,41 @@ WRITABLE = {
     "incident_date",
     "status",
     "intake_answers",
+    "claim_stage",
+    "checklist_state",
+    "coverage_decisions",
 }
+
+# Where the insurance claim stands, in the order it usually progresses.
+# Mirrored by the ClaimStage type in frontend/src/api.ts.
+CLAIM_STAGES = (
+    "not_started",
+    "reported",
+    "adjuster_assigned",
+    "estimate_received",
+    "settlement_offer",
+    "payout",
+    "closed",
+    "denied",
+)
+
+STATUSES = {"active", "closed"}
+
+
+def validate_claim_stage(value) -> bool:
+    """Pure check so it is unit-testable without a request context."""
+    return value in CLAIM_STAGES
+
+
+def _validate_writable(row: dict) -> str | None:
+    """Returns a user-facing error string, or None when the row is fine."""
+    if "claim_stage" in row and row["claim_stage"] is not None:
+        if not validate_claim_stage(row["claim_stage"]):
+            return "claim_stage must be one of: " + ", ".join(CLAIM_STAGES)
+    if "status" in row and row["status"] is not None:
+        if row["status"] not in STATUSES:
+            return "status must be one of: " + ", ".join(sorted(STATUSES))
+    return None
 
 
 def _sync_profile_location(sb, case_row: dict | None) -> None:
@@ -81,6 +115,9 @@ def create_case():
         return jsonify({"error": "case_name and disaster_type are required"}), 400
 
     row = {k: v for k, v in data.items() if k in WRITABLE}
+    err = _validate_writable(row)
+    if err:
+        return jsonify({"error": err}), 400
     row["user_id"] = g.user_id
     row["derived_tags"] = sorted(derive_tags(row.get("intake_answers") or {}))
 
@@ -89,6 +126,28 @@ def create_case():
     created = res.data[0] if res.data else None
     _sync_profile_location(sb, created)
     return jsonify({"case": created}), 201
+
+
+# NOTE: this static route must be declared before the dynamic /<case_id>
+# routes below, otherwise Flask would try to treat "deleted" as a case id.
+@bp.get("/deleted")
+@require_auth
+def list_deleted_cases():
+    """Cases deleted within the last 30 days, so an accidental delete is
+    recoverable from the UI instead of being a support request."""
+    from datetime import datetime, timedelta, timezone
+
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("recovery_cases")
+        .select("*")
+        .not_.is_("deleted_at", "null")
+        .gte("deleted_at", cutoff)
+        .order("deleted_at", desc=True)
+        .execute()
+    )
+    return jsonify({"cases": res.data or []})
 
 
 @bp.get("/<case_id>")
@@ -108,6 +167,9 @@ def update_case(case_id: str):
     row = {k: v for k, v in data.items() if k in WRITABLE}
     if not row:
         return jsonify({"error": "no updatable fields provided"}), 400
+    err = _validate_writable(row)
+    if err:
+        return jsonify({"error": err}), 400
     if "intake_answers" in row:
         row["derived_tags"] = sorted(derive_tags(row["intake_answers"] or {}))
 
@@ -133,3 +195,52 @@ def soft_delete_case(case_id: str):
     if not res.data:
         return jsonify({"error": "not found"}), 404
     return jsonify({"ok": True})
+
+
+@bp.post("/<case_id>/restore")
+@require_auth
+def restore_case(case_id: str):
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("recovery_cases")
+        .update({"deleted_at": None})
+        .eq("id", case_id)
+        .execute()
+    )
+    if not res.data:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"case": res.data[0]})
+
+
+@bp.post("/<case_id>/close")
+@require_auth
+def close_case(case_id: str):
+    """Mark a case finished. Closed cases stay readable (the records may
+    matter for years) but stop cluttering the active list."""
+    from datetime import datetime, timezone
+
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("recovery_cases")
+        .update({"status": "closed", "closed_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", case_id)
+        .execute()
+    )
+    if not res.data:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"case": res.data[0]})
+
+
+@bp.post("/<case_id>/reopen")
+@require_auth
+def reopen_case(case_id: str):
+    sb = user_client(g.access_token)
+    res = (
+        sb.table("recovery_cases")
+        .update({"status": "active", "closed_at": None})
+        .eq("id", case_id)
+        .execute()
+    )
+    if not res.data:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"case": res.data[0]})

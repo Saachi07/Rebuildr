@@ -5,7 +5,7 @@ dereference the ``$ref``/``$defs`` that Pydantic emits for nested models, and
 its Google AI (non-Vertex) schema path rejects JSON-schema keys like ``title``
 and ``default``. This helper inlines all ``$ref`` targets, drops the
 unsupported keys, and collapses ``Optional[T]`` (``anyOf: [T, null]``) into a
-nullable field — producing a plain dict the SDK accepts.
+nullable field, producing a plain dict the SDK accepts.
 """
 
 from __future__ import annotations

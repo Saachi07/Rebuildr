@@ -36,7 +36,7 @@ create policy "cases: delete own" on public.recovery_cases
     for delete using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
--- case_items — owned via parent case
+-- case_items, owned via parent case
 -- ---------------------------------------------------------------------------
 alter table public.case_items enable row level security;
 
@@ -64,7 +64,7 @@ create policy "items: write via case" on public.case_items
     );
 
 -- ---------------------------------------------------------------------------
--- recommendations — owned via parent case
+-- recommendations, owned via parent case
 -- ---------------------------------------------------------------------------
 alter table public.recommendations enable row level security;
 
@@ -92,7 +92,7 @@ create policy "recs: write via case" on public.recommendations
     );
 
 -- ---------------------------------------------------------------------------
--- document_summaries — owned via parent case
+-- document_summaries, owned via parent case
 -- ---------------------------------------------------------------------------
 alter table public.document_summaries enable row level security;
 
@@ -120,7 +120,7 @@ create policy "docs: write via case" on public.document_summaries
     );
 
 -- ---------------------------------------------------------------------------
--- resources — public read; writes restricted to service_role (no policy = denied)
+-- resources, public read; writes restricted to service_role (no policy = denied)
 -- ---------------------------------------------------------------------------
 alter table public.resources enable row level security;
 

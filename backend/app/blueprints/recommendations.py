@@ -1,4 +1,4 @@
-"""Recommendation endpoints — drives the content-based filter.
+"""Recommendation endpoints, drives the content-based filter.
 
 GET  /cases/<case_id>/recommendations  → run the filter and return groups
 POST /cases/<case_id>/recommendations  → run + persist into ``recommendations``
@@ -8,10 +8,10 @@ The filter is fed by three sources, all already persisted (no Gemini call
 in this request path):
 
 * the case row itself (disaster type, region, intake-derived tags),
-* the image-classification pipeline — ``case_items`` rows created from
+* the image-classification pipeline, ``case_items`` rows created from
   ``POST /ml/analyze-photo`` results, folded into damage-severity tags via
   ``services.signals.inventory_signals_from_items``,
-* the document pipeline — ``user_documents.gemini_analysis`` rows from
+* the document pipeline, ``user_documents.gemini_analysis`` rows from
   ``POST /documents/<id>/analyze``, folded into insurer / deadline / denial
   signals via ``services.signals.document_signals_from_documents``.
 
@@ -62,7 +62,7 @@ class _Context:
 
 def _load_documents_signals(sb):
     """Fetch the caller's analyzed documents (RLS scopes to the user) and
-    fold them into one DocumentSignals. Soft-fails to None — a broken
+    fold them into one DocumentSignals. Soft-fails to None, a broken
     documents table should never take recommendations down."""
     try:
         res = (
@@ -78,7 +78,7 @@ def _load_documents_signals(sb):
 
 
 def _load_profile(sb):
-    """Caller's profile row — region/location fallback when the case doesn't
+    """Caller's profile row, region/location fallback when the case doesn't
     carry them. Soft-fails to an empty dict."""
     try:
         res = (

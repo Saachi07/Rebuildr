@@ -87,7 +87,7 @@ export function LocationAutocomplete({ value, onChange }: Props) {
         <div className="notice" style={{ marginTop: 10 }}>
           <strong>We don't cover {value.trim()} yet.</strong>
           <span className="muted-strong" style={{ display: "block", marginTop: 4 }}>
-            Right now Rebuildr is built for Alberta, Canada. You can still create a case —
+            Right now Rebuildr is built for Alberta, Canada. You can still create a case , 
             documents and inventory will work, but local recommendations may not match your area.
             Try entering the closest Alberta town, or continue with what you typed.
           </span>
