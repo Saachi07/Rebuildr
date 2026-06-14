@@ -46,16 +46,17 @@ _CATEGORY_ORDER = [
 
 class _Context:
     __slots__ = ("case", "items", "resources", "sb",
-                 "inventory", "documents", "statuses", "rec_ids")
+                 "inventory", "documents", "documents_rows", "statuses", "rec_ids")
 
     def __init__(self, case, items, resources, sb,
-                 inventory, documents, statuses, rec_ids):
+                 inventory, documents, documents_rows, statuses, rec_ids):
         self.case = case
         self.items = items
         self.resources = resources
         self.sb = sb
         self.inventory = inventory
         self.documents = documents
+        self.documents_rows = documents_rows  # raw document rows for readiness
         self.statuses = statuses      # resource_id -> status
         self.rec_ids = rec_ids        # resource_id -> recommendations row id
 
@@ -75,6 +76,21 @@ def _load_documents_signals(sb):
     except Exception:
         return None
     return document_signals_from_documents(res.data or [])
+
+
+def _load_document_rows(sb):
+    """Fetch raw document rows (all docs, not just analyzed) for readiness
+    checking. Soft-fails to empty list."""
+    try:
+        res = (
+            sb.table("user_documents")
+            .select("id, doc_type")
+            .is_("deleted_at", "null")
+            .execute()
+        )
+        return res.data or []
+    except Exception:
+        return []
 
 
 def _load_profile(sb):
@@ -127,6 +143,7 @@ def _load_context(case_id: str):
         sb,
         inventory=inventory_signals_from_items(item_rows),
         documents=_load_documents_signals(sb),
+        documents_rows=_load_document_rows(sb),
         statuses=statuses,
         rec_ids=rec_ids,
     )
@@ -151,6 +168,79 @@ def _ordered_categories(grouped) -> list[str]:
         grouped.keys(),
         key=lambda t: (known.get(t, len(_CATEGORY_ORDER)), t),
     )
+
+
+def _case_readiness(case, items, documents_rows, grouped) -> dict:
+    """Compute case readiness across 5 equally-weighted dimensions (20% each).
+    
+    Returns:
+    {
+        "percent": 0-100,
+        "completed": 0-5,
+        "total": 5,
+        "checks": [
+            {"key": "...", "label": "...", "done": bool},
+            ...
+        ]
+    }
+    """
+    checks = []
+
+    # 1. Insurance document uploaded
+    has_insurance = any(
+        (d.get("doc_type") or "").lower() in {"insurance_policy", "policy"}
+        for d in documents_rows
+    )
+    checks.append({
+        "key": "insurance_document",
+        "label": "Insurance policy uploaded",
+        "done": has_insurance,
+    })
+
+    # 2. Home inventory exists
+    has_inventory = len(items) > 0
+    checks.append({
+        "key": "inventory_exists",
+        "label": "Home inventory completed",
+        "done": has_inventory,
+    })
+
+    # 3. Optional intake questions answered
+    intake_answered = bool(case.get("intake_answers"))
+    checks.append({
+        "key": "intake_answered",
+        "label": "Optional questions answered",
+        "done": intake_answered,
+    })
+
+    # 4. Basic case information complete (disaster type + region or location)
+    has_type = bool(case.get("disaster_type"))
+    has_location = bool(case.get("region") or case.get("location"))
+    case_info_complete = has_type and has_location
+    checks.append({
+        "key": "case_info_complete",
+        "label": "Case information complete",
+        "done": case_info_complete,
+    })
+
+    # 5. Recovery plan generated (at least one recommendation exists)
+    has_recommendations = bool(grouped and any(grouped.values()))
+    checks.append({
+        "key": "recommendations_generated",
+        "label": "Recovery plan generated",
+        "done": has_recommendations,
+    })
+
+    completed = sum(1 for c in checks if c["done"])
+    total = len(checks)
+    percent = round((completed / total) * 100) if total else 0
+
+    return {
+        "percent": percent,
+        "completed": completed,
+        "total": total,
+        "checks": checks,
+    }
 
 
 def _response_payload(case_id: str, ctx: _Context, grouped) -> dict:
@@ -216,6 +306,7 @@ def _response_payload(case_id: str, ctx: _Context, grouped) -> dict:
         "personalize_more": personalize_hints(
             ctx.case, ctx.items, ctx.resources, ctx.inventory, ctx.documents,
         ),
+        "readiness": _case_readiness(ctx.case, ctx.items, ctx.documents_rows, grouped),
     }
 
 
