@@ -335,7 +335,6 @@ function SectionLinks({ className }: { className: string }) {
     <nav className={className} aria-label="Main sections">
       <NavLink to={planTo} end className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
       <NavLink to={inventoryTo} end className={({ isActive }) => (isActive ? "active" : "")}>Inventory</NavLink>
-      <NavLink to="/documents" className={({ isActive }) => (isActive ? "active" : "")}>Documents</NavLink>
       <NavLink to="/emergency" className={({ isActive }) => (isActive ? "active urgent-link" : "urgent-link")}>
         Get help
       </NavLink>
