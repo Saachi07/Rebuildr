@@ -67,15 +67,21 @@ export default function Dashboard() {
         </div>
       )}
       <div className="grid grid-2">
-        {cases?.map((c) => (
-          <Link key={c.id} to={`/cases/${c.id}/recommendations`} className="card tile">
-            <h3>{c.case_name}</h3>
-            <p>{c.disaster_type}{c.location ? ` · ${c.location}` : ""}</p>
-            <div style={{ marginTop: 8 }}>
-              <span className="badge">{c.status ?? "active"}</span>
-            </div>
-          </Link>
-        ))}
+        {cases?.map((c) => {
+          // A draft is a recovery the user started but has not confirmed yet.
+          // Send it back to the intake to finish, and label it plainly.
+          const isDraft = c.status === "draft";
+          const to = isDraft ? "/cases/new" : `/cases/${c.id}/recommendations`;
+          return (
+            <Link key={c.id} to={to} className="card tile">
+              <h3>{c.case_name || "Untitled recovery"}</h3>
+              <p>{c.disaster_type || "Not specified yet"}{c.location ? ` · ${c.location}` : ""}</p>
+              <div style={{ marginTop: 8 }}>
+                <span className="badge">{isDraft ? "In progress" : c.status ?? "active"}</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {terms?.encryption_notice && (

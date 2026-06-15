@@ -16,7 +16,12 @@ if str(BACKEND) not in sys.path:
 pytest.importorskip("flask")
 
 from app.blueprints.ale import sum_expenses  # noqa: E402
-from app.blueprints.cases import CLAIM_STAGES, validate_claim_stage  # noqa: E402
+from app.blueprints.cases import (  # noqa: E402
+    CLAIM_STAGES,
+    STATUSES,
+    _validate_writable,
+    validate_claim_stage,
+)
 from app.blueprints.me import build_export, is_recent  # noqa: E402
 from app.services import rate_limit  # noqa: E402
 
@@ -34,6 +39,22 @@ class TestClaimStage:
     def test_expected_stages_present(self):
         for stage in ("not_started", "reported", "adjuster_assigned", "payout", "denied", "closed"):
             assert stage in CLAIM_STAGES
+
+
+class TestCaseStatus:
+    def test_status_set_is_draft_active_closed(self):
+        assert STATUSES == {"draft", "active", "closed"}
+
+    def test_known_statuses_pass_validation(self):
+        for status in ("draft", "active", "closed"):
+            assert _validate_writable({"status": status}) is None
+
+    def test_unknown_status_rejected(self):
+        err = _validate_writable({"status": "archived"})
+        assert err and "status must be one of" in err
+
+    def test_missing_status_is_fine(self):
+        assert _validate_writable({"case_name": "Anything"}) is None
 
 
 class TestIsRecent:

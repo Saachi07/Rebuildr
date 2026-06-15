@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { BackButton } from "../components/BackButton";
 import { Hint } from "../components/Hint";
 import { LocationAutocomplete } from "../components/LocationAutocomplete";
+import { Spinner } from "../components/Skeleton";
 import { useCases } from "../lib/CasesContext";
 
 // Big tappable cards instead of a dropdown: every option visible at once,
@@ -23,20 +24,84 @@ function isoDaysAgo(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+type FormState = {
+  case_name: string;
+  disaster_type: string;
+  location: string;
+  incident_date: string;
+};
+
+const EMPTY_FORM: FormState = {
+  case_name: "",
+  disaster_type: "wildfire",
+  location: "",
+  incident_date: "",
+};
+
 export default function NewCase() {
   const nav = useNavigate();
-  const { refresh } = useCases();
-  const [form, setForm] = useState({
-    case_name: "",
-    disaster_type: "wildfire",
-    location: "",
-    incident_date: "",
-  });
+  const { cases, activeDraft, refresh } = useCases();
+  // The draft is the autosave target. We either reuse the one already open or
+  // create one on arrival, so half-entered answers survive an app close.
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Until the draft is hydrated or created we show a spinner, otherwise an
+  // empty form would flash over the user's saved answers for a moment.
+  const [ready, setReady] = useState(false);
+  const initRef = useRef(false);
 
-  function update<K extends keyof typeof form>(k: K, v: string) {
-    setForm({ ...form, [k]: v });
+  // On mount, hydrate from the active draft if there is one, otherwise create
+  // a fresh draft to autosave into. Wait for cases to load first (null means
+  // still loading) so we never create a duplicate draft.
+  useEffect(() => {
+    if (cases === null || initRef.current) return;
+    initRef.current = true;
+    (async () => {
+      if (activeDraft) {
+        setDraftId(activeDraft.id);
+        setForm({
+          case_name: activeDraft.case_name ?? "",
+          disaster_type: activeDraft.disaster_type || "wildfire",
+          location: activeDraft.location ?? "",
+          incident_date: activeDraft.incident_date ?? "",
+        });
+        setReady(true);
+        return;
+      }
+      try {
+        const res = await api.createCase({ status: "draft" });
+        setDraftId(res.case.id);
+        await refresh();
+      } catch (e: any) {
+        setErr(e.message ?? String(e));
+      } finally {
+        setReady(true);
+      }
+    })();
+  }, [cases, activeDraft, refresh]);
+
+  // Debounced autosave: persist each field into the draft a beat after the
+  // user stops typing. Best-effort, a failed save just retries on the next
+  // edit and the Continue step writes the final values anyway.
+  useEffect(() => {
+    if (!ready || !draftId) return;
+    const t = setTimeout(() => {
+      api
+        .updateCase(draftId, {
+          case_name: form.case_name,
+          disaster_type: form.disaster_type,
+          location: form.location,
+          incident_date: form.incident_date || null,
+        })
+        .catch(() => {});
+    }, 600);
+    return () => clearTimeout(t);
+  }, [form, ready, draftId]);
+
+  function update<K extends keyof FormState>(k: K, v: string) {
+    setForm((prev) => ({ ...prev, [k]: v }));
   }
 
   // Naming a case is a creative task nobody in crisis needs. Suggest one
@@ -49,28 +114,67 @@ export default function NewCase() {
     return [label.split(" /")[0], place, when].filter(Boolean).join(", ");
   }
 
+  // Continue promotes the draft to an active case and moves on to the plan.
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!draftId) return;
     setErr(null);
     setBusy(true);
     try {
-      const payload = { ...form, case_name: form.case_name.trim() || suggestedName() };
-      const res = await api.createCase(payload);
-      refresh();
-      nav(`/cases/${res.case.id}/recommendations`);
+      await api.updateCase(draftId, {
+        case_name: form.case_name.trim() || suggestedName(),
+        disaster_type: form.disaster_type,
+        location: form.location,
+        incident_date: form.incident_date || null,
+        status: "active",
+      });
+      await refresh();
+      nav(`/cases/${draftId}/recommendations`);
     } catch (e: any) {
       setErr(e.message ?? String(e));
-    } finally {
       setBusy(false);
     }
   }
 
+  // Discard soft-deletes the draft and returns to Prepare, so a recovery that
+  // was started by mistake leaves nothing behind and the phase resets cleanly.
+  async function discard() {
+    if (!draftId) {
+      nav("/prepare");
+      return;
+    }
+    const ok = window.confirm(
+      "Discard this case? Anything you entered here will be removed. You can always start again.",
+    );
+    if (!ok) return;
+    setErr(null);
+    setBusy(true);
+    try {
+      await api.deleteCase(draftId);
+      await refresh();
+      nav("/prepare");
+    } catch (e: any) {
+      setErr(e.message ?? String(e));
+      setBusy(false);
+    }
+  }
+
+  if (!ready) {
+    return (
+      <div className="container" style={{ maxWidth: 620 }}>
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
     <div className="container" style={{ maxWidth: 620 }}>
-      <BackButton to="/dashboard" label="Dashboard" />
+      <BackButton to="/prepare" label="Prepare" />
       <h1 style={{ marginTop: 16 }}>Tell us what happened</h1>
       <p className="warm-note">
-        Just the basics for now. You can add photos and documents in the next step.
+        Just the basics for now. Everything you type saves as you go, so you can
+        step away and come back any time. You can add photos and documents in
+        the next step.
       </p>
       <div className="card">
         <form onSubmit={submit}>
@@ -139,6 +243,12 @@ export default function NewCase() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <button type="button" className="link-btn danger-text" disabled={busy} onClick={discard}>
+          Discard this case
+        </button>
       </div>
     </div>
   );

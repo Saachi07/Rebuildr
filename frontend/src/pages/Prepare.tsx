@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
 import { useCases } from "../lib/CasesContext";
+import { useStartRecovery } from "../lib/useStartRecovery";
 
 // A pre-disaster preparedness flow, kept separate from active recovery. The
 // most valuable thing a household can do before a loss is photograph rooms
@@ -33,9 +34,44 @@ function loadChecklist(): Record<string, boolean> {
   return {};
 }
 
+// Returning users who have closed every past case still land here. A gentle,
+// dismissable reminder to refresh their inventory, never a forced step.
+const NUDGE_KEY = "rebuildr.prepare.refreshNudge.dismissed";
+
 export default function Prepare() {
-  const { latest } = useCases();
+  const { latest, cases } = useCases();
+  const startRecovery = useStartRecovery();
+  const [starting, setStarting] = useState(false);
   const [checked, setChecked] = useState<Record<string, boolean>>(loadChecklist);
+  const [nudgeDismissed, setNudgeDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(NUDGE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  // In prepare phase any case present is a closed one (open cases would put us
+  // in recovery). So a non-empty list here means a returning user.
+  const hasClosedCases = !!cases && cases.length > 0;
+
+  function dismissNudge() {
+    setNudgeDismissed(true);
+    try {
+      localStorage.setItem(NUDGE_KEY, "1");
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  async function onStartRecovery() {
+    setStarting(true);
+    try {
+      await startRecovery();
+    } finally {
+      setStarting(false);
+    }
+  }
 
   useEffect(() => {
     try {
@@ -64,6 +100,38 @@ export default function Prepare() {
         matter most: photograph your home while it is whole, and understand
         your coverage before you ever need it.
       </p>
+
+      <div className="card" style={{ marginTop: 8 }}>
+        <p className="muted-strong" style={{ marginTop: 0 }}>
+          Already dealing with damage? We will walk you through it, one calm
+          step at a time. Your progress saves as you go.
+        </p>
+        <button className="big" disabled={starting} onClick={onStartRecovery}>
+          {starting ? "Setting things up…" : "If something has happened, start your recovery"}
+        </button>
+      </div>
+
+      {hasClosedCases && !nudgeDismissed && (
+        <div className="notice" style={{ marginTop: 8 }}>
+          <div className="row" style={{ gap: 6, flexWrap: "nowrap", alignItems: "flex-start" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <strong>Welcome back. A good time to refresh your inventory.</strong>
+              <span className="muted" style={{ display: "block" }}>
+                If you have bought or replaced things since your last claim, a
+                few new photos now keeps you ready. No rush, only when it suits
+                you.
+              </span>
+            </div>
+            <button
+              className="close-x"
+              aria-label="Dismiss this reminder"
+              onClick={dismissNudge}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-2" style={{ marginTop: 8 }}>
         <div className="card accent-card">

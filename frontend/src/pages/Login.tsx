@@ -65,19 +65,10 @@ export default function Login() {
   }
 
   async function routeAfterAuth() {
-    // Drop the user straight into their plan if one exists, otherwise into
-    // NewCase. Falls back to dashboard if /cases fails.
-    refresh();
-    try {
-      const { cases } = await api.listCases();
-      if (cases.length > 0) {
-        nav(`/cases/${cases[0].id}/recommendations`);
-      } else {
-        nav("/cases/new");
-      }
-    } catch {
-      nav("/dashboard");
-    }
+    // Land on the phase-aware home, which derives Prepare vs recovery from the
+    // user's cases. Refresh first so the right phase is ready when we arrive.
+    await refresh();
+    nav("/home");
   }
 
   // Record terms acceptance at sign-up so the blocking TermsGate modal

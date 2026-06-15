@@ -23,6 +23,7 @@ import { CasePicker } from "./components/CasePicker";
 import { OfflineBanner } from "./components/OfflineBanner";
 import { ToastProvider } from "./components/Toast";
 import { CasesProvider, useCases } from "./lib/CasesContext";
+import { useStartRecovery } from "./lib/useStartRecovery";
 import { useDismissable } from "./lib/useDismissable";
 import { api } from "./api";
 import { isAlertRelevantToLocation } from "./lib/regionMapping";
@@ -342,14 +343,40 @@ function SectionLinks({ className }: { className: string }) {
   );
 }
 
+// Text-only chip shown while preparing. Tapping it starts recovery. We never
+// use it in recovery phase, the rest of the nav already reflects an open case.
+function PhaseChip() {
+  const { phase } = useCases();
+  const startRecovery = useStartRecovery();
+  const [busy, setBusy] = useState(false);
+  if (phase !== "prepare") return null;
+  return (
+    <button
+      className="phase-chip"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          await startRecovery();
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      Preparing
+    </button>
+  );
+}
+
 function Nav() {
   const { user } = useAuth();
   return (
     <div className="nav">
-      <Link to="/" className="brand">Rebuildr</Link>
+      <Link to={user ? "/home" : "/"} className="brand">Rebuildr</Link>
       <div className="row">
         {user ? (
           <>
+            <PhaseChip />
             <SectionLinks className="nav-links" />
             <Link to="/dashboard" className="nav-dashboard">Dashboard</Link>
             <NotificationsButton />
@@ -397,6 +424,16 @@ function Private({ children }: { children: JSX.Element }) {
   return children;
 }
 
+// The phase-aware landing for a signed-in user. Phase is derived from server
+// state, so the same account shows the same home on every device. While cases
+// are still loading we show the spinner rather than guessing, otherwise the
+// wrong phase would flash before the real one settles.
+function Home() {
+  const { cases, phase } = useCases();
+  if (cases === null) return <div className="container"><Spinner /></div>;
+  return phase === "prepare" ? <Prepare /> : <Dashboard />;
+}
+
 export default function App() {
   return (
     <CasesProvider>
@@ -411,6 +448,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/home" element={<Private><Home /></Private>} />
             <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
             <Route path="/profile" element={<Private><Profile /></Private>} />
             <Route path="/prepare" element={<Private><Prepare /></Private>} />

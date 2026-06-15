@@ -42,7 +42,7 @@ CLAIM_STAGES = (
     "denied",
 )
 
-STATUSES = {"active", "closed"}
+STATUSES = {"draft", "active", "closed"}
 
 
 def validate_claim_stage(value) -> bool:
@@ -111,7 +111,12 @@ def list_cases():
 @require_auth
 def create_case():
     data = request.get_json(silent=True) or {}
-    if not data.get("case_name") or not data.get("disaster_type"):
+    # A draft is the commit point for starting recovery: it is created before
+    # the intake form so half-entered info autosaves into it. Name and type
+    # are filled in as the user works, so we do not require them yet. Every
+    # other create still needs both.
+    is_draft = data.get("status") == "draft"
+    if not is_draft and (not data.get("case_name") or not data.get("disaster_type")):
         return jsonify({"error": "case_name and disaster_type are required"}), 400
 
     row = {k: v for k, v in data.items() if k in WRITABLE}
