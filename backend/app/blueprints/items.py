@@ -53,6 +53,7 @@ WRITABLE = {
     "image_url",
     "before_url",
     "after_url",
+    "receipts",
     "description",
     "room",
     "case_id",

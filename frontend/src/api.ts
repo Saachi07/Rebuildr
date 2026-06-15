@@ -228,6 +228,7 @@ export type Item = {
   room?: string;
   before_url?: string;
   after_url?: string;
+  receipts?: string;
 };
 
 // Every extracted fact carries the exact sentence it came from plus the page
@@ -389,7 +390,7 @@ export type PersonalizeHint = {
 
 export type ReadinessCheck = {
   key: string;
-  label: string;
+  label?: string;
   done: boolean;
 };
 
@@ -445,7 +446,6 @@ export type DataExport = {
   recommendations: unknown[];
 };
 
-export type ReadinessCheck = { key: string; done: boolean };
 export type Readiness = {
   percent: number;
   completed: number;

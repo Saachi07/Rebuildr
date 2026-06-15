@@ -19,3 +19,7 @@ alter table public.case_items
 insert into storage.buckets (id, name, public)
 values ('item-images', 'item-images', true)
 on conflict (id) do nothing;
+
+
+alter table public.case_items
+    add column if not exists receipts text;

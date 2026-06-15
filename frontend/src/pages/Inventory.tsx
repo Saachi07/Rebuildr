@@ -446,6 +446,7 @@ export default function Inventory() {
       room: item.room,
       before_url: item.before_url,
       after_url: item.after_url,
+      receipts: item.receipts,
     };
     try {
       await api.deleteItem(id, item.id);
@@ -1005,6 +1006,7 @@ function ItemTable(
           <th>Damage</th>
           <th>Est. value</th>
           <th>Photos</th>
+          <th>Receipt</th>
           <th></th>
         </tr>
       </thead>
@@ -1019,6 +1021,7 @@ function ItemTable(
             <td data-label="Damage">{it.damage_type ? <span className="badge">{it.damage_type}</span> : <span className="muted">-</span>}</td>
             <td data-label="Est. value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
             <td data-label="Photos"><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
+            <td data-label="Receipt"><ItemReceipt item={it} caseId={caseId} onChange={onChange} /></td>
             <td className="actions"><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} /></td>
           </tr>
         ))}
@@ -1181,6 +1184,85 @@ function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; on
           );
         })}
       </div>
+      {err && <div className="muted" style={{ fontSize: 11, color: "var(--danger)" }}>{err}</div>}
+    </div>
+  );
+}
+
+// A single receipt slot per item. Reuses the item-image upload endpoint, so
+// receipts are photos of paper receipts (JPG/PNG/etc); the public URL lands in
+// the `receipts` column. Shows a thumbnail that opens the full image, with a
+// way to replace or remove it.
+function ItemReceipt({ item, caseId, onChange }: { item: Item; caseId: string; onChange: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const url = item.receipts;
+
+  async function upload(file?: File) {
+    if (!file || !caseId) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const { url: uploaded } = await api.uploadItemImage(file);
+      await api.updateItem(caseId, item.id, { receipts: uploaded });
+      onChange();
+    } catch (e: any) {
+      setErr(e.message ?? "The receipt didn't upload. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    if (!caseId) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.updateItem(caseId, item.id, { receipts: "" });
+      onChange();
+    } catch (e: any) {
+      setErr(e.message ?? "Could not remove the receipt. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      {url ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <a href={url} target="_blank" rel="noopener noreferrer" title="View receipt">
+            <img src={url} alt={`Receipt for ${item.name}`} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6, display: "block" }} />
+          </a>
+          <button className="link-btn" disabled={busy} onClick={remove} title="Remove receipt" style={{ fontSize: 11 }}>
+            Remove
+          </button>
+        </div>
+      ) : (
+        <label title="Add receipt" style={{ cursor: "pointer", textAlign: "center", display: "block" }}>
+          <span
+            className="muted"
+            style={{
+              width: 40, height: 40, borderRadius: 6, border: "1px dashed var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
+            }}
+          >
+            {busy ? "..." : "+"}
+          </span>
+          <span className="muted" style={{ fontSize: 11 }}>Receipt</span>
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            disabled={busy}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              upload(f);
+            }}
+          />
+        </label>
+      )}
       {err && <div className="muted" style={{ fontSize: 11, color: "var(--danger)" }}>{err}</div>}
     </div>
   );

@@ -136,6 +136,12 @@ export default function Landing() {
             download everything you have given us, or delete your account, at
             any time.
           </p>
+          <p className="muted-strong" style={{ marginBottom: 0 }}>
+            Read our{" "}
+            <Link to="/legal/privacy" style={{ color: "var(--focus)", textDecoration: "underline" }}>Privacy Policy</Link>{" "}
+            and{" "}
+            <Link to="/legal/terms" style={{ color: "var(--focus)", textDecoration: "underline" }}>Terms of Service</Link>.
+          </p>
         </div>
       </section>
 
@@ -149,6 +155,14 @@ export default function Landing() {
           <Link to={start}><button className="big">Start when you're ready</button></Link>
         </div>
       </section>
+
+      <footer className="landing-footer">
+        <Link to="/legal/privacy">Privacy Policy</Link>
+        <span aria-hidden>·</span>
+        <Link to="/legal/terms">Terms of Service</Link>
+        <span aria-hidden>·</span>
+        <Link to="/emergency">Get help now</Link>
+      </footer>
     </div>
   );
 }

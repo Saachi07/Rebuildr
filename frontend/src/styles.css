@@ -645,6 +645,14 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .center-cta { text-align: center; padding-bottom: 24px; }
 .center-cta h2 { font-size: 28px; margin: 0 0 12px; }
 
+.landing-footer {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center;
+  margin: 48px auto 24px; padding-top: 24px; border-top: 1px solid var(--border);
+  max-width: 980px; color: var(--muted); font-size: 14px;
+}
+.landing-footer a { color: var(--muted-strong); text-decoration: none; }
+.landing-footer a:hover { text-decoration: underline; }
+
 @media (max-width: 600px) {
   .landing-section { margin-top: 40px; }
   .section-head h2, .center-cta h2 { font-size: 24px; }
