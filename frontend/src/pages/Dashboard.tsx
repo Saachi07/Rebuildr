@@ -52,7 +52,7 @@ export default function Dashboard() {
 
         <Link to="/emergency" className="card tile big-tile">
           <h2>Emergency contacts</h2>
-          <p>911, crisis lines, Red Cross, one tap to call.</p>
+          <p>Crisis lines, Red Cross, and local support, one tap to call.</p>
         </Link>
       </div>
 

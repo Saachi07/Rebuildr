@@ -4,7 +4,6 @@ import { api, Case } from "../api";
 import { BackButton } from "../components/BackButton";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../auth/AuthContext";
-import { getLanguage, setLanguage, LANGUAGES, Language } from "../lib/i18n";
 
 export default function Settings() {
   const toast = useToast();
@@ -15,9 +14,6 @@ export default function Settings() {
 
   // Export
   const [exporting, setExporting] = useState(false);
-
-  // Language
-  const [language, setLang] = useState<Language>(getLanguage());
 
   // Delete account
   const [showDelete, setShowDelete] = useState(false);
@@ -56,17 +52,6 @@ export default function Settings() {
     }
   }
 
-  async function changeLanguage(next: Language) {
-    setLang(next);
-    setLanguage(next);
-    try {
-      await api.updateMe({ language: next });
-    } catch {
-      // Persisting to the server is a nicety, the local choice already took.
-    }
-    toast.show("Language preference saved.");
-  }
-
   async function confirmDelete() {
     setDeleting(true);
     setErr(null);
@@ -103,23 +88,6 @@ export default function Settings() {
       <h1 style={{ marginTop: 16 }}>Settings</h1>
 
       {err && <div className="error">{err}</div>}
-
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>Language</h3>
-        <p className="muted-strong" style={{ marginTop: 0 }}>
-          Choose the language you are most comfortable with.
-        </p>
-        <select
-          aria-label="Language"
-          value={language}
-          onChange={(e) => changeLanguage(e.target.value as Language)}
-          style={{ maxWidth: 280 }}
-        >
-          {LANGUAGES.map((l) => (
-            <option key={l.code} value={l.code}>{l.label}</option>
-          ))}
-        </select>
-      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Export my data</h3>

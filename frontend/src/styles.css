@@ -623,3 +623,29 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   .hero .warm { font-size: 17px; }
   .nav { padding: 12px 16px; }
 }
+
+/* Landing page sections: generous spacing and centered section intros so the
+   longer page reads as a calm, guided scroll rather than a wall of text. */
+.landing-section { margin: 56px auto 0; max-width: 980px; }
+.section-head { text-align: center; max-width: 640px; margin: 0 auto 24px; }
+.section-head h2 { font-size: 28px; margin: 0 0 10px; line-height: 1.25; }
+.section-head p { font-size: 17px; margin: 0; line-height: 1.5; }
+
+.pill-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+}
+.pill {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+  padding: 10px 18px; font-size: 15px; color: var(--muted-strong); font-weight: 600;
+}
+
+.calm-card { background: var(--accent-soft); border-color: var(--accent); }
+
+.center-cta { text-align: center; padding-bottom: 24px; }
+.center-cta h2 { font-size: 28px; margin: 0 0 12px; }
+
+@media (max-width: 600px) {
+  .landing-section { margin-top: 40px; }
+  .section-head h2, .center-cta h2 { font-size: 24px; }
+}

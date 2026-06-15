@@ -35,9 +35,3 @@ def check_rate_limit(user_id: str, key: str, max_per_minute: int) -> bool:
             return False
         bucket.append(now)
         return True
-
-
-def reset() -> None:
-    """Clear all counters. Test helper."""
-    with _lock:
-        _events.clear()

@@ -16,12 +16,6 @@ type Contact = {
 // phone call is the last thing someone in crisis needs.)
 const CONTACTS: Contact[] = [
   {
-    name: "911",
-    phone: "911",
-    detail: "Life-threatening emergencies, fire, medical, immediate danger.",
-    urgent: true,
-  },
-  {
     name: "988 Suicide Crisis Helpline",
     phone: "988",
     phoneLabel: "Call or text 988",

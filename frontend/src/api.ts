@@ -514,9 +514,6 @@ export const api = {
   deleteAleExpense: (id: string) =>
     request<{ ok: true }>(`/ale-expenses/${id}`, { method: "DELETE" }),
 
-  getDamageMapping: () =>
-    request<{ mapping: Record<string, string> }>("/meta/damage-mapping"),
-
   getRecommendations: (caseId: string, _topK = 5) =>
     request<RecommendResponse>(
       `/cases/${caseId}/recommendations`,
@@ -602,12 +599,8 @@ export const api = {
 
   // /items, user-wide library, independent of any case
   listMyItems: () => request<{ items: Item[] }>("/items"),
-  createLibraryItem: (body: Partial<Item>) =>
-    request<{ item: Item }>("/items", { method: "POST", body: JSON.stringify(body) }),
   attachItemToCase: (itemId: string, caseId: string) =>
     request<{ item: Item }>(`/items/${itemId}/attach/${caseId}`, { method: "POST" }),
-  detachItem: (itemId: string) =>
-    request<{ item: Item }>(`/items/${itemId}/detach`, { method: "POST" }),
 
   // /me, profile + readiness score
   getMe: () => request<MeResponse>("/me"),
