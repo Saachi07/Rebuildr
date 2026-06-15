@@ -387,6 +387,19 @@ export type PersonalizeHint = {
   copy: string;
 };
 
+export type ReadinessCheck = {
+  key: string;
+  label: string;
+  done: boolean;
+};
+
+export type CaseReadiness = {
+  percent: number;
+  completed: number;
+  total: number;
+  checks: ReadinessCheck[];
+};
+
 export type RecommendResponse = {
   by_category: RecGroups;
   top_pick: Recommendation | null;
@@ -394,6 +407,7 @@ export type RecommendResponse = {
   personalize_more: PersonalizeHint[];
   empty_categories?: string[];
   todo?: Recommendation[];
+  readiness?: CaseReadiness;
 };
 
 export type ScrapeResult = {

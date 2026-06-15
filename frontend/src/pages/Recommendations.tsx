@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, PersonalizeHint, RecGroups, Recommendation, RecStatus } from "../api";
+import { api, CaseReadiness, PersonalizeHint, RecGroups, Recommendation, RecStatus } from "../api";
 import { BackButton } from "../components/BackButton";
 import { PersonalizeCard, ResolvedHint } from "../components/IntakeQuestions";
 
@@ -70,6 +70,7 @@ export default function Recommendations() {
   const [topPick, setTopPick] = useState<Recommendation | null>(null);
   const [hints, setHints] = useState<PersonalizeHint[]>([]);
   const [emptyCategories, setEmptyCategories] = useState<string[]>([]);
+  const [readiness, setReadiness] = useState<CaseReadiness | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
@@ -93,6 +94,7 @@ export default function Recommendations() {
       setTopPick(r.top_pick ?? null);
       setHints(r.personalize_more ?? []);
       setEmptyCategories(r.empty_categories ?? []);
+      setReadiness(r.readiness ?? null);
       setStatusOverrides({});
     } catch (e: any) {
       // Keep the last good plan on screen; just surface the problem.
@@ -196,6 +198,38 @@ export default function Recommendations() {
         </div>
       )}
       {busy && !groups && <p className="muted-strong">Putting together your plan…</p>}
+
+      {readiness && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <h3 style={{ margin: "0 0 12px" }}>Recovery Readiness</h3>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <span style={{ fontSize: 18, fontWeight: "bold" }}>{readiness.percent}% Ready</span>
+              <span className="muted" style={{ fontSize: 13 }}>{readiness.completed} of {readiness.total}</span>
+            </div>
+            <div style={{ width: "100%", height: 8, backgroundColor: "#e0e0e0", borderRadius: 4, overflow: "hidden" }}>
+              <div
+                style={{
+                  width: `${readiness.percent}%`,
+                  height: "100%",
+                  backgroundColor: readiness.percent >= 80 ? "#4caf50" : readiness.percent >= 50 ? "#ff9800" : "#f44336",
+                  transition: "width 0.3s ease",
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ fontSize: 13 }}>
+            {readiness.checks.map((check) => (
+              <div key={check.key} style={{ display: "flex", alignItems: "center", margin: "8px 0", opacity: check.done ? 1 : 0.7 }}>
+                <span style={{ marginRight: 8, fontSize: 14 }}>{check.done ? "✓" : "○"}</span>
+                <span style={{ textDecoration: check.done ? "line-through" : "none", opacity: check.done ? 0.6 : 1 }}>
+                  {check.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {groups && !empty && visibleCount > 0 && (
         <ProgressBar done={doneCount} total={visibleCount} />
