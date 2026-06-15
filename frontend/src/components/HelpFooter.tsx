@@ -19,8 +19,7 @@ export function HelpFooter() {
     <div className="help-footer" role="complementary" aria-label="Help and crisis support">
       <strong>Need to talk to someone?</strong>
       <span className="muted-strong">
-        Call or text <a href="tel:988">988</a> (24/7) · Alberta Mental Health
-        Help Line: <a href="tel:18773032642">1-877-303-2642</a>
+        Alberta Mental Health Help Line: <a href="tel:18773032642">1-877-303-2642</a>
       </span>
       <Link to="/emergency" style={{ color: "var(--focus)", textDecoration: "underline" }}>
         All emergency contacts

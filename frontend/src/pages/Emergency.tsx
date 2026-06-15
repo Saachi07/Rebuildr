@@ -15,13 +15,7 @@ type Contact = {
 // pick up for an Albertan. (US numbers like FEMA were removed: a dead-end
 // phone call is the last thing someone in crisis needs.)
 const CONTACTS: Contact[] = [
-  {
-    name: "988 Suicide Crisis Helpline",
-    phone: "988",
-    phoneLabel: "Call or text 988",
-    detail: "24/7 crisis support across Canada. Free and confidential. It's okay to call just to talk.",
-    urgent: true,
-  },
+
   {
     name: "211 Alberta",
     phone: "211",
@@ -29,17 +23,29 @@ const CONTACTS: Contact[] = [
     detail: "24/7 help finding shelter, food, financial aid, and local disaster support. Free, confidential, in 170+ languages.",
     urgent: true,
   },
+  
   {
     name: "Alberta Mental Health Help Line",
     phone: "1-877-303-2642",
     detail: "24/7 confidential support for stress, anxiety, and crisis after a disaster.",
+    urgent: true,
   },
+  
+
   {
     name: "Canadian Red Cross",
     phone: "1-800-863-6582",
     url: "https://www.redcross.ca/how-we-help/emergencies-and-disasters-in-canada",
     detail: "Emergency shelter, food, supplies, and family reunification after disasters.",
   },
+
+  {
+    name: "988 Suicide Crisis Helpline",
+    phone: "988",
+    phoneLabel: "Call or text 988",
+    detail: "24/7 crisis support across Canada. Free and confidential. It's okay to call just to talk.",
+  },
+  
   {
     name: "Alberta Supports",
     phone: "1-877-644-9992",
