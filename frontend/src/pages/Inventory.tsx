@@ -1001,11 +1001,11 @@ function ItemTable(
     <table className="tbl tbl-cards">
       <thead>
         <tr>
+          <th>Photos</th>
           <th>Item</th>
           <th>Category</th>
           <th>Damage</th>
           <th>Est. value</th>
-          <th>Photos</th>
           <th>Receipt</th>
           <th></th>
         </tr>
@@ -1013,6 +1013,7 @@ function ItemTable(
       <tbody>
         {items.map((it) => (
           <tr key={it.id}>
+            <td data-label="Photos"><ItemPhotos item={it} /></td>
             <td data-label="Item">
               <strong>{it.name}</strong>
               {it.description && <div className="muted" style={{ fontSize: 13 }}>{it.description}</div>}
@@ -1020,7 +1021,6 @@ function ItemTable(
             <td data-label="Category">{it.category ?? <span className="muted">-</span>}</td>
             <td data-label="Damage">{it.damage_type ? <span className="badge">{it.damage_type}</span> : <span className="muted">-</span>}</td>
             <td data-label="Est. value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
-            <td data-label="Photos"><ItemPhotos item={it} caseId={caseId} onChange={onChange} /></td>
             <td data-label="Receipt"><ItemReceipt item={it} caseId={caseId} onChange={onChange} /></td>
             <td className="actions"><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} /></td>
           </tr>
@@ -1129,62 +1129,32 @@ const PHOTO_SLOTS: [string, "before_url" | "after_url"][] = [
   ["After", "after_url"],
 ];
 
-function ItemPhotos({ item, caseId, onChange }: { item: Item; caseId: string; onChange: () => void }) {
-  const [busy, setBusy] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function upload(key: "before_url" | "after_url", file?: File) {
-    if (!file || !caseId) return;
-    setBusy(key);
-    setErr(null);
-    try {
-      const { url } = await api.uploadItemImage(file);
-      await api.updateItem(caseId, item.id, { [key]: url });
-      onChange();
-    } catch (e: any) {
-      setErr(e.message ?? "The photo didn't upload. Please try again.");
-    } finally {
-      setBusy(null);
-    }
+// Read-only photo thumbnails for a saved item. Before/After photos are
+// captured during the scan flow; here they're view-only, clicking a thumbnail
+// opens the full image in a new tab. No manual upload from this table.
+function ItemPhotos({ item }: { item: Item }) {
+  const slots = PHOTO_SLOTS.filter(([, key]) => item[key]);
+  if (slots.length === 0) {
+    return <span className="muted">-</span>;
   }
-
   return (
-    <div>
-      <div style={{ display: "flex", gap: 6 }}>
-        {PHOTO_SLOTS.map(([label, key]) => {
-          const url = item[key];
-          return (
-            <label key={key} title={`${label} photo`} style={{ cursor: "pointer", textAlign: "center", display: "block" }}>
-              {url ? (
-                <img src={url} alt={`${label} photo of ${item.name}`} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6, display: "block" }} />
-              ) : (
-                <span
-                  className="muted"
-                  style={{
-                    width: 40, height: 40, borderRadius: 6, border: "1px dashed var(--border)",
-                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
-                  }}
-                >
-                  {busy === key ? "..." : "+"}
-                </span>
-              )}
-              <span className="muted" style={{ fontSize: 11 }}>{label}</span>
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                disabled={busy !== null}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  e.target.value = "";
-                  upload(key, f);
-                }}
-              />
-            </label>
-          );
-        })}
-      </div>
-      {err && <div className="muted" style={{ fontSize: 11, color: "var(--danger)" }}>{err}</div>}
+    <div style={{ display: "flex", gap: 6 }}>
+      {slots.map(([label, key]) => {
+        const url = item[key]!;
+        return (
+          <a
+            key={key}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Open ${label.toLowerCase()} photo`}
+            style={{ textAlign: "center", display: "block" }}
+          >
+            <img src={url} alt={`${label} photo of ${item.name}`} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6, display: "block" }} />
+            <span className="muted" style={{ fontSize: 11 }}>{label}</span>
+          </a>
+        );
+      })}
     </div>
   );
 }
