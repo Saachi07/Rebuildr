@@ -115,21 +115,26 @@ export default function NewCase() {
   }
 
   // Continue promotes the draft to an active case and moves on to the plan.
+  // If the draft never got created (for example the initial draft save failed),
+  // we create the case outright from the filled-in form so the user is never
+  // stuck behind a dead button.
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!draftId) return;
     setErr(null);
     setBusy(true);
+    const fields = {
+      case_name: form.case_name.trim() || suggestedName(),
+      disaster_type: form.disaster_type,
+      location: form.location,
+      incident_date: form.incident_date || null,
+      status: "active" as const,
+    };
     try {
-      await api.updateCase(draftId, {
-        case_name: form.case_name.trim() || suggestedName(),
-        disaster_type: form.disaster_type,
-        location: form.location,
-        incident_date: form.incident_date || null,
-        status: "active",
-      });
+      const id = draftId
+        ? (await api.updateCase(draftId, fields)).case.id
+        : (await api.createCase(fields)).case.id;
       await refresh();
-      nav(`/cases/${draftId}/recommendations`);
+      nav(`/cases/${id}/recommendations`);
     } catch (e: any) {
       setErr(e.message ?? String(e));
       setBusy(false);
