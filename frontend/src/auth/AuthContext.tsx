@@ -18,17 +18,37 @@ type AuthValue = {
 
 const Ctx = createContext<AuthValue | null>(null);
 
+// While we're letting people try the product without signing up, anyone who
+// lands without a session gets a real but anonymous Supabase user. Each visitor
+// gets their own isolated account and a normal authenticated token, so the
+// backend treats them like any other user. Set VITE_DISABLE_AUTH=0 (or remove
+// it) to turn this off and require real sign-in again.
+const ALLOW_ANONYMOUS = import.meta.env.VITE_DISABLE_AUTH === "1";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let cancelled = false;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (cancelled) return;
+      if (!data.session && ALLOW_ANONYMOUS) {
+        // No session yet: silently create an anonymous one so the visitor can
+        // explore the app. onAuthStateChange below picks up the new session.
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) console.error("anonymous sign-in failed", error);
+        setLoading(false);
+        return;
+      }
       setSession(data.session);
       setLoading(false);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const value: AuthValue = {

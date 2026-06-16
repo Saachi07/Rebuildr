@@ -385,7 +385,7 @@ function Nav() {
         ) : (
           <>
             <Link to="/emergency" className="urgent-link">Get help now</Link>
-            <Link to="/login"><button>Sign in</button></Link>
+            <Link to="/login"><button>Try our product</button></Link>
           </>
         )}
       </div>
