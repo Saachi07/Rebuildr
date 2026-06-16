@@ -24,7 +24,7 @@ For each item include:
 
 Include: furniture, appliances, electronics, decor, rugs, curtains, light fixtures (e.g. chandeliers, lamps), artwork, and other movable personal belongings.
 
-Do NOT include: floors, flooring materials, walls, wallpaper, paint, ceilings, baseboards, door frames, window frames, or any other permanent structural or architectural element of the building."""
+Do NOT include: floors, flooring materials, walls, wallpaper, paint, ceilings, baseboards, door frames, window frames, chandeliers or any other permanent structural or architectural element of the building."""
 
 
 class PriceRange(BaseModel):
