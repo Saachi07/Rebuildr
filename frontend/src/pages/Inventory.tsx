@@ -5,6 +5,7 @@ import { BackButton } from "../components/BackButton";
 import { Hint } from "../components/Hint";
 import { useToast } from "../components/Toast";
 import { useDismissable } from "../lib/useDismissable";
+import { depreciatedValue } from "../lib/depreciation";
 
 const DAMAGE_TYPES = ["fire", "smoke", "water", "wind", "mold", "other"];
 const CATEGORIES = ["furniture", "appliance", "electronics", "clothing", "other"];
@@ -88,6 +89,7 @@ type Draft = ScannedItem & {
   draft_id: string;
   damage_type: string;
   estimated_value: number;
+  purchase_date: string;
 };
 
 function midPrice(s: ScannedItem) {
@@ -101,6 +103,7 @@ function toDraft(s: ScannedItem, i: number, kind: PrePost, defaultDamage: string
     draft_id: `${Date.now()}-${i}`,
     damage_type: kind === "post" ? defaultDamage : "other",
     estimated_value: midPrice(s),
+    purchase_date: "",
   };
 }
 
@@ -180,6 +183,22 @@ export default function Inventory() {
     () => items.reduce((sum, it) => sum + (it.estimated_value ?? 0), 0),
     [items],
   );
+
+  // Estimated depreciated (actual cash value) total. Items with a purchase date
+  // are depreciated; items without one count at full replacement cost, since we
+  // can't depreciate an unknown age. We track whether any were dated so the UI
+  // can explain the number honestly.
+  const { depreciatedTotal, anyDated } = useMemo(() => {
+    let total = 0;
+    let dated = false;
+    for (const it of items) {
+      const rcv = it.estimated_value ?? 0;
+      const acv = depreciatedValue(rcv, it.category, it.purchase_date);
+      if (acv != null) dated = true;
+      total += acv ?? rcv;
+    }
+    return { depreciatedTotal: total, anyDated: dated };
+  }, [items]);
 
   // The inventory is the home's, not a single event's: one home accumulates
   // items across every disaster it goes through, so we load everything the
@@ -394,6 +413,7 @@ export default function Inventory() {
           category: mapCategory(d.category),
           damage_type: d.damage_type,
           estimated_value: d.estimated_value,
+          purchase_date: d.purchase_date || undefined,
           description: [d.visible_brand, d.approximate_size, `x${d.count}`]
             .filter(Boolean)
             .join(" · "),
@@ -578,13 +598,17 @@ export default function Inventory() {
               <div>
                 <label>
                   Room{" "}
-                  <Hint text="We set this for the whole batch from the photo. Change it once here and it applies to every item." />
+                  <Hint text="We guessed this from the photo. Pick one of your existing rooms or type a new name; it applies to every item in this batch." />
                 </label>
                 <input
                   value={batchRoom}
+                  list="batch-rooms"
                   placeholder="e.g. Living room"
                   onChange={(e) => setBatchRoom(e.target.value)}
                 />
+                <datalist id="batch-rooms">
+                  {allRooms.map((r) => <option key={r} value={r} />)}
+                </datalist>
               </div>
               <div>
                 <label>
@@ -651,6 +675,14 @@ export default function Inventory() {
                     <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
                       Our estimate: ${est.low}-${est.high}
                     </p>
+                    {(() => {
+                      const acv = depreciatedValue(d.estimated_value, d.category, d.purchase_date);
+                      return acv != null ? (
+                        <p className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                          Replacement ${d.estimated_value.toLocaleString()} · depreciated payout ~${acv.toLocaleString()}
+                        </p>
+                      ) : null;
+                    })()}
                     <div className="row" style={{ marginTop: 8 }}>
                       <button className="secondary" type="button" onClick={() => toggleExpand(d.draft_id)}>
                         {open ? "Done" : "Edit"}
@@ -702,6 +734,18 @@ export default function Inventory() {
                             </button>
                           </div>
                         </div>
+                        <div>
+                          <label>When did you buy it? (optional)</label>
+                          <input
+                            type="date"
+                            value={d.purchase_date}
+                            max={new Date().toISOString().slice(0, 10)}
+                            onChange={(e) => updateDraft(d.draft_id, { purchase_date: e.target.value })}
+                          />
+                          <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                            Lets us estimate the depreciated value your insurer may pay.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -739,12 +783,19 @@ export default function Inventory() {
           <div className="row" style={{ alignItems: "center" }}>
             <div>
               <strong style={{ fontSize: 18 }}>
-                Total documented: ${totalValue.toLocaleString()}
+                Replacement value: ${totalValue.toLocaleString()}
               </strong>
               <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
-                across {items.length} item{items.length === 1 ? "" : "s"}, this is
-                the number your insurer will want.
+                across {items.length} item{items.length === 1 ? "" : "s"}, what it
+                costs to buy everything new today.
               </span>
+              {anyDated && (
+                <span className="muted-strong" style={{ display: "block", fontSize: 13, marginTop: 6 }}>
+                  Estimated depreciated value: ${depreciatedTotal.toLocaleString()}.
+                  Insurers often pay this lower amount first and the rest once you
+                  replace the item. Add purchase dates to sharpen the estimate.
+                </span>
+              )}
             </div>
             <span className="spacer" />
             <button className="secondary no-print" onClick={exportCsv}>Export CSV</button>
@@ -813,6 +864,7 @@ function ManualItemForm({
     category: "other",
     damage_type: defaultDamage,
     estimated_value: "",
+    purchase_date: "",
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -829,8 +881,9 @@ function ManualItemForm({
         category: form.category,
         damage_type: form.damage_type,
         estimated_value: Number.isFinite(value) && value > 0 ? Math.round(value) : undefined,
+        purchase_date: form.purchase_date || undefined,
       });
-      setForm((f) => ({ ...f, name: "", estimated_value: "" }));
+      setForm((f) => ({ ...f, name: "", estimated_value: "", purchase_date: "" }));
       onAdded();
     } catch (e: any) {
       setErr(e.message ?? String(e));
@@ -896,6 +949,16 @@ function ManualItemForm({
             {DAMAGE_TYPES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
+        <div>
+          <label htmlFor="manual-purchased">When did you buy it? (optional)</label>
+          <input
+            id="manual-purchased"
+            type="date"
+            value={form.purchase_date}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={(e) => setForm({ ...form, purchase_date: e.target.value })}
+          />
+        </div>
       </div>
       {err && <div className="error">{err}</div>}
       <div style={{ marginTop: 14 }}>
@@ -921,12 +984,48 @@ function RoomGroupedItems(
   return (
     <>
       {ordered.map(([room, group]) => (
-        <div key={room} className="room-group">
-          <h3>{room} <span className="badge" style={{ marginLeft: 6 }}>{group.length}</span></h3>
-          <ItemTable items={group} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} />
-        </div>
+        <RoomGroup
+          key={room}
+          room={room}
+          group={group}
+          caseId={caseId}
+          rooms={rooms}
+          onChange={onChange}
+          onDelete={onDelete}
+        />
       ))}
     </>
+  );
+}
+
+// One collapsible room section. Collapsed by default so a long inventory reads
+// as a tidy list of rooms; the header shows the item count and the room's total
+// value. The table stays in the DOM (hidden with a class) so printing the
+// claim report still includes every room even while collapsed on screen.
+function RoomGroup(
+  { room, group, caseId, rooms, onChange, onDelete }:
+  { room: string; group: Item[]; caseId: string; rooms: string[]; onChange: () => void; onDelete: (it: Item) => void },
+) {
+  const [open, setOpen] = useState(false);
+  const total = group.reduce((sum, it) => sum + (it.estimated_value ?? 0), 0);
+  return (
+    <div className="room-group">
+      <button
+        type="button"
+        className="room-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className={`room-chev${open ? " open" : ""}`} aria-hidden>▸</span>
+        <span className="room-name">{room}</span>
+        <span className="badge">{group.length} item{group.length === 1 ? "" : "s"}</span>
+        <span className="spacer" />
+        <span className="muted-strong" style={{ fontSize: 14 }}>${total.toLocaleString()}</span>
+      </button>
+      <div className={open ? "room-body" : "room-body room-collapsed"}>
+        <ItemTable items={group} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} />
+      </div>
+    </div>
   );
 }
 
@@ -957,7 +1056,19 @@ function ItemTable(
             </td>
             <td data-label="Category">{it.category ?? <span className="muted">-</span>}</td>
             <td data-label="Damage">{it.damage_type ? <span className="badge">{it.damage_type}</span> : <span className="muted">-</span>}</td>
-            <td data-label="Est. value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
+            <td data-label="Est. value">
+              {it.estimated_value ? (
+                <>
+                  <div>${it.estimated_value.toLocaleString()}</div>
+                  {(() => {
+                    const acv = depreciatedValue(it.estimated_value, it.category, it.purchase_date);
+                    return acv != null ? (
+                      <div className="muted" style={{ fontSize: 12 }}>~${acv.toLocaleString()} depreciated</div>
+                    ) : null;
+                  })()}
+                </>
+              ) : <span className="muted">-</span>}
+            </td>
             <td data-label="Receipt"><ItemReceipt item={it} caseId={caseId} onChange={onChange} /></td>
             <td className="actions"><ItemActions item={it} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} /></td>
           </tr>

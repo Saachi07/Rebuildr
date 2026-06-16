@@ -20,7 +20,10 @@ bp = Blueprint("ale", __name__)
 
 WRITABLE = {"category", "vendor", "amount", "expense_date", "receipt_url", "notes"}
 
-CATEGORIES = {"hotel", "meals", "transport", "storage", "pets", "other"}
+# "cleanup" covers hiring someone to safely clear or retrieve belongings from
+# an uninhabitable unit, a real, often large displaced-living cost survivors
+# told us was missing from the usual categories.
+CATEGORIES = {"hotel", "meals", "transport", "storage", "pets", "cleanup", "other"}
 
 
 def sum_expenses(rows: list[dict]) -> float:

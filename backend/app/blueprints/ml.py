@@ -16,6 +16,45 @@ except ImportError:  # pragma: no cover - transitional until rate_limit ships
 bp = Blueprint("ml", __name__, url_prefix="/ml")
 
 
+# Largest demo upload we'll accept. Demo scans are unauthenticated, so we keep
+# the door narrow: one reasonably sized room photo, nothing more.
+DEMO_MAX_BYTES = 12 * 1024 * 1024
+
+
+@bp.post("/demo-analyze-photo")
+def demo_analyze_photo():
+    """Public, no-login scan for the landing page "Try it yourself" zone.
+
+    Same Gemini scan as the authed endpoint, but unauthenticated so a visitor
+    can see the product before signing up. The image is only ever passed to the
+    model in-memory and is never written to storage, so it is gone the moment
+    this request returns.
+    """
+    if "image" not in request.files:
+        return jsonify({"error": "image file is required"}), 400
+    f = request.files["image"]
+    if not f or not f.filename:
+        return jsonify({"error": "image file is required"}), 400
+
+    blob = f.read()
+    if not blob:
+        return jsonify({"error": "empty image"}), 400
+    if len(blob) > DEMO_MAX_BYTES:
+        return jsonify({"error": "That photo is a little large for the demo. Try one under 12 MB."}), 413
+
+    api_key = current_app.config.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
+
+    try:
+        result = analyze_room_photo(blob, api_key, pre_post="post")
+    except ModelOverloaded as exc:
+        return jsonify({"error": str(exc)}), 503
+    except Exception as exc:  # noqa: BLE001 - surface error to client
+        return jsonify({"error": str(exc)}), 500
+    return jsonify(result.model_dump())
+
+
 @bp.post("/analyze-photo")
 @require_auth
 def analyze_photo():

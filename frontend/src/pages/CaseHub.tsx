@@ -11,6 +11,8 @@ import FirstStepsChecklist from "../components/claim/FirstStepsChecklist";
 import CommunicationsLog from "../components/claim/CommunicationsLog";
 import AleTracker from "../components/claim/AleTracker";
 import CoverageDecisions from "../components/claim/CoverageDecisions";
+import CoverageGap from "../components/claim/CoverageGap";
+import KeyContacts from "../components/claim/KeyContacts";
 import ReferralChain from "../components/claim/ReferralChain";
 import CloseCaseButton, { isClosed } from "../components/claim/CloseCaseButton";
 import "../styles/claims.css";
@@ -152,6 +154,8 @@ export default function CaseHub() {
             <FirstStepsChecklist caseDoc={c} onChange={onCaseChange} />
           </div>
 
+          <KeyContacts caseDoc={c} onChange={onCaseChange} onLogContact={() => setTab("communications")} />
+
           <div className="grid grid-2">
             <Link to={`/cases/${c.id}/recommendations`} className="tile">
               <h3>Your recovery plan</h3>
@@ -183,6 +187,7 @@ export default function CaseHub() {
 
       {tab === "coverage" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <CoverageGap documents={documents} />
           <CoverageDecisions caseDoc={c} onChange={onCaseChange} />
           <ReferralChain disasterType={c.disaster_type} />
         </div>

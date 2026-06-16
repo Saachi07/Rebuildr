@@ -11,6 +11,7 @@ const CATEGORY_LABELS: Record<AleCategory, string> = {
   transport: "Transport",
   storage: "Storage",
   pets: "Pets",
+  cleanup: "Cleanup / contents retrieval",
   other: "Other",
 };
 
@@ -211,6 +212,7 @@ export default function AleTracker({ caseId }: { caseId: string }) {
                 <option value="transport">Transport</option>
                 <option value="storage">Storage</option>
                 <option value="pets">Pets</option>
+                <option value="cleanup">Cleanup / contents retrieval</option>
                 <option value="other">Other</option>
               </select>
             </div>

@@ -56,6 +56,7 @@ WRITABLE = {
     "receipts",
     "description",
     "room",
+    "purchase_date",
     "case_id",
 }
 

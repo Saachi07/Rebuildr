@@ -251,3 +251,61 @@
     display: none !important;
   }
 }
+
+/* ---- Coverage gap card ---- */
+.coverage-figure {
+  background: var(--panel-2, #232733);
+  border: 1px solid var(--border, #313749);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.coverage-figure .amount {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 4px 0;
+  color: var(--text, #f1f3f9);
+}
+.coverage-verdict {
+  margin-top: 14px;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.coverage-verdict.warn {
+  background: var(--danger-soft, rgba(194, 90, 63, 0.1));
+  border: 1px solid var(--danger-border, rgba(194, 90, 63, 0.35));
+}
+.coverage-verdict.ok {
+  background: var(--status-ok-bg, rgba(47, 125, 91, 0.16));
+  border: 1px solid var(--ok, #2f7d5b);
+}
+
+/* ---- Key contacts checklist ---- */
+.key-contacts {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 14px;
+}
+.key-contacts li {
+  border-top: 1px solid var(--border, #313749);
+}
+.key-contacts li:first-child {
+  border-top: none;
+}
+.key-contact-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 2px;
+  margin: 0;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--text, #f1f3f9);
+}
+.key-contact-row input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}

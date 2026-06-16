@@ -1,61 +1,53 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import DemoDropzone from "../components/DemoDropzone";
 
-// What Rebuildr actually does, grounded in the real features: document
-// analysis, inventory, the recovery plan, local programs, claim tracking,
-// and emergency help. Kept warm and plain, no jargon.
-const FEATURES = [
-  {
-    title: "Read your insurance, for you",
-    body: "Upload your policy and we pull out what is covered, your deductible, and the deadlines that matter, all in plain language.",
-  },
+// The landing page leads with a hero and an unmissable Immediate Help block for
+// anyone arriving mid-crisis, then shows the product through framed mockups
+// instead of long paragraphs. Copy is kept short on purpose: a stressed reader
+// should be able to scan it, not study it.
+
+// Three product pillars, each shown with a real screenshot mockup. Detail lives
+// on the inner pages, so each pillar links out rather than explaining in full.
+const PILLARS = [
   {
     title: "List what you lost",
-    body: "Photograph each room and we help you list and value the damage, ready to attach to your claim.",
+    body: "Photograph a room and our AI builds a claim-ready inventory with values.",
+    // Drop a screenshot of the inventory scan result here (PNG, ~390px wide).
+    img: "/landing/mockup-inventory.png",
+    alt: "Rebuildr inventory: a scanned room with itemized values",
+  },
+  {
+    title: "Read your insurance, for you",
+    body: "Upload your policy and we pull out coverage, deductibles, and deadlines in plain language.",
+    // Drop a screenshot of the document analysis summary here.
+    img: "/landing/mockup-policy.png",
+    alt: "Rebuildr policy analysis: plain-language summary with deadlines",
   },
   {
     title: "A plan, one step at a time",
-    body: "We turn everything into a clear set of next steps, with the dates that matter, updated as your situation changes.",
-  },
-  {
-    title: "Find local help",
-    body: "We match you with disaster programs, financial aid, and support services in your area that you may qualify for.",
-  },
-  {
-    title: "Track your claim",
-    body: "Follow your claim from the first call to payout, log every conversation, and keep your living-expense receipts in one place.",
-  },
-  {
-    title: "Help when you need it",
-    body: "Crisis lines, local support, and weather alerts for your area, always one tap away.",
+    body: "Everything becomes a clear set of next steps, with the dates that matter.",
+    // Drop a screenshot of the recommendations / plan view here.
+    img: "/landing/mockup-plan.png",
+    alt: "Rebuildr recovery plan: prioritized next steps",
   },
 ];
 
-const STEPS = [
+// Two real testimonials go here once collected. Placeholders keep the layout and
+// tone in place; fill in `quote`, `name`, and `attribution` when ready.
+const TESTIMONIALS = [
   {
-    n: "1",
-    title: "Share what you have",
-    body: "A few photos, your insurance papers, even just one document is enough to start.",
+    quote: "",
+    name: "",
+    attribution: "Wildfire survivor",
+    placeholder: "Their words about what Rebuildr made easier will go here.",
   },
   {
-    n: "2",
-    title: "We sort it for you",
-    body: "We read your policy, list what you lost, and figure out what is covered.",
+    quote: "",
+    name: "",
+    attribution: "Flood survivor",
+    placeholder: "A second short quote about getting back on their feet will go here.",
   },
-  {
-    n: "3",
-    title: "You get a plan",
-    body: "A clear next step, the deadlines that matter, and people who can help.",
-  },
-];
-
-const DISASTERS = [
-  "Wildfire and smoke",
-  "Flood and water",
-  "Hurricane and wind",
-  "Tornado",
-  "Earthquake",
-  "Hail, winter storms, and more",
 ];
 
 export default function Landing() {
@@ -66,90 +58,117 @@ export default function Landing() {
       <div className="hero">
         <h1>You're not doing this alone.</h1>
         <p className="warm">
-          Rebuildr is a companion for getting back on your feet after a
-          disaster. We read your insurance, help you document what you lost,
-          and turn it all into a clear recovery plan, one small step at a time.
+          Rebuildr helps you document what you lost, understand your insurance,
+          and turn it into a clear recovery plan.
         </p>
         <div className="cta-row">
-          <Link to="/emergency"><button className="urgent big">I need help right now</button></Link>
           <Link to={start}><button className="big">Start when you're ready</button></Link>
         </div>
       </div>
 
+      {/* #15: Immediate Help is the single most prominent block, sized and
+          colored so a person in crisis cannot miss it. */}
+      <section className="immediate-help" aria-label="Immediate help">
+        <div>
+          <h2>Need help right now?</h2>
+          <p>
+            If you or someone near you is in danger, call <strong>911</strong>.
+            For shelter, food, or someone to talk to, get help lines that pick up
+            24/7.
+          </p>
+        </div>
+        <Link to="/emergency"><button className="urgent big">Get help now</button></Link>
+      </section>
+
+      {/* #2: interactive no-login demo of the AI scan. */}
+      <section className="landing-section">
+        <div className="section-head">
+          <h2>Try it yourself</h2>
+          <p className="muted-strong">
+            See what our AI finds in one photo of a room. No account needed.
+          </p>
+        </div>
+        <DemoDropzone />
+      </section>
+
+      {/* #1 + #16: show the product through framed mockups, not paragraphs. */}
       <section className="landing-section">
         <div className="section-head">
           <h2>What Rebuildr does</h2>
-          <p className="muted-strong">
-            Recovering after a fire, flood, or storm means paperwork, deadlines,
-            and decisions at the worst possible time. Rebuildr carries that load
-            with you.
-          </p>
         </div>
         <div className="grid grid-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="card">
-              <h3 style={{ marginTop: 0 }}>{f.title}</h3>
-              <p className="muted-strong" style={{ margin: 0 }}>{f.body}</p>
+          {PILLARS.map((p) => (
+            <div key={p.title} className="pillar">
+              <div className="phone-mock">
+                {/* Screenshot placeholder: replace the src files in
+                    /public/landing when the mockups are finalized. */}
+                <img
+                  src={p.img}
+                  alt={p.alt}
+                  onError={(e) => { (e.currentTarget.style.display = "none"); }}
+                />
+                <div className="phone-mock-placeholder" aria-hidden>
+                  Screenshot coming soon
+                </div>
+              </div>
+              <h3>{p.title}</h3>
+              <p className="muted-strong">{p.body}</p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* #5: testimonial placeholders. */}
       <section className="landing-section">
         <div className="section-head">
-          <h2>How it works</h2>
-          <p className="muted-strong">
-            Three steps, at your own pace. Nothing has to happen all at once.
-          </p>
+          <h2>From people who have been through it</h2>
         </div>
-        <div className="grid grid-3">
-          {STEPS.map((s) => (
-            <div key={s.n} className="card">
-              <div className="step-num">{s.n}</div>
-              <h3 style={{ margin: "12px 0 6px" }}>{s.title}</h3>
-              <p className="muted-strong" style={{ margin: 0 }}>{s.body}</p>
-            </div>
+        <div className="grid grid-2">
+          {TESTIMONIALS.map((t, i) => (
+            <figure key={i} className="testimonial">
+              <blockquote>
+                {t.quote || <span className="muted">{t.placeholder}</span>}
+              </blockquote>
+              <figcaption>
+                <span className="testimonial-avatar" aria-hidden />
+                <span>
+                  <strong>{t.name || "Name to come"}</strong>
+                  <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
+                    {t.attribution}
+                  </span>
+                </span>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </section>
 
+      {/* #3: concrete security/trust statement, true to the RLS setup. */}
       <section className="landing-section">
-        <div className="section-head">
-          <h2>Whatever happened, we can help</h2>
-          <p className="muted-strong">
-            Rebuildr supports recovery from a wide range of disasters.
-          </p>
-        </div>
-        <ul className="pill-list">
-          {DISASTERS.map((d) => (
-            <li key={d} className="pill">{d}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="landing-section">
-        <div className="card calm-card">
-          <h2 style={{ marginTop: 0 }}>Your information stays yours</h2>
-          <p className="muted-strong">
-            Your documents and photos are private and encrypted. We use them
-            only to help with your recovery, never to sell or share. You can
-            download everything you have given us, or delete your account, at
-            any time.
-          </p>
-          <p className="muted-strong" style={{ marginBottom: 0 }}>
-            Read our{" "}
-            <Link to="/legal/privacy" style={{ color: "var(--focus)", textDecoration: "underline" }}>Privacy Policy</Link>{" "}
-            and{" "}
-            <Link to="/legal/terms" style={{ color: "var(--focus)", textDecoration: "underline" }}>Terms of Service</Link>.
-          </p>
+        <div className="card calm-card trust-badge">
+          <div className="trust-mark" aria-hidden>Secured</div>
+          <div>
+            <h2 style={{ marginTop: 0 }}>Your information stays yours</h2>
+            <p className="muted-strong" style={{ marginBottom: 6 }}>
+              Your documents and photos are encrypted and isolated to your
+              account, so no other user can ever reach them. We use them only to
+              help your recovery, never to sell or share. You can export
+              everything or delete your account at any time.
+            </p>
+            <p className="muted-strong" style={{ margin: 0 }}>
+              Read our{" "}
+              <Link to="/legal/privacy" style={{ color: "var(--focus)", textDecoration: "underline" }}>Privacy Policy</Link>{" "}
+              and{" "}
+              <Link to="/legal/terms" style={{ color: "var(--focus)", textDecoration: "underline" }}>Terms of Service</Link>.
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="landing-section center-cta">
         <h2>Ready when you are</h2>
         <p className="muted-strong" style={{ maxWidth: 520, margin: "0 auto 20px" }}>
-          You can start with a single photo or document. We will be here for the
-          rest.
+          Start with a single photo or document. We will be here for the rest.
         </p>
         <div className="cta-row" style={{ justifyContent: "center" }}>
           <Link to={start}><button className="big">Start when you're ready</button></Link>

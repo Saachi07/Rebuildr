@@ -199,7 +199,7 @@ export type Communication = {
   created_at?: string;
 };
 
-export type AleCategory = "hotel" | "meals" | "transport" | "storage" | "pets" | "other";
+export type AleCategory = "hotel" | "meals" | "transport" | "storage" | "pets" | "cleanup" | "other";
 
 // An additional living expense the insurer may reimburse while the user is
 // displaced. Keeping receipts organized is what gets ALE paid out fastest.
@@ -226,6 +226,10 @@ export type Item = {
   estimated_value?: number;
   description?: string;
   room?: string;
+  // When the item was bought. Used to estimate its depreciated (actual cash)
+  // value alongside the replacement cost in estimated_value. Stored as an
+  // ISO date string (YYYY-MM-DD).
+  purchase_date?: string | null;
   before_url?: string;
   after_url?: string;
   receipts?: string;
@@ -582,6 +586,21 @@ export const api = {
     const fd = new FormData();
     fd.append("file", file);
     return uploadWithProgress("/documents", fd, onProgress);
+  },
+
+  // Public, no-login demo scan for the landing page "Try it yourself" zone.
+  // The backend scans the image and deletes it immediately; nothing is stored.
+  analyzeDemoPhoto: async (file: File): Promise<RoomScan> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}/ml/demo-analyze-photo`, { method: "POST", body: fd });
+    } catch {
+      throw new ApiError(OFFLINE_MESSAGE);
+    }
+    if (!res.ok) throw await toApiError(res);
+    return res.json();
   },
 
   analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" | "auto" = "auto"): Promise<RoomScan> => {

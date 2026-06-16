@@ -42,7 +42,7 @@ const CONTACTS: Contact[] = [
   {
     name: "988 Suicide Crisis Helpline",
     phone: "988",
-    phoneLabel: "Call or text 988",
+    phoneLabel: "Call 988",
     detail: "24/7 crisis support across Canada. Free and confidential. It's okay to call just to talk.",
   },
   

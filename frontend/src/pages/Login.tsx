@@ -103,7 +103,10 @@ export default function Login() {
             "Once you've clicked it, come back here and sign in.",
           );
         } else {
-          await recordTermsAcceptance();
+          // Recording terms acceptance is best-effort (the TermsGate will catch
+          // it otherwise), so don't make the user wait on it before landing in
+          // the app. Awaiting it here added a round-trip to the sign-up lag.
+          void recordTermsAcceptance();
           await routeAfterAuth();
         }
       } else if (mode === "magic") {
