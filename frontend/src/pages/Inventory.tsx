@@ -167,11 +167,6 @@ export default function Inventory() {
   // Manual entry, photos aren't always possible when the photos burned too.
   const [showManual, setShowManual] = useState(false);
 
-  // Items the user has from other cases, offered as "attach to this case"
-  // so they don't have to re-enter what they already documented elsewhere.
-  const [library, setLibrary] = useState<Item[]>([]);
-  const [attaching, setAttaching] = useState<string | null>(null);
-
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
@@ -186,12 +181,11 @@ export default function Inventory() {
     [items],
   );
 
+  // The inventory is the home's, not a single event's: one home accumulates
+  // items across every disaster it goes through, so we load everything the
+  // user owns and show it in every case. No "attach to this case" step.
   function load() {
-    if (!id) return;
-    api.listItems(id).then((r) => setItems(r.items)).catch((e) => setErr(e.message ?? String(e)));
-    api.listMyItems()
-      .then((r) => setLibrary(r.items.filter((it) => it.case_id !== id)))
-      .catch(() => setLibrary([]));
+    api.listMyItems().then((r) => setItems(r.items)).catch((e) => setErr(e.message ?? String(e)));
   }
 
   useEffect(load, [id]);
@@ -240,19 +234,6 @@ export default function Inventory() {
     );
     return () => window.clearInterval(t);
   }, [scanBusy]);
-
-  async function attachFromLibrary(itemId: string) {
-    if (!id) return;
-    setAttaching(itemId);
-    try {
-      await api.attachItemToCase(itemId, id);
-      load();
-    } catch (e: any) {
-      setErr(e.message ?? String(e));
-    } finally {
-      setAttaching(null);
-    }
-  }
 
   async function scanFile(file: File) {
     setScannedFile(file);
@@ -449,7 +430,7 @@ export default function Inventory() {
       receipts: item.receipts,
     };
     try {
-      await api.deleteItem(id, item.id);
+      await api.deleteMyItem(item.id);
       load();
       toast.show(`Deleted "${item.name}".`, {
         actionLabel: "Undo",
@@ -753,50 +734,6 @@ export default function Inventory() {
         )}
       </div>
 
-      {library.length > 0 && (
-        <div className="card no-print">
-          <h3 style={{ marginTop: 0 }}>
-            From your library
-            <span className="badge" style={{ marginLeft: 8 }}>{library.length}</span>
-          </h3>
-          <p className="muted-strong" style={{ marginTop: 0, fontSize: 14 }}>
-            Items you've already documented in other cases. Add any that
-            apply here too, no need to re-enter them.
-          </p>
-          <table className="tbl tbl-cards">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Room</th>
-                <th>Value</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {library.slice(0, 12).map((it) => (
-                <tr key={it.id}>
-                  <td data-label="Item">
-                    <strong>{it.name}</strong>
-                    {it.category && <span className="badge" style={{ marginLeft: 8 }}>{it.category}</span>}
-                  </td>
-                  <td data-label="Room">{it.room || <span className="muted">-</span>}</td>
-                  <td data-label="Value">{it.estimated_value ? `$${it.estimated_value}` : <span className="muted">-</span>}</td>
-                  <td className="actions">
-                    <button
-                      className="secondary"
-                      disabled={attaching === it.id}
-                      onClick={() => attachFromLibrary(it.id)}
-                    >
-                      {attaching === it.id ? "Adding..." : "Add to this case"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
       {items.length > 0 && (
         <div className="card total-card">
           <div className="row" style={{ alignItems: "center" }}>
@@ -1056,7 +993,7 @@ function ItemActions(
     }
     setBusy(true);
     try {
-      await api.updateItem(caseId, item.id, { room: target });
+      await api.updateMyItem(item.id, { room: target });
       onChange();
     } finally {
       setBusy(false);
@@ -1174,7 +1111,7 @@ function ItemReceipt({ item, caseId, onChange }: { item: Item; caseId: string; o
     setErr(null);
     try {
       const { url: uploaded } = await api.uploadItemImage(file);
-      await api.updateItem(caseId, item.id, { receipts: uploaded });
+      await api.updateMyItem(item.id, { receipts: uploaded });
       onChange();
     } catch (e: any) {
       setErr(e.message ?? "The receipt didn't upload. Please try again.");
@@ -1188,7 +1125,7 @@ function ItemReceipt({ item, caseId, onChange }: { item: Item; caseId: string; o
     setBusy(true);
     setErr(null);
     try {
-      await api.updateItem(caseId, item.id, { receipts: "" });
+      await api.updateMyItem(item.id, { receipts: "" });
       onChange();
     } catch (e: any) {
       setErr(e.message ?? "Could not remove the receipt. Please try again.");

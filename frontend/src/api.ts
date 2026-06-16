@@ -486,6 +486,16 @@ export const api = {
     }),
   deleteItem: (caseId: string, itemId: string) =>
     request<{ ok: true }>(`/cases/${caseId}/items/${itemId}`, { method: "DELETE" }),
+  // Home-scoped (user library) item edits. The inventory is shared across all
+  // of a home's events, so an item shown in one case may belong to another;
+  // these endpoints match on the owner, not the case, so editing always works.
+  updateMyItem: (itemId: string, body: Partial<Item>) =>
+    request<{ item: Item }>(`/items/${itemId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteMyItem: (itemId: string) =>
+    request<{ ok: true }>(`/items/${itemId}`, { method: "DELETE" }),
   deleteCase: (id: string) =>
     request<{ ok: true }>(`/cases/${id}`, { method: "DELETE" }),
   listDeletedCases: () => request<{ cases: Case[] }>("/cases/deleted"),
