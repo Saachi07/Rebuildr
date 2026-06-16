@@ -35,9 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       if (!data.session && ALLOW_ANONYMOUS) {
         // No session yet: silently create an anonymous one so the visitor can
-        // explore the app. onAuthStateChange below picks up the new session.
-        const { error } = await supabase.auth.signInAnonymously();
+        // explore the app. Set the session from the result directly, rather
+        // than waiting on onAuthStateChange, so the route guard never briefly
+        // sees "no user" and bounces to /login.
+        const { data: anon, error } = await supabase.auth.signInAnonymously();
         if (error) console.error("anonymous sign-in failed", error);
+        else setSession(anon.session);
         setLoading(false);
         return;
       }
