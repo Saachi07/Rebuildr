@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
 import DemoDropzone from "../components/DemoDropzone";
 
 // The landing page leads with a hero and an unmissable Immediate Help block for
@@ -33,6 +32,19 @@ const PILLARS = [
   },
 ];
 
+// Rebuildr is calibrated to Alberta's programs and deadlines for now (the
+// Disaster Recovery Program, provincial relief, regional municipalities). A
+// quiet regional anchor near the top tells a local visitor the guidance is
+// built for where they are, not generic.
+const ALBERTA_REGIONS = [
+  "Edmonton",
+  "Calgary",
+  "Fort McMurray",
+  "Red Deer",
+  "Lethbridge",
+  "Regional municipalities",
+];
+
 // Two real testimonials go here once collected. Placeholders keep the layout and
 // tone in place; fill in `quote`, `name`, and `attribution` when ready.
 const TESTIMONIALS = [
@@ -51,8 +63,8 @@ const TESTIMONIALS = [
 ];
 
 export default function Landing() {
-  const { user } = useAuth();
-  const start = user ? "/cases/new" : "/login";
+  // No sign-in step in demo mode, every visitor goes straight into a new case.
+  const start = "/cases/new";
   return (
     <div className="container">
       <div className="hero">
@@ -78,6 +90,22 @@ export default function Landing() {
           </p>
         </div>
         <Link to="/emergency"><button className="urgent big">Get help now</button></Link>
+      </section>
+
+      {/* Regional anchor: built for Alberta's programs and deadlines. */}
+      <section className="region-band" aria-label="Where Rebuildr works">
+        <div className="region-band-head">
+          <span className="region-tag">Alberta</span>
+          <p>
+            Built around Alberta's recovery programs, relief funding, and
+            filing deadlines, so the guidance fits the rules where you live.
+          </p>
+        </div>
+        <ul className="region-list">
+          {ALBERTA_REGIONS.map((r) => (
+            <li key={r} className="pill">{r}</li>
+          ))}
+        </ul>
       </section>
 
       {/* #2: interactive no-login demo of the AI scan. */}

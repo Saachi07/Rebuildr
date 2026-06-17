@@ -466,6 +466,58 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   transition: width 200ms ease;
 }
 
+/* ---- Directory-style filter tabs (recovery plan) ---- */
+.browse-head { margin: 24px 0 12px; font-size: 20px; }
+.filter-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+}
+.filter-tab {
+  background: var(--panel); color: var(--muted-strong);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; font-size: 14px; font-weight: 600; min-height: 38px;
+}
+.filter-tab:hover { background: var(--panel-2); color: var(--text); border-color: var(--muted-strong); }
+.filter-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.filter-tab .filter-count {
+  display: inline-block; margin-left: 4px; font-size: 12px; font-weight: 700;
+  background: var(--accent-soft); color: var(--focus);
+  border-radius: 999px; padding: 1px 7px;
+}
+.filter-tab.active .filter-count { background: rgba(255, 255, 255, 0.25); color: #fff; }
+
+/* ---- Recovery readiness gauge ---- */
+.readiness-head { display: flex; align-items: center; gap: 16px; }
+.readiness-ring {
+  flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.readiness-ring-inner {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--panel); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700;
+}
+.readiness-checks { list-style: none; padding: 0; margin: 16px 0 0; }
+.readiness-checks li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; font-size: 15px; color: var(--muted-strong);
+  border-top: 1px solid var(--border);
+}
+.readiness-checks li:first-child { border-top: none; }
+.readiness-checks li.done { color: var(--text); }
+.readiness-mark {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--border); background: var(--panel-2);
+  font-size: 13px; font-weight: 700; color: var(--muted);
+}
+.readiness-checks li.done .readiness-mark {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .readiness-ring { transition: background 0.4s ease; }
+}
+
 /* ---- Location autocomplete ---- */
 .autocomplete { position: relative; }
 .autocomplete-list {
@@ -497,6 +549,36 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 }
 .toggle-group button.active { background: var(--accent); color: white; }
 .toggle-group button:hover:not(.active) { background: var(--border); color: var(--text); }
+
+/* ---- Stepped wizard progress (new case intake) ---- */
+.wizard-steps {
+  list-style: none; padding: 0; margin: 20px 0 10px;
+  display: flex; gap: 8px;
+}
+.wizard-step {
+  flex: 1; display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted); min-width: 0;
+}
+.wizard-step-dot {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  border: 1.5px solid var(--border); background: var(--panel-2); color: var(--muted);
+}
+.wizard-step-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wizard-step.current { color: var(--text); font-weight: 600; }
+.wizard-step.current .wizard-step-dot {
+  border-color: var(--accent); background: var(--accent-soft); color: var(--focus);
+}
+.wizard-step.done { color: var(--muted-strong); }
+.wizard-step.done .wizard-step-dot {
+  border-color: var(--accent); background: var(--accent); color: #fff;
+}
+@media (max-width: 520px) {
+  .wizard-step-label { display: none; }
+  .wizard-step { flex: 0 0 auto; }
+  .wizard-steps { gap: 10px; justify-content: flex-start; }
+}
 
 /* ---- Disaster-type choice cards (text only, no emoji) ---- */
 .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
@@ -550,6 +632,52 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .case-picker .chev { color: var(--muted); font-size: 12px; }
 .case-picker-static { cursor: default; }
 .case-picker-static:hover { background: var(--panel-2); }
+
+/* ---- Inventory kanban board (one column per room) ---- */
+.room-board {
+  display: flex; gap: 14px; margin-top: 14px;
+  overflow-x: auto; padding-bottom: 8px;
+  scroll-snap-type: x proximity;
+}
+.board-col {
+  flex: 0 0 280px; max-width: 280px;
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+  scroll-snap-align: start;
+}
+.board-col.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+.board-col-head { display: flex; align-items: center; gap: 8px; }
+.board-col-name { font-size: 16px; font-weight: 700; }
+.board-col-total { font-size: 14px; }
+.board-col-body { display: flex; flex-direction: column; gap: 10px; min-height: 40px; }
+.board-col-empty { font-size: 13px; text-align: center; padding: 14px 6px; margin: 0; }
+.board-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px; cursor: grab;
+}
+.board-card:active { cursor: grabbing; }
+.board-card-main { display: flex; gap: 10px; align-items: flex-start; }
+.board-card-thumb {
+  width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+  flex-shrink: 0; display: block;
+}
+.board-card-name { font-size: 15px; display: block; word-break: break-word; }
+.board-card-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.board-card-meta .badge { font-size: 12px; padding: 2px 8px; }
+.board-card-foot {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  padding-top: 8px; border-top: 1px solid var(--border); font-size: 14px;
+}
+.board-add {
+  background: transparent; color: var(--focus);
+  border: 1px dashed var(--border); border-radius: 10px;
+  font-size: 14px; font-weight: 600; min-height: 40px;
+}
+.board-add:hover { background: var(--panel); border-color: var(--accent); }
+@media (max-width: 700px) {
+  .board-col { flex-basis: 78vw; max-width: 78vw; }
+}
 
 /* ---- Room group header in inventory (collapsible, minimized by default) ---- */
 .room-group { margin-top: 16px; }
@@ -669,6 +797,26 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 }
 
 .calm-card { background: var(--accent-soft); border-color: var(--accent); }
+
+/* Regional anchor band on the landing page. */
+.region-band {
+  margin: 40px auto 0; max-width: 980px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 6px solid var(--accent); border-radius: 14px;
+  padding: 20px 24px;
+}
+.region-band-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.region-tag {
+  flex-shrink: 0; background: var(--accent); color: #fff;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 6px 14px; border-radius: 999px;
+}
+.region-band-head p { margin: 0; flex: 1; min-width: 240px; color: var(--muted-strong); font-size: 15px; line-height: 1.5; }
+.region-list {
+  list-style: none; padding: 0; margin: 16px 0 0;
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.region-list .pill { font-size: 14px; padding: 8px 16px; }
 
 .center-cta { text-align: center; padding-bottom: 24px; }
 .center-cta h2 { font-size: 28px; margin: 0 0 12px; }

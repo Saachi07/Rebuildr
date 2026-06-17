@@ -57,6 +57,46 @@ async function authHeaders(): Promise<HeadersInit> {
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
+// Phone photos are routinely 4000px+ and several megabytes. Uploading them raw
+// is by far the slowest part of a scan, and a larger image does not make the
+// model more accurate. We downscale to a sane maximum edge and re-encode as
+// JPEG before sending: a 6 MB photo becomes a few hundred KB, turning a wait of
+// tens of seconds into a few. Any failure falls back to the original file, so
+// correctness never depends on the resize succeeding.
+const MAX_UPLOAD_EDGE = 1600;
+
+async function downscaleForUpload(file: File): Promise<Blob> {
+  if (!file.type.startsWith("image/")) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const longEdge = Math.max(bitmap.width, bitmap.height);
+    const scale = Math.min(1, MAX_UPLOAD_EDGE / longEdge);
+    if (scale >= 1) {
+      bitmap.close?.();
+      return file; // already small enough, no point re-encoding
+    }
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close?.();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.82),
+    );
+    // If shrinking somehow produced a larger blob, keep the smaller original.
+    return blob && blob.size < file.size ? blob : file;
+  } catch {
+    return file;
+  }
+}
+
 // Transient failures (model overloaded, rate limited, brief network blip)
 // resolve themselves within seconds. Retrying quietly spares a stressed user
 // from seeing an error they would only respond to by clicking retry anyway.
@@ -89,6 +129,41 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     if (!res.ok) {
       const err = await toApiError(res);
       if (RETRYABLE_STATUSES.has(res.status)) {
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+    return res.json() as Promise<T>;
+  }
+  throw lastError ?? new ApiError(OFFLINE_MESSAGE);
+}
+
+// Raw multipart POST (FormData). The few file endpoints can't go through
+// request() (which forces a JSON content-type), so this mirrors its auth and
+// transient-retry behavior for them. Use uploadWithProgress instead when the
+// caller needs an upload progress bar.
+async function postForm<T>(
+  path: string,
+  form: FormData,
+  opts: { auth?: boolean; retry?: boolean } = {},
+): Promise<T> {
+  const { auth = true, retry = false } = opts;
+  const headers = auth ? await authHeaders() : {};
+  const maxAttempts = retry ? RETRY_DELAYS_MS.length + 1 : 1;
+  let lastError: ApiError | null = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    let res: Response;
+    try {
+      res = await fetch(`${BASE}${path}`, { method: "POST", headers, body: form });
+    } catch {
+      lastError = new ApiError(OFFLINE_MESSAGE);
+      continue;
+    }
+    if (!res.ok) {
+      const err = await toApiError(res);
+      if (retry && RETRYABLE_STATUSES.has(res.status)) {
         lastError = err;
         continue;
       }
@@ -592,33 +667,17 @@ export const api = {
   // The backend scans the image and deletes it immediately; nothing is stored.
   analyzeDemoPhoto: async (file: File): Promise<RoomScan> => {
     const fd = new FormData();
-    fd.append("image", file);
-    let res: Response;
-    try {
-      res = await fetch(`${BASE}/ml/demo-analyze-photo`, { method: "POST", body: fd });
-    } catch {
-      throw new ApiError(OFFLINE_MESSAGE);
-    }
-    if (!res.ok) throw await toApiError(res);
-    return res.json();
+    fd.append("image", await downscaleForUpload(file));
+    return postForm<RoomScan>("/ml/demo-analyze-photo", fd, { auth: false, retry: true });
   },
 
   analyzeRoomPhoto: async (file: File, prePost: "pre" | "post" | "auto" = "auto"): Promise<RoomScan> => {
     const fd = new FormData();
-    fd.append("image", file);
+    fd.append("image", await downscaleForUpload(file));
     fd.append("pre_post", prePost);
-    let res: Response;
-    try {
-      res = await fetch(`${BASE}/ml/analyze-photo`, {
-        method: "POST",
-        headers: await authHeaders(),
-        body: fd,
-      });
-    } catch {
-      throw new ApiError(OFFLINE_MESSAGE);
-    }
-    if (!res.ok) throw await toApiError(res);
-    return res.json();
+    // Gemini sheds load with 503/429 under demand; a quiet retry spares the
+    // user from re-shooting a room just because the model was briefly busy.
+    return postForm<RoomScan>("/ml/analyze-photo", fd, { retry: true });
   },
 
   // Upload an item photo to storage; returns the public URL to store in
@@ -626,18 +685,7 @@ export const api = {
   uploadItemImage: async (file: File): Promise<{ url: string }> => {
     const fd = new FormData();
     fd.append("image", file);
-    let res: Response;
-    try {
-      res = await fetch(`${BASE}/items/upload-image`, {
-        method: "POST",
-        headers: await authHeaders(),
-        body: fd,
-      });
-    } catch {
-      throw new ApiError(OFFLINE_MESSAGE);
-    }
-    if (!res.ok) throw await toApiError(res);
-    return res.json();
+    return postForm<{ url: string }>("/items/upload-image", fd, { retry: true });
   },
 
   // /items, user-wide library, independent of any case

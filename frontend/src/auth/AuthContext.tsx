@@ -18,12 +18,86 @@ type AuthValue = {
 
 const Ctx = createContext<AuthValue | null>(null);
 
-// While we're letting people try the product without signing up, anyone who
-// lands without a session gets a real but anonymous Supabase user. Each visitor
-// gets their own isolated account and a normal authenticated token, so the
-// backend treats them like any other user. Set VITE_DISABLE_AUTH=0 (or remove
-// it) to turn this off and require real sign-in again.
-const ALLOW_ANONYMOUS = import.meta.env.VITE_DISABLE_AUTH === "1";
+// Demo mode: let people try the product without a sign-up screen, while still
+// producing real email+password accounts that show up in our user base (unlike
+// throwaway anonymous users). On first visit we silently generate a unique
+// email + password, create the account, and remember the credentials on this
+// device so a returning visitor lands back in the same account with their work
+// intact. Set VITE_DISABLE_AUTH=0 (or remove it) to require real sign-in again.
+//
+// NOTE: this relies on email confirmation being OFF for the Supabase project,
+// the generated addresses are not real inboxes, so a confirmation step would
+// strand demo users. Keep confirmations disabled while demo mode is on.
+const DEMO_MODE = import.meta.env.VITE_DISABLE_AUTH === "1";
+
+const DEMO_CREDS_KEY = "rebuildr.demoCreds";
+// Generated addresses live on a domain we control and never send real mail to.
+const DEMO_EMAIL_DOMAIN = "rebuildr-demo.app";
+
+type DemoCreds = { email: string; password: string };
+
+function randomId(): string {
+  // crypto.randomUUID is available in every browser we target; the fallback
+  // just keeps TypeScript and ancient environments happy.
+  return (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${performance.now()}`).replace(/[^a-z0-9]/gi, "");
+}
+
+function loadDemoCreds(): DemoCreds | null {
+  try {
+    const raw = localStorage.getItem(DEMO_CREDS_KEY);
+    return raw ? (JSON.parse(raw) as DemoCreds) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDemoCreds(creds: DemoCreds) {
+  try {
+    localStorage.setItem(DEMO_CREDS_KEY, JSON.stringify(creds));
+  } catch {
+    /* best-effort; a visitor in private mode just gets a fresh account */
+  }
+}
+
+function makeDemoCreds(): DemoCreds {
+  // Mixed-case + symbol so the password clears stricter Supabase policies.
+  return { email: `demo-${randomId()}@${DEMO_EMAIL_DOMAIN}`, password: `Demo!${randomId()}` };
+}
+
+// Sign into this device's demo account, creating one the first time. Returns
+// the session, or null if the account couldn't be established (logged for us;
+// the visitor simply sees the normal signed-out state).
+async function ensureDemoSession(): Promise<Session | null> {
+  const existing = loadDemoCreds();
+  if (existing) {
+    const { data, error } = await supabase.auth.signInWithPassword(existing);
+    if (!error && data.session) return data.session;
+    // Stored credentials no longer work (account purged, password policy
+    // change): fall through and mint a fresh demo account.
+  }
+  const creds = makeDemoCreds();
+  const { data, error } = await supabase.auth.signUp({
+    email: creds.email,
+    password: creds.password,
+  });
+  if (error) {
+    console.error("demo sign-up failed", error);
+    return null;
+  }
+  saveDemoCreds(creds);
+  if (data.session) return data.session;
+  // No session from signUp means email confirmation is enabled; try a direct
+  // sign-in, which works when the project allows unconfirmed logins.
+  const signIn = await supabase.auth.signInWithPassword(creds);
+  if (signIn.error || !signIn.data.session) {
+    console.error(
+      "demo sign-in failed; disable email confirmation in Supabase for demo mode",
+      signIn.error,
+    );
+    return null;
+  }
+  return signIn.data.session;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -33,14 +107,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     supabase.auth.getSession().then(async ({ data }) => {
       if (cancelled) return;
-      if (!data.session && ALLOW_ANONYMOUS) {
-        // No session yet: silently create an anonymous one so the visitor can
-        // explore the app. Set the session from the result directly, rather
-        // than waiting on onAuthStateChange, so the route guard never briefly
-        // sees "no user" and bounces to /login.
-        const { data: anon, error } = await supabase.auth.signInAnonymously();
-        if (error) console.error("anonymous sign-in failed", error);
-        else setSession(anon.session);
+      if (!data.session && DEMO_MODE) {
+        // No session yet: silently sign into (or create) this device's demo
+        // account so the visitor can explore the app. Set the session directly
+        // rather than waiting on onAuthStateChange, so the route guard never
+        // briefly sees "no user" and bounces to /login.
+        const session = await ensureDemoSession();
+        if (cancelled) return;
+        setSession(session);
         setLoading(false);
         return;
       }

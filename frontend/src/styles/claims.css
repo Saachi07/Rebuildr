@@ -114,6 +114,68 @@
   color: var(--text, #f1f3f9);
 }
 
+/* ALE receipt checklist (checklist.design pattern: clear state + helper text) */
+.ale-checklist {
+  background: var(--panel, #1a1d24);
+  border: 1px solid var(--border, #313749);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.ale-checklist h4 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.ale-checklist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ale-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border, #313749);
+}
+.ale-checklist li:first-of-type {
+  border-top: none;
+}
+.ale-check-mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border, #313749);
+  background: var(--panel-2, #232733);
+  color: var(--muted, #b3bbcc);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.ale-checklist li.done .ale-check-mark {
+  background: var(--accent, #2f7d63);
+  border-color: var(--accent, #2f7d63);
+  color: #fff;
+}
+.ale-check-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ale-check-body strong {
+  font-size: 15px;
+  color: var(--text, #f1f3f9);
+}
+.ale-checklist li.done .ale-check-body strong {
+  color: var(--muted-strong, #d4d9e6);
+}
+
 /* Claim lifecycle road */
 .lifecycle {
   background: var(--panel, #1a1d24);

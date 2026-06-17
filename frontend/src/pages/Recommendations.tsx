@@ -77,6 +77,9 @@ export default function Recommendations() {
   // Stress narrows working memory, show only the next few steps by
   // default, with the full plan one tap away.
   const [showFull, setShowFull] = useState(false);
+  // Directory-style filter over the full plan's category browse area.
+  // "all" shows every category; a category key narrows to just that one.
+  const [filter, setFilter] = useState<string>("all");
   const [hasIntake, setHasIntake] = useState<boolean | null>(null);
   // Optimistic status changes, keyed by resource id, layered over the
   // statuses the server sent. Cleared on each successful reload.
@@ -138,7 +141,6 @@ export default function Recommendations() {
   const savedRecs = allRecs.filter((r) => statusOf(r) === "saved");
   const hiddenRecs = allRecs.filter((r) => statusOf(r) === "dismissed");
   const visibleCount = allRecs.filter((r) => statusOf(r) !== "dismissed").length;
-  const doneCount = allRecs.filter((r) => statusOf(r) === "done").length;
 
   const empty = groups && Object.values(groups).every((g) => g.length === 0);
 
@@ -199,41 +201,7 @@ export default function Recommendations() {
       )}
       {busy && !groups && <p className="muted-strong">Putting together your plan…</p>}
 
-      {readiness && (
-        <div className="card" style={{ marginBottom: 16 }}>
-          <h3 style={{ margin: "0 0 12px" }}>Recovery Readiness</h3>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <span style={{ fontSize: 18, fontWeight: "bold" }}>{readiness.percent}% Ready</span>
-              <span className="muted" style={{ fontSize: 13 }}>{readiness.completed} of {readiness.total}</span>
-            </div>
-            <div style={{ width: "100%", height: 8, backgroundColor: "#e0e0e0", borderRadius: 4, overflow: "hidden" }}>
-              <div
-                style={{
-                  width: `${readiness.percent}%`,
-                  height: "100%",
-                  backgroundColor: readiness.percent >= 80 ? "#4caf50" : readiness.percent >= 50 ? "#ff9800" : "#f44336",
-                  transition: "width 0.3s ease",
-                }}
-              />
-            </div>
-          </div>
-          <div style={{ fontSize: 13 }}>
-            {readiness.checks.map((check) => (
-              <div key={check.key} style={{ display: "flex", alignItems: "center", margin: "8px 0", opacity: check.done ? 1 : 0.7 }}>
-                <span style={{ marginRight: 8, fontSize: 14 }}>{check.done ? "✓" : "○"}</span>
-                <span style={{ textDecoration: check.done ? "line-through" : "none", opacity: check.done ? 0.6 : 1 }}>
-                  {check.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {groups && !empty && visibleCount > 0 && (
-        <ProgressBar done={doneCount} total={visibleCount} />
-      )}
+      {readiness && <ReadinessCard readiness={readiness} />}
 
       {groups && empty && <EmptyChecklist caseId={id} />}
 
@@ -378,21 +346,71 @@ export default function Recommendations() {
             </div>
           )}
 
-          {orderedGroups.map(([category, recs]) => {
-            const shown = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed");
-            if (shown.length === 0) return null;
-            return (
-              <details key={category} className="rec-group rec-accordion">
-                <summary>
-                  <h2>{categoryLabel(category)}</h2>
-                  <span className="badge">{shown.length}</span>
-                </summary>
-                {shown.map((r) => (
-                  <RecCard key={r.id} rec={r} status={statusOf(r)} onStatus={setStatus} />
-                ))}
-              </details>
-            );
-          })}
+          {orderedGroups.length > 0 && (
+            <>
+              <h2 className="browse-head">Browse all help by need</h2>
+              {orderedGroups.length > 1 && (
+                <div className="filter-tabs no-print" role="tablist" aria-label="Filter help by category">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={filter === "all"}
+                    className={`filter-tab${filter === "all" ? " active" : ""}`}
+                    onClick={() => setFilter("all")}
+                  >
+                    All <span className="filter-count">{visibleCount}</span>
+                  </button>
+                  {orderedGroups.map(([cat, recs]) => {
+                    const n = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed").length;
+                    if (n === 0) return null;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        role="tab"
+                        aria-selected={filter === cat}
+                        className={`filter-tab${filter === cat ? " active" : ""}`}
+                        onClick={() => setFilter(cat)}
+                      >
+                        {categoryLabel(cat)} <span className="filter-count">{n}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {orderedGroups
+                .filter(([category]) => filter === "all" || filter === category)
+                .map(([category, recs]) => {
+                  const shown = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed");
+                  if (shown.length === 0) return null;
+                  // A single chosen category reads as a directory listing,
+                  // open and flat; "All" keeps each category collapsible so a
+                  // stressed reader opens only what they need.
+                  if (filter !== "all") {
+                    return (
+                      <div key={category} className="rec-group">
+                        <h2>{categoryLabel(category)}</h2>
+                        {shown.map((r) => (
+                          <RecCard key={r.id} rec={r} status={statusOf(r)} onStatus={setStatus} />
+                        ))}
+                      </div>
+                    );
+                  }
+                  return (
+                    <details key={category} className="rec-group rec-accordion">
+                      <summary>
+                        <h2>{categoryLabel(category)}</h2>
+                        <span className="badge">{shown.length}</span>
+                      </summary>
+                      {shown.map((r) => (
+                        <RecCard key={r.id} rec={r} status={statusOf(r)} onStatus={setStatus} />
+                      ))}
+                    </details>
+                  );
+                })}
+            </>
+          )}
 
           {emptyCategories.length > 0 && (
             <div className="card">
@@ -443,26 +461,43 @@ export default function Recommendations() {
   );
 }
 
-function ProgressBar({ done, total }: { done: number; total: number }) {
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+// A small, fixed readiness gauge: a calm circular ring plus the few checks
+// that make a claim go smoothly. Unlike the old per-suggestion counter, the
+// denominator here is small and stable, so "60% ready" reads as encouragement
+// rather than "6 of 30 done" reading as a mountain left to climb.
+function ReadinessCard({ readiness }: { readiness: CaseReadiness }) {
+  const pct = Math.max(0, Math.min(100, readiness.percent));
+  // Stays within the warm palette: calm green when nearly ready, warm amber
+  // partway, soft terracotta early on. Never alarm-red.
+  const color =
+    pct >= 80 ? "var(--ok)" : pct >= 50 ? "var(--warn)" : "var(--danger)";
   return (
-    <div className="card" style={{ padding: "12px 16px" }}>
-      <div className="row" style={{ alignItems: "center" }}>
-        <span style={{ fontSize: 14 }}>
-          <strong>{done}</strong> of <strong>{total}</strong> steps done
-        </span>
-        <span className="spacer" />
-        <span className="muted-strong" style={{ fontSize: 13 }}>
-          {done === 0
-            ? "Every step counts, even a small one."
-            : done === total
-              ? "You've worked through everything here. Well done."
-              : "You're making real progress."}
-        </span>
+    <div className="card" style={{ marginBottom: 16 }}>
+      <div className="readiness-head">
+        <div
+          className="readiness-ring"
+          role="img"
+          aria-label={`${pct}% ready`}
+          style={{ background: `conic-gradient(${color} ${pct * 3.6}deg, var(--meter-track) 0deg)` }}
+        >
+          <span className="readiness-ring-inner">{pct}%</span>
+        </div>
+        <div>
+          <h3 style={{ margin: "0 0 2px" }}>You're {pct}% ready</h3>
+          <span className="muted-strong" style={{ fontSize: 14 }}>
+            {readiness.completed} of {readiness.total} groundwork pieces in place.
+            {pct >= 80 ? " You're in good shape to make a claim." : " Each one strengthens your claim."}
+          </span>
+        </div>
       </div>
-      <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-        <div className="meter-fill" style={{ width: `${pct}%` }} />
-      </div>
+      <ul className="readiness-checks">
+        {readiness.checks.map((check) => (
+          <li key={check.key} className={check.done ? "done" : ""}>
+            <span className="readiness-mark" aria-hidden>{check.done ? "✓" : ""}</span>
+            <span>{check.label}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

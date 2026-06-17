@@ -38,6 +38,10 @@ const EMPTY_FORM: FormState = {
   incident_date: "",
 };
 
+// One labelled step per screen. Kept short on purpose, three is the most a
+// stressed person should have to hold in mind at once.
+const STEPS = ["The disaster", "Where it happened", "When it happened"];
+
 export default function NewCase() {
   const nav = useNavigate();
   const { cases, activeDraft, refresh } = useCases();
@@ -47,6 +51,11 @@ export default function NewCase() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // One question per screen lowers cognitive load in a crisis (Hick's law),
+  // and a visibly-started progress bar makes finishing feel close (the
+  // goal-gradient effect): we open on step 1 with a sensible disaster already
+  // chosen, so it reads as "you've begun" rather than "a blank form awaits".
+  const [step, setStep] = useState(0);
   // Until the draft is hydrated or created we show a spinner, otherwise an
   // empty form would flash over the user's saved answers for a moment.
   const [ready, setReady] = useState(false);
@@ -177,75 +186,130 @@ export default function NewCase() {
       <BackButton to="/prepare" label="Prepare" />
       <h1 style={{ marginTop: 16 }}>Tell us what happened</h1>
       <p className="warm-note">
-        Just the basics for now. Everything you type saves as you go, so you can
-        step away and come back any time. You can add photos and documents in
-        the next step.
+        One thing at a time. Everything you type saves as you go, so you can
+        step away and come back any time. You can add photos and documents
+        afterward.
       </p>
-      <div className="card">
+
+      <ol className="wizard-steps" aria-label="Setup progress">
+        {STEPS.map((label, i) => (
+          <li
+            key={label}
+            className={`wizard-step${i < step ? " done" : i === step ? " current" : ""}`}
+            aria-current={i === step ? "step" : undefined}
+          >
+            <span className="wizard-step-dot" aria-hidden>{i < step ? "✓" : i + 1}</span>
+            <span className="wizard-step-label">{label}</span>
+          </li>
+        ))}
+      </ol>
+      <div
+        className="meter"
+        role="progressbar"
+        aria-valuenow={step + 1}
+        aria-valuemin={1}
+        aria-valuemax={STEPS.length}
+        aria-label="Setup progress"
+      >
+        <div className="meter-fill" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+      </div>
+
+      <div className="card" style={{ marginTop: 16 }}>
         <form onSubmit={submit}>
-          <label id="disaster-label">What kind of disaster was it?</label>
-          <div className="choice-grid" role="radiogroup" aria-labelledby="disaster-label">
-            {DISASTERS.map((d) => (
-              <button
-                key={d.value}
-                type="button"
-                role="radio"
-                aria-checked={form.disaster_type === d.value}
-                className={`choice-card${form.disaster_type === d.value ? " selected" : ""}`}
-                onClick={() => update("disaster_type", d.value)}
-              >
-                <span className="choice-title">{d.label}</span>
-                <span className="choice-detail">{d.detail}</span>
-              </button>
-            ))}
-          </div>
+          {step === 0 && (
+            <>
+              <label id="disaster-label">What kind of disaster was it?</label>
+              <p className="muted-strong" style={{ margin: "0 0 10px", fontSize: 14 }}>
+                We've started you on the most common one, change it if it's not right.
+              </p>
+              <div className="choice-grid" role="radiogroup" aria-labelledby="disaster-label">
+                {DISASTERS.map((d) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={form.disaster_type === d.value}
+                    className={`choice-card${form.disaster_type === d.value ? " selected" : ""}`}
+                    onClick={() => update("disaster_type", d.value)}
+                  >
+                    <span className="choice-title">{d.label}</span>
+                    <span className="choice-detail">{d.detail}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
-          <label>
-            Where did it happen?{" "}
-            <Hint text="We use this to match you with local emergency services and resources. We currently know Alberta best." />
-          </label>
-          <LocationAutocomplete
-            value={form.location}
-            onChange={(v) => update("location", v)}
-          />
+          {step === 1 && (
+            <>
+              <label>
+                Where did it happen?{" "}
+                <Hint text="We use this to match you with local emergency services and resources. We currently know Alberta best." />
+              </label>
+              <LocationAutocomplete
+                value={form.location}
+                onChange={(v) => update("location", v)}
+              />
+              <p className="muted-strong" style={{ margin: "10px 0 0", fontSize: 13 }}>
+                Not sure of the exact address? A city or area is plenty.
+              </p>
+            </>
+          )}
 
-          <label>
-            When did it happen?{" "}
-            <Hint text="Optional - an estimate is fine. It helps us flag insurance deadlines that are coming up soon." />
-          </label>
-          <div className="row" style={{ gap: 8, marginBottom: 8 }}>
-            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(0))}>
-              Today
-            </button>
-            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(1))}>
-              Yesterday
-            </button>
-            <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(7))}>
-              About a week ago
-            </button>
-          </div>
-          <input
-            type="date"
-            value={form.incident_date}
-            aria-label="Date of the incident"
-            onChange={(e) => update("incident_date", e.target.value)}
-          />
+          {step === 2 && (
+            <>
+              <label>
+                When did it happen?{" "}
+                <Hint text="Optional - an estimate is fine. It helps us flag insurance deadlines that are coming up soon." />
+              </label>
+              <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+                <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(0))}>
+                  Today
+                </button>
+                <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(1))}>
+                  Yesterday
+                </button>
+                <button type="button" className="secondary chip-btn" onClick={() => update("incident_date", isoDaysAgo(7))}>
+                  About a week ago
+                </button>
+              </div>
+              <input
+                type="date"
+                value={form.incident_date}
+                aria-label="Date of the incident"
+                onChange={(e) => update("incident_date", e.target.value)}
+              />
 
-          <label>
-            Name for this case (optional){" "}
-            <Hint text="Just a label to find it later. We'll pick a sensible one if you leave this blank, and you can change it anytime." />
-          </label>
-          <input
-            value={form.case_name}
-            placeholder={suggestedName()}
-            onChange={(e) => update("case_name", e.target.value)}
-          />
+              <label>
+                Name for this case (optional){" "}
+                <Hint text="Just a label to find it later. We'll pick a sensible one if you leave this blank, and you can change it anytime." />
+              </label>
+              <input
+                value={form.case_name}
+                placeholder={suggestedName()}
+                onChange={(e) => update("case_name", e.target.value)}
+              />
+            </>
+          )}
 
           {err && <div className="error">{err}</div>}
-          <div style={{ marginTop: 20 }}>
-            <button type="submit" disabled={busy} className="big">
-              {busy ? "Setting things up…" : "Continue"}
-            </button>
+
+          <div className="row" style={{ marginTop: 20 }}>
+            {step > 0 && (
+              <button type="button" className="secondary" disabled={busy} onClick={() => setStep((s) => s - 1)}>
+                Back
+              </button>
+            )}
+            <span className="spacer" />
+            {step < STEPS.length - 1 ? (
+              <button type="button" className="big" onClick={() => setStep((s) => s + 1)}>
+                Next
+              </button>
+            ) : (
+              <button type="submit" disabled={busy} className="big">
+                {busy ? "Setting things up…" : "Continue"}
+              </button>
+            )}
           </div>
         </form>
       </div>

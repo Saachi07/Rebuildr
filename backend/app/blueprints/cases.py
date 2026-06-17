@@ -125,6 +125,13 @@ def create_case():
         return jsonify({"error": err}), 400
     row["user_id"] = g.user_id
     row["derived_tags"] = sorted(derive_tags(row.get("intake_answers") or {}))
+    # case_name and disaster_type are NOT NULL in the schema, but a draft is
+    # created before the user has typed either (they autosave moments later,
+    # and Continue writes the final values). Seed empty placeholders so the
+    # very first draft insert doesn't trip the not-null constraint.
+    if is_draft:
+        row.setdefault("case_name", "")
+        row.setdefault("disaster_type", "")
 
     sb = user_client(g.access_token)
     res = sb.table("recovery_cases").insert(row).execute()

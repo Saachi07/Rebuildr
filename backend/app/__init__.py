@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_compress import Compress
 from flask_cors import CORS
 
@@ -77,5 +77,19 @@ def create_app(config_class: type = Config) -> Flask:
     @app.errorhandler(405)
     def _method_not_allowed(_e):
         return jsonify({"error": "method not allowed"}), 405
+
+    # Catch-all for unhandled exceptions. Without this, a raised error (e.g. a
+    # Postgres constraint violation surfacing as a Supabase APIError) returns
+    # an opaque HTML 500 with the traceback lost. Here we log the full
+    # traceback server-side for diagnosis and return a clean JSON 500 so the
+    # frontend can show its friendly message.
+    @app.errorhandler(Exception)
+    def _unhandled(e):
+        from werkzeug.exceptions import HTTPException
+
+        if isinstance(e, HTTPException):
+            return e  # 4xx/5xx with their own handling pass through unchanged
+        app.logger.exception("Unhandled exception on %s %s", request.method, request.path)
+        return jsonify({"error": "Something went wrong on our side. Please try again."}), 500
 
     return app

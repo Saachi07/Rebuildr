@@ -173,7 +173,20 @@ export default function Prepare() {
           <span className="spacer" />
           <span className="badge">{doneCount} of {CHECKLIST_ITEMS.length} ready</span>
         </div>
-        <p className="muted-strong" style={{ margin: "6px 0 4px" }}>
+        <div
+          className="meter"
+          role="progressbar"
+          aria-valuenow={doneCount}
+          aria-valuemin={0}
+          aria-valuemax={CHECKLIST_ITEMS.length}
+          aria-label="Preparedness progress"
+        >
+          <div
+            className="meter-fill"
+            style={{ width: `${Math.round((doneCount / CHECKLIST_ITEMS.length) * 100)}%` }}
+          />
+        </div>
+        <p className="muted-strong" style={{ margin: "10px 0 4px" }}>
           Keep or upload these. Tick them off as you go, we save your progress
           on this device.
         </p>

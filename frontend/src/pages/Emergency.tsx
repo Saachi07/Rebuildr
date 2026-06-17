@@ -111,7 +111,7 @@ export default function Emergency() {
         ) : (
           <>
             When you're safe,{" "}
-            <Link to="/login" style={{ textDecoration: "underline", color: "var(--focus)" }}>sign in</Link>{" "}
+            <Link to="/cases/new" style={{ textDecoration: "underline", color: "var(--focus)" }}>get started</Link>{" "}
             to start documenting what happened and building your plan.
           </>
         )}

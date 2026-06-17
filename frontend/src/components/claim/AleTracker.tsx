@@ -15,6 +15,24 @@ const CATEGORY_LABELS: Record<AleCategory, string> = {
   other: "Other",
 };
 
+// Plain-language "why this matters" for each reimbursable category, shown in
+// the receipt checklist so people know what to keep and why an insurer pays it.
+const CATEGORY_HINTS: Record<AleCategory, string> = {
+  hotel: "Temporary lodging while you can't live at home. Keep every night's receipt.",
+  meals: "The extra you spend on food above your normal grocery costs.",
+  transport: "Fuel, taxis, or transit for the extra distance you now travel.",
+  storage: "Storing belongings you salvaged while your home is repaired.",
+  pets: "Boarding or care if your pets can't stay with you.",
+  cleanup: "Retrieving or cleaning contents from the damaged home.",
+  other: "Anything else your displacement is costing you.",
+};
+
+// The checklist surfaces the everyday categories first; "other" stays out of
+// it (it's a catch-all, not a receipt to chase down).
+const CHECKLIST_CATEGORIES: AleCategory[] = [
+  "hotel", "meals", "transport", "storage", "pets", "cleanup",
+];
+
 function formatMoney(amount: number): string {
   return amount.toLocaleString(undefined, { style: "currency", currency: "CAD" });
 }
@@ -87,6 +105,14 @@ export default function AleTracker({ caseId }: { caseId: string }) {
     setShowForm(true);
   }
 
+  // Open the add form pre-set to one category, so logging a kind of receipt
+  // straight from the checklist is a single tap, not a category hunt.
+  function openAddCategory(category: AleCategory) {
+    setEditing(null);
+    setForm({ ...emptyForm(), category });
+    setShowForm(true);
+  }
+
   function openEdit(x: AleExpense) {
     setEditing(x);
     setForm({
@@ -149,6 +175,8 @@ export default function AleTracker({ caseId }: { caseId: string }) {
 
   if (expenses === null) return <Spinner />;
 
+  const loggedCategories = new Set(expenses.map((x) => x.category));
+
   return (
     <div>
       <p className="claim-intro">
@@ -160,6 +188,35 @@ export default function AleTracker({ caseId }: { caseId: string }) {
       <div className="ale-total">
         <div className="claim-entry-meta">Running total</div>
         <div className="amount">{formatMoney(total)}</div>
+      </div>
+
+      <div className="ale-checklist no-print">
+        <h4>Receipts worth keeping</h4>
+        <p className="claim-entry-meta" style={{ margin: "0 0 10px" }}>
+          Log at least one of each that applies to you. You can add as many as
+          you like, anytime.
+        </p>
+        <ul>
+          {CHECKLIST_CATEGORIES.map((cat) => {
+            const done = loggedCategories.has(cat);
+            return (
+              <li key={cat} className={done ? "done" : ""}>
+                <span className="ale-check-mark" aria-hidden>{done ? "✓" : ""}</span>
+                <div className="ale-check-body">
+                  <strong>{CATEGORY_LABELS[cat]}</strong>
+                  <span className="claim-entry-meta">{CATEGORY_HINTS[cat]}</span>
+                </div>
+                {done ? (
+                  <span className="badge">Logged</span>
+                ) : (
+                  <button type="button" className="link-btn" onClick={() => openAddCategory(cat)}>
+                    Add
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div className="row no-print" style={{ marginBottom: 14 }}>

@@ -42,7 +42,7 @@ export default function Dashboard() {
         </Link>
 
         <Link to={inventoryHref} className="card tile big-tile">
-          <h2>What you lost</h2>
+          <h2>Inventory</h2>
           <p>
             {latestCase
               ? `List and photograph what was damaged, room by room.`

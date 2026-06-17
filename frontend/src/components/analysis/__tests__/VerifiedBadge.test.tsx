@@ -11,9 +11,7 @@ describe("VerifiedBadge", () => {
   it("shows a cautionary marker when verified is false", () => {
     render(<VerifiedBadge verified={false} />);
     expect(
-      screen.getByText(
-        "Could not verify this against your document, please check the original",
-      ),
+      screen.getByText("Please verify this with your document"),
     ).toBeInTheDocument();
   });
 

@@ -143,6 +143,14 @@ export default function Inventory() {
   const [items, setItems] = useState<Item[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>("room");
+  // Saved items can be read as a list (claim-report friendly) or a board of
+  // room columns (spatial, matches how people remember a home). The board is
+  // the default for the visual, room-by-room mental model.
+  const [view, setView] = useState<"list" | "board">("board");
+  // When adding an item straight from a board column, the manual form opens
+  // with that room prefilled.
+  const [presetRoom, setPresetRoom] = useState<string>("");
+  const manualRef = useRef<HTMLDivElement>(null);
 
   // Scan + draft-review state.
   const [kind, setKind] = useState<PrePost>("post");
@@ -468,6 +476,29 @@ export default function Inventory() {
     }
   }
 
+  // Move an item to another room (board drag-and-drop). Optimistic: the card
+  // jumps columns immediately, then we persist; a failure reloads the truth.
+  async function moveItemToRoom(itemId: string, room: string) {
+    const target = room.trim();
+    const item = items.find((i) => i.id === itemId);
+    if (!item || (item.room ?? "") === target) return;
+    setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, room: target } : i)));
+    try {
+      await api.updateMyItem(itemId, { room: target });
+    } catch (e: any) {
+      setErr(e.message ?? String(e));
+      load();
+    }
+  }
+
+  // Add an item straight into a board column: prefill the room and reveal the
+  // manual form, scrolling it into view so the connection is obvious.
+  function addToRoom(room: string) {
+    setPresetRoom(room === "Other" ? "" : room);
+    setShowManual(true);
+    requestAnimationFrame(() => manualRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }
+
   function exportCsv() {
     const header = ["Name", "Room", "Category", "Damage type", "Estimated value (CAD)", "Description"];
     const rows = items.map((it) => [
@@ -586,7 +617,7 @@ export default function Inventory() {
               <span className="badge">{drafts.length} items</span>
               <span className="badge">{kind === "pre" ? "Before" : "After"}</span>
               <span className="spacer" />
-              <button className="secondary" onClick={discardBatch} disabled={busy}>
+              <button className="ghost" onClick={discardBatch} disabled={busy}>
                 Discard
               </button>
               <button onClick={saveAllDrafts} disabled={busy}>
@@ -683,12 +714,17 @@ export default function Inventory() {
                         </p>
                       ) : null;
                     })()}
-                    <div className="row" style={{ marginTop: 8 }}>
-                      <button className="secondary" type="button" onClick={() => toggleExpand(d.draft_id)}>
-                        {open ? "Done" : "Edit"}
+                    <div className="row" style={{ marginTop: 10 }}>
+                      <button className="link-btn" type="button" onClick={() => toggleExpand(d.draft_id)}>
+                        {open ? "Hide details" : "Edit details"}
                       </button>
                       <span className="spacer" />
-                      <button className="secondary" type="button" onClick={() => dropDraft(d.draft_id)}>
+                      <button
+                        className="link-btn"
+                        type="button"
+                        style={{ color: "var(--danger-text)" }}
+                        onClick={() => dropDraft(d.draft_id)}
+                      >
                         Remove
                       </button>
                     </div>
@@ -756,7 +792,7 @@ export default function Inventory() {
         )}
       </div>
 
-      <div className="card no-print">
+      <div className="card no-print" ref={manualRef}>
         <div className="row" style={{ alignItems: "center" }}>
           <h3 style={{ margin: 0 }}>Add an item by hand</h3>
           <span className="spacer" />
@@ -770,9 +806,11 @@ export default function Inventory() {
         </p>
         {showManual && id && (
           <ManualItemForm
+            key={presetRoom || "manual"}
             caseId={id}
             rooms={allRooms}
             defaultDamage={defaultDamage}
+            presetRoom={presetRoom}
             onAdded={() => { load(); toast.show("Item added to your inventory."); }}
           />
         )}
@@ -811,24 +849,56 @@ export default function Inventory() {
         <span className="spacer" />
         {items.length > 0 && (
           <>
-            <label style={{ margin: 0 }} htmlFor="inv-sort">Sort by</label>
-            <select
-              id="inv-sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortBy)}
-              style={{ width: "auto" }}
-            >
-              <option value="room">Room</option>
-              <option value="none">When added</option>
-              <option value="category">Category</option>
-              <option value="price">Value (high to low)</option>
-            </select>
+            <div className="toggle-group no-print" role="tablist" aria-label="How to view your items">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === "board"}
+                className={view === "board" ? "active" : ""}
+                onClick={() => setView("board")}
+              >
+                Board
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === "list"}
+                className={view === "list" ? "active" : ""}
+                onClick={() => setView("list")}
+              >
+                List
+              </button>
+            </div>
+            {view === "list" && (
+              <>
+                <label style={{ margin: 0 }} htmlFor="inv-sort">Sort by</label>
+                <select
+                  id="inv-sort"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortBy)}
+                  style={{ width: "auto" }}
+                >
+                  <option value="room">Room</option>
+                  <option value="none">When added</option>
+                  <option value="category">Category</option>
+                  <option value="price">Value (high to low)</option>
+                </select>
+              </>
+            )}
           </>
         )}
       </div>
       {err && <div className="error">{err}</div>}
       {items.length === 0 && <p className="muted-strong">Nothing saved yet.</p>}
-      {items.length > 0 && sortBy === "room" ? (
+      {items.length > 0 && view === "board" ? (
+        <RoomBoard
+          items={items}
+          rooms={allRooms}
+          onMove={moveItemToRoom}
+          onAddToRoom={addToRoom}
+          onDelete={deleteWithUndo}
+        />
+      ) : items.length > 0 && sortBy === "room" ? (
         <RoomGroupedItems items={items} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} />
       ) : items.length > 0 ? (
         <ItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} />
@@ -851,16 +921,18 @@ function ManualItemForm({
   caseId,
   rooms,
   defaultDamage,
+  presetRoom,
   onAdded,
 }: {
   caseId: string;
   rooms: string[];
   defaultDamage: string;
+  presetRoom?: string;
   onAdded: () => void;
 }) {
   const [form, setForm] = useState({
     name: "",
-    room: "",
+    room: presetRoom ?? "",
     category: "other",
     damage_type: defaultDamage,
     estimated_value: "",
@@ -967,6 +1039,132 @@ function ManualItemForm({
         </button>
       </div>
     </form>
+  );
+}
+
+// Kanban-style board: one column per physical room, matching how people
+// remember a home. Items are cards inside their room; drag a card to another
+// column to move it (the List view stays for keyboard/mobile and printing).
+function RoomBoard({
+  items,
+  rooms,
+  onMove,
+  onAddToRoom,
+  onDelete,
+}: {
+  items: Item[];
+  rooms: string[];
+  onMove: (itemId: string, room: string) => void;
+  onAddToRoom: (room: string) => void;
+  onDelete: (it: Item) => void;
+}) {
+  const groups = new Map<string, Item[]>();
+  for (const it of items) {
+    const key = it.room?.trim() || "Other";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(it);
+  }
+  // Make sure every known room shows a column even if it's currently empty,
+  // so there's always somewhere to drop an item.
+  for (const r of rooms) if (r && !groups.has(r)) groups.set(r, []);
+  // Named rooms first (alphabetical); the catch-all "Other" column last.
+  const ordered = Array.from(groups.entries()).sort(([a], [b]) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    return a.localeCompare(b);
+  });
+  return (
+    <div className="room-board no-print">
+      {ordered.map(([room, group]) => (
+        <BoardColumn key={room} room={room} items={group} onMove={onMove} onAddToRoom={onAddToRoom} onDelete={onDelete} />
+      ))}
+    </div>
+  );
+}
+
+function BoardColumn({
+  room,
+  items,
+  onMove,
+  onAddToRoom,
+  onDelete,
+}: {
+  room: string;
+  items: Item[];
+  onMove: (itemId: string, room: string) => void;
+  onAddToRoom: (room: string) => void;
+  onDelete: (it: Item) => void;
+}) {
+  const [over, setOver] = useState(false);
+  const total = items.reduce((s, it) => s + (it.estimated_value ?? 0), 0);
+  // The "Other" column means "no room set", so dropping there clears the room.
+  const roomValue = room === "Other" ? "" : room;
+  return (
+    <section
+      className={`board-col${over ? " drag-over" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); if (!over) setOver(true); }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOver(false); }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setOver(false);
+        const id = e.dataTransfer.getData("text/plain");
+        if (id) onMove(id, roomValue);
+      }}
+    >
+      <header className="board-col-head">
+        <span className="board-col-name">{room}</span>
+        <span className="badge">{items.length}</span>
+        <span className="spacer" />
+        <span className="muted-strong board-col-total">${total.toLocaleString()}</span>
+      </header>
+      <div className="board-col-body">
+        {items.length === 0 ? (
+          <p className="muted board-col-empty">Drop items here, or add one below.</p>
+        ) : (
+          items.map((it) => <BoardCard key={it.id} item={it} onDelete={onDelete} />)
+        )}
+      </div>
+      <button type="button" className="board-add" onClick={() => onAddToRoom(room)}>
+        + Add item
+      </button>
+    </section>
+  );
+}
+
+function BoardCard({ item, onDelete }: { item: Item; onDelete: (it: Item) => void }) {
+  const thumb = item.before_url || item.after_url;
+  return (
+    <article
+      className="board-card"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", item.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+    >
+      <div className="board-card-main">
+        {thumb && <img className="board-card-thumb" src={thumb} alt="" />}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <strong className="board-card-name">{item.name}</strong>
+          <div className="board-card-meta">
+            {item.category && <span className="badge">{item.category}</span>}
+            {item.damage_type && <span className="badge">{item.damage_type}</span>}
+          </div>
+        </div>
+      </div>
+      <div className="board-card-foot">
+        <strong>{item.estimated_value ? `$${item.estimated_value.toLocaleString()}` : <span className="muted">No value yet</span>}</strong>
+        <span className="spacer" />
+        <button
+          type="button"
+          className="link-btn"
+          style={{ color: "var(--danger-text)" }}
+          onClick={() => onDelete(item)}
+        >
+          Remove
+        </button>
+      </div>
+    </article>
   );
 }
 

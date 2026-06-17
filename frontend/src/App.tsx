@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NewCase from "./pages/NewCase";
 import CaseHub from "./pages/CaseHub";
@@ -13,6 +12,7 @@ import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Prepare from "./pages/Prepare";
+import FirstRun from "./pages/FirstRun";
 import Settings from "./pages/Settings";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
@@ -324,14 +324,21 @@ function ProfileMenu() {
 // Persistent links to the main sections, previously these were only
 // reachable through dashboard tiles, so users lost their way constantly.
 function SectionLinks({ className }: { className: string }) {
-  const { latest } = useCases();
+  const { latest, phase, latestOpen } = useCases();
   // With an active case, the two links resolve to that case's recommendations
   // and inventory. With no case yet, they must stay distinct and must never
   // both highlight as active: Plan starts a case, Inventory goes to the
   // preparedness flow (pre-loss inventory lives there). Pointing them at the
   // same path made the nav read as broken.
   const planTo = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
-  const inventoryTo = latest ? `/cases/${latest.id}/inventory` : "/prepare";
+  // In recovery the user expects "Inventory" to open the inventory they are
+  // actively building for their open case, not the preparedness checklist.
+  // Only in the prepare phase does it land on the prep hub, which is the entry
+  // point into photographing rooms before anything has happened.
+  const inventoryTo =
+    phase === "recovery" && latestOpen
+      ? `/cases/${latestOpen.id}/inventory`
+      : "/prepare";
   return (
     <nav className={className} aria-label="Main sections">
       <NavLink to={planTo} end className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
@@ -420,17 +427,27 @@ function ActionBar() {
 function Private({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="container"><Spinner /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  // Demo mode signs everyone in automatically, so there's no /login page; if a
+  // session genuinely can't be established we send people to the landing page
+  // rather than a route that no longer exists.
+  if (!user) return <Navigate to="/" replace />;
   return children;
 }
 
 // The phase-aware landing for a signed-in user. Phase is derived from server
-// state, so the same account shows the same home on every device. While cases
-// are still loading we show the spinner rather than guessing, otherwise the
-// wrong phase would flash before the real one settles.
+// state, so the same account shows the same home on every device. While the
+// lists are still loading we show the spinner rather than guessing, otherwise
+// the wrong phase would flash before the real one settles.
+//
+// A brand-new user (no cases, no inventory) gets the one-time situational
+// welcome instead of the prepare hub. Everyone else auto-lands where they
+// left off: Dashboard once recovery is underway, the prepare hub otherwise.
 function Home() {
-  const { cases, phase } = useCases();
-  if (cases === null) return <div className="container"><Spinner /></div>;
+  const { cases, myItems, phase, isNewUser } = useCases();
+  if (cases === null || myItems === null) {
+    return <div className="container"><Spinner /></div>;
+  }
+  if (phase === "prepare" && isNewUser) return <FirstRun />;
   return phase === "prepare" ? <Prepare /> : <Dashboard />;
 }
 
@@ -445,7 +462,6 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/emergency" element={<Emergency />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/legal/terms" element={<Terms />} />
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/home" element={<Private><Home /></Private>} />
