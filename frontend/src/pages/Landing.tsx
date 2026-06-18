@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import DemoDropzone from "../components/DemoDropzone";
+import { useAuth } from "../auth/AuthContext";
 
 // The landing page leads with a hero and an unmissable Immediate Help block for
 // anyone arriving mid-crisis, then shows the product through framed mockups
@@ -80,9 +82,49 @@ const TESTIMONIALS = [
   },
 ];
 
-export default function Landing() {
+// The primary call to action. Rather than linking straight into a guarded
+// route (which silently bounces a visitor whose session hasn't been
+// established yet), it makes sure there is a session first, then navigates.
+// That way the button always does something visible, and surfaces an error if
+// a session genuinely can't be created instead of looping back to the landing
+// page.
+function StartButton() {
+  const { ensureSession } = useAuth();
+  const nav = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   // No sign-in step in demo mode, every visitor goes straight into a new case.
   const start = "/cases/new";
+  return (
+    <div>
+      <button
+        className="big"
+        disabled={busy}
+        onClick={async () => {
+          setErr(null);
+          setBusy(true);
+          try {
+            const ok = await ensureSession();
+            if (ok) {
+              nav(start);
+            } else {
+              setErr("We couldn't get things started just now. Please try again in a moment.");
+            }
+          } catch {
+            setErr("We couldn't get things started just now. Please try again in a moment.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Getting things ready…" : "Start when you're ready"}
+      </button>
+      {err && <p className="error" style={{ marginTop: 10 }}>{err}</p>}
+    </div>
+  );
+}
+
+export default function Landing() {
   return (
     <div className="container">
       <div className="hero">
@@ -92,7 +134,7 @@ export default function Landing() {
           and turn it into a clear recovery plan.
         </p>
         <div className="cta-row">
-          <Link to={start}><button className="big">Start when you're ready</button></Link>
+          <StartButton />
         </div>
       </div>
 
@@ -225,7 +267,7 @@ export default function Landing() {
           Start with a single photo or document. We will be here for the rest.
         </p>
         <div className="cta-row" style={{ justifyContent: "center" }}>
-          <Link to={start}><button className="big">Start when you're ready</button></Link>
+          <StartButton />
         </div>
       </section>
 

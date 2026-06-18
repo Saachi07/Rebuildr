@@ -6,6 +6,13 @@ type AuthValue = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  // True when the app is running in no-sign-up demo mode (VITE_DISABLE_AUTH=1).
+  demoMode: boolean;
+  // Guarantee there is a usable session before entering a guarded route. In
+  // demo mode this signs into (or creates) this device's demo account on
+  // demand, so a landing CTA never drops the visitor onto a guard that bounces
+  // them back. Returns true once a user exists, false if one couldn't be made.
+  ensureSession: () => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<void>;
   // Returns whether the account still needs email confirmation (no session yet).
   signUp: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>;
@@ -132,6 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: session?.user ?? null,
     session,
     loading,
+    demoMode: DEMO_MODE,
+    ensureSession: async () => {
+      if (session?.user) return true;
+      if (!DEMO_MODE) return false;
+      const s = await ensureDemoSession();
+      if (s) setSession(s);
+      return !!s;
+    },
     signIn: async (email, password) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;

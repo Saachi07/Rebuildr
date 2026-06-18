@@ -375,6 +375,32 @@ function PhaseChip() {
   );
 }
 
+// "Try our product" must reliably land a signed-out visitor inside the app.
+// Linking straight to /home bounces them back here whenever a session hasn't
+// been established yet, so we ensure one first and then navigate.
+function TryProductButton() {
+  const { ensureSession } = useAuth();
+  const nav = useNavigate();
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          // Only navigate once a session exists; both targets are guarded, so
+          // navigating without one would just bounce back here.
+          if (await ensureSession()) nav("/home");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      {busy ? "Loading…" : "Try our product"}
+    </button>
+  );
+}
+
 function Nav() {
   const { user } = useAuth();
   return (
@@ -392,7 +418,7 @@ function Nav() {
         ) : (
           <>
             <Link to="/emergency" className="urgent-link">Get help now</Link>
-            <Link to="/home"><button>Try our product</button></Link>
+            <TryProductButton />
           </>
         )}
       </div>
