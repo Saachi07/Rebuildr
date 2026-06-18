@@ -43,7 +43,7 @@ export default function FirstRun() {
       </div>
 
       <div className="card" style={{ marginTop: 8 }}>
-        <h3 style={{ marginTop: 0 }}>Nothing is wrong yet</h3>
+        <h3 style={{ marginTop: 0 }}>I want to be ready</h3>
         <p className="muted-strong" style={{ marginTop: 0 }}>
           Good. The best time to get ready is before you ever need to.
           Photograph your home while it is whole and understand your coverage
