@@ -120,6 +120,23 @@ function draftsKey(caseId: string) {
   return `rebuildr.drafts.${caseId}`;
 }
 
+// Per-case personal-property coverage limit, stored on the device. Written
+// either by the user (in the HUD) or by the document panel's "Activate claim
+// limits" step, which saves the verified Coverage C amount under this key.
+function coverageKey(caseId: string) {
+  return `rebuildr.coverageLimit.${caseId}`;
+}
+
+function loadCoverageLimit(caseId: string): number | null {
+  try {
+    const raw = localStorage.getItem(coverageKey(caseId));
+    const n = raw == null ? NaN : Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 function loadPersistedDrafts(caseId: string): PersistedDrafts | null {
   try {
     const raw = localStorage.getItem(draftsKey(caseId));
@@ -151,6 +168,10 @@ export default function Inventory() {
   // with that room prefilled.
   const [presetRoom, setPresetRoom] = useState<string>("");
   const manualRef = useRef<HTMLDivElement>(null);
+  // The personal-property (Coverage C) limit powers the HUD progress bar. It's
+  // the destination of the document "Activate claim limits" bridge; the user
+  // can also set or correct it here, and it persists per case on this device.
+  const [coverageLimit, setCoverageLimit] = useState<number | null>(null);
 
   // Scan + draft-review state.
   const [kind, setKind] = useState<PrePost>("post");
@@ -224,6 +245,24 @@ export default function Inventory() {
       .then((r) => setDefaultDamage(DISASTER_TO_DAMAGE[r.case.disaster_type] ?? "other"))
       .catch(() => {});
   }, [id]);
+
+  // Load the saved coverage limit for this case (set here or by the document
+  // panel's "Activate claim limits" step).
+  useEffect(() => {
+    if (!id) { setCoverageLimit(null); return; }
+    setCoverageLimit(loadCoverageLimit(id));
+  }, [id]);
+
+  function updateCoverageLimit(next: number | null) {
+    setCoverageLimit(next);
+    if (!id) return;
+    try {
+      if (next && next > 0) localStorage.setItem(coverageKey(id), String(Math.round(next)));
+      else localStorage.removeItem(coverageKey(id));
+    } catch {
+      /* best-effort */
+    }
+  }
 
   // Restore any unsaved drafts from a previous visit.
   useEffect(() => {
@@ -891,13 +930,21 @@ export default function Inventory() {
       {err && <div className="error">{err}</div>}
       {items.length === 0 && <p className="muted-strong">Nothing saved yet.</p>}
       {items.length > 0 && view === "board" ? (
-        <RoomBoard
-          items={items}
-          rooms={allRooms}
-          onMove={moveItemToRoom}
-          onAddToRoom={addToRoom}
-          onDelete={deleteWithUndo}
-        />
+        <>
+          <InventoryHud
+            total={totalValue}
+            limit={coverageLimit}
+            onSetLimit={updateCoverageLimit}
+            onExport={() => window.print()}
+          />
+          <RoomBoard
+            items={items}
+            rooms={allRooms}
+            onMove={moveItemToRoom}
+            onAddToRoom={addToRoom}
+            onDelete={deleteWithUndo}
+          />
+        </>
       ) : items.length > 0 && sortBy === "room" ? (
         <RoomGroupedItems items={items} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} />
       ) : items.length > 0 ? (
@@ -1042,6 +1089,95 @@ function ManualItemForm({
   );
 }
 
+// Sticky heads-up display over the board: total claim value, progress toward
+// the personal-property coverage limit, and the proof-of-loss export. Kept to
+// a few numbers on purpose so it never competes with the board for attention.
+function InventoryHud({
+  total,
+  limit,
+  onSetLimit,
+  onExport,
+}: {
+  total: number;
+  limit: number | null;
+  onSetLimit: (n: number | null) => void;
+  onExport: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const pct = limit && limit > 0 ? Math.min(100, Math.round((total / limit) * 100)) : 0;
+  const over = limit != null && total > limit;
+
+  function save() {
+    const n = Number(draft);
+    onSetLimit(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
+    setEditing(false);
+  }
+
+  return (
+    <div className="inv-hud">
+      <div className="inv-hud-figure">
+        <span className="inv-hud-label">Total claim value</span>
+        <span className="inv-hud-total">${total.toLocaleString()}</span>
+      </div>
+
+      <div className="inv-hud-coverage">
+        {editing ? (
+          <div className="row" style={{ gap: 8 }}>
+            <input
+              type="number"
+              min={0}
+              autoFocus
+              value={draft}
+              placeholder="e.g. 100000"
+              aria-label="Personal property coverage limit (CAD)"
+              onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+              onChange={(e) => setDraft(e.target.value)}
+              style={{ maxWidth: 160 }}
+            />
+            <button className="chip-btn" type="button" onClick={save}>Save</button>
+            <button className="chip-btn secondary" type="button" onClick={() => setEditing(false)}>Cancel</button>
+          </div>
+        ) : limit ? (
+          <>
+            <div className="row" style={{ alignItems: "baseline" }}>
+              <span className="inv-hud-label">
+                {over ? "Over your contents limit" : "Of your contents limit"}
+              </span>
+              <span className="spacer" />
+              <span className="muted-strong" style={{ fontSize: 13 }}>
+                ${total.toLocaleString()} / ${limit.toLocaleString()} ({pct}%)
+              </span>
+            </div>
+            <div className="meter" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+              <div className="meter-fill" style={{ width: `${pct}%`, background: over ? "var(--danger)" : undefined }} />
+            </div>
+            <div className="row" style={{ marginTop: 6 }}>
+              {over && (
+                <span className="muted-strong" style={{ fontSize: 12, color: "var(--danger-text)" }}>
+                  You've logged more than this coverage pays. Worth reviewing with your adjuster.
+                </span>
+              )}
+              <span className="spacer" />
+              <button className="link-btn" type="button" onClick={() => { setDraft(String(limit)); setEditing(true); }}>
+                Change limit
+              </button>
+            </div>
+          </>
+        ) : (
+          <button className="link-btn" type="button" onClick={() => { setDraft(""); setEditing(true); }}>
+            Set your personal-property limit to track progress
+          </button>
+        )}
+      </div>
+
+      <button type="button" className="secondary no-print inv-hud-export" onClick={onExport}>
+        Generate proof of loss
+      </button>
+    </div>
+  );
+}
+
 // Kanban-style board: one column per physical room, matching how people
 // remember a home. Items are cards inside their room; drag a card to another
 // column to move it (the List view stays for keyboard/mobile and printing).
@@ -1131,8 +1267,19 @@ function BoardColumn({
   );
 }
 
+// What still needs doing for a claim-ready item: a photo and a receipt. The
+// badge tells the user at a glance, so they can chase down what's missing.
+function itemStatus(item: Item): { label: string; cls: string } {
+  const hasPhoto = !!(item.before_url || item.after_url);
+  const hasReceipt = !!item.receipts;
+  if (hasPhoto && hasReceipt) return { label: "Complete", cls: "status-salvageable" };
+  if (!hasPhoto) return { label: "Photo needed", cls: "chip-warn" };
+  return { label: "Receipt needed", cls: "chip-warn" };
+}
+
 function BoardCard({ item, onDelete }: { item: Item; onDelete: (it: Item) => void }) {
   const thumb = item.before_url || item.after_url;
+  const status = itemStatus(item);
   return (
     <article
       className="board-card"
@@ -1147,8 +1294,8 @@ function BoardCard({ item, onDelete }: { item: Item; onDelete: (it: Item) => voi
         <div style={{ flex: 1, minWidth: 0 }}>
           <strong className="board-card-name">{item.name}</strong>
           <div className="board-card-meta">
+            <span className={`chip ${status.cls}`}>{status.label}</span>
             {item.category && <span className="badge">{item.category}</span>}
-            {item.damage_type && <span className="badge">{item.damage_type}</span>}
           </div>
         </div>
       </div>

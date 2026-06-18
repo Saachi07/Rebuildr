@@ -47,45 +47,54 @@ export default function DemoDropzone() {
   }
 
   const items = scan?.items.slice(0, MAX_PREVIEW_ITEMS) ?? [];
+  // One-photo teaser: once we've shown a result, the dropzone is retired so the
+  // demo stays a read-only glimpse, not a free scanning tool. The real,
+  // multi-photo, editable workflow lives behind "Start when you're ready".
+  const done = !!scan && items.length > 0;
 
   return (
     <div className="demo-zone">
-      <div
-        className={`dropzone${dragOver ? " over" : ""}`}
-        role="button"
-        tabIndex={0}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        aria-label="Drop a photo of any room, or tap to choose one"
-      >
-        {busy ? (
-          <div className="dropzone-inner">
-            <div className="spinner" style={{ margin: "0 auto 8px" }} />
-            <strong>Reading your photo...</strong>
-            <span className="muted" style={{ fontSize: 13 }}>This can take up to half a minute.</span>
-          </div>
-        ) : (
-          <div className="dropzone-inner">
-            <strong>Drop a photo of any room, or tap to take one</strong>
-            <span className="muted-strong" style={{ fontSize: 14 }}>JPG, PNG, or HEIC</span>
-          </div>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPTED}
-          capture="environment"
-          style={{ display: "none" }}
-          onChange={onPick}
-        />
-      </div>
+      {!done && (
+        <div
+          className={`dropzone${dragOver ? " over" : ""}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          aria-label="Drop a photo of any room, or tap to choose one"
+        >
+          {busy ? (
+            <div className="dropzone-inner">
+              <div className="spinner" style={{ margin: "0 auto 8px" }} />
+              <strong>Reading your photo...</strong>
+              <span className="muted" style={{ fontSize: 13 }}>This can take up to half a minute.</span>
+            </div>
+          ) : (
+            <div className="dropzone-inner">
+              <strong>Drop a photo of any room, or tap to take one</strong>
+              <span className="muted-strong" style={{ fontSize: 14 }}>JPG, PNG, or HEIC</span>
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept={ACCEPTED}
+            capture="environment"
+            style={{ display: "none" }}
+            onChange={onPick}
+          />
+        </div>
+      )}
 
-      <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-        Your photo is scanned and then deleted right away. We do not keep demo photos.
-      </p>
+      {!done && (
+        <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+          One photo, just to show you how it works. It's scanned and then
+          deleted right away. We do not keep demo photos.
+        </p>
+      )}
 
       {err && <div className="error" style={{ marginTop: 8 }}>{err}</div>}
 

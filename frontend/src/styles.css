@@ -651,6 +651,28 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .case-picker-static { cursor: default; }
 .case-picker-static:hover { background: var(--panel-2); }
 
+/* ---- Inventory HUD (sticky heads-up display over the board) ---- */
+.inv-hud {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 14px;
+  padding: 14px 18px; margin-top: 14px;
+  box-shadow: 0 4px 16px rgba(58, 48, 39, 0.06);
+}
+.inv-hud-figure { display: flex; flex-direction: column; gap: 2px; }
+.inv-hud-label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); font-weight: 600;
+}
+.inv-hud-total { font-size: 26px; font-weight: 700; line-height: 1.1; }
+.inv-hud-coverage { flex: 1; min-width: 240px; }
+.inv-hud-export { white-space: nowrap; }
+@media (max-width: 600px) {
+  .inv-hud { position: static; }
+  .inv-hud-export { width: 100%; }
+}
+
 /* ---- Inventory kanban board (one column per room) ---- */
 .room-board {
   display: flex; gap: 14px; margin-top: 14px;
