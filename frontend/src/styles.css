@@ -379,6 +379,24 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   border-radius: 8px; box-shadow: 0 6px 20px rgba(58, 48, 39, 0.12); padding: 6px; text-align: left;
 }
 
+/* ---- Dashboard metric strip (exactly five at-a-glance numbers) ---- */
+.metric-strip {
+  display: grid; gap: 12px; margin: 20px 0 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.metric {
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 12px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+}
+.metric-label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); font-weight: 600;
+}
+.metric-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.metric-hint { font-size: 13px; color: var(--focus); text-decoration: underline; font-weight: 600; }
+.metric-hint-spacer { min-height: 18px; }
+
 .dashboard-tiles { margin-top: 16px; }
 .big-tile {
   display: flex; flex-direction: column;
@@ -817,6 +835,17 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   display: flex; flex-wrap: wrap; gap: 10px;
 }
 .region-list .pill { font-size: 14px; padding: 8px 16px; }
+.region-grid {
+  display: grid; gap: 12px; margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.region-card {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.region-card strong { font-size: 15px; color: var(--text); }
+.region-card span { font-size: 13px; color: var(--muted-strong); line-height: 1.5; }
 
 .center-cta { text-align: center; padding-bottom: 24px; }
 .center-cta h2 { font-size: 28px; margin: 0 0 12px; }

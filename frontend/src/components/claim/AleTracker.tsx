@@ -33,6 +33,18 @@ const CHECKLIST_CATEGORIES: AleCategory[] = [
   "hotel", "meals", "transport", "storage", "pets", "cleanup",
 ];
 
+// Inline, category-specific guidance shown under the receipt field, so the
+// receipt a person uploads is one an insurer will actually accept.
+const RECEIPT_TIPS: Record<AleCategory, string> = {
+  hotel: "Use an itemized receipt showing a $0.00 balance, so it's clearly paid in full.",
+  meals: "Keep the itemized receipt, not just the card slip. Insurers reimburse the extra over your normal grocery spend.",
+  transport: "Note the trip's purpose on the receipt (e.g. commute from temporary lodging).",
+  storage: "Keep the signed rental agreement or first invoice showing the monthly rate.",
+  pets: "Ask the boarding facility for a dated invoice with your pet's name on it.",
+  cleanup: "Get an itemized invoice listing the work done and the property address.",
+  other: "Keep an itemized, dated receipt that shows what was paid and to whom.",
+};
+
 function formatMoney(amount: number): string {
   return amount.toLocaleString(undefined, { style: "currency", currency: "CAD" });
 }
@@ -284,6 +296,9 @@ export default function AleTracker({ caseId }: { caseId: string }) {
                 onChange={(e) => set("amount", e.target.value)}
                 placeholder="0.00"
               />
+              <p className="field-hint">
+                Log the extra cost caused by being displaced, that's what ALE covers.
+              </p>
             </div>
           </div>
 
@@ -324,6 +339,7 @@ export default function AleTracker({ caseId }: { caseId: string }) {
             onChange={(e) => set("receipt_url", e.target.value)}
             placeholder="https://..."
           />
+          <p className="field-hint">{RECEIPT_TIPS[form.category]}</p>
 
           <div className="row" style={{ marginTop: 16 }}>
             <span className="spacer" />

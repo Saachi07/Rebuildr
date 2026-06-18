@@ -114,6 +114,14 @@
   color: var(--text, #f1f3f9);
 }
 
+/* Inline helper text under a form field (checklist.design helper-block) */
+.field-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted, #b3bbcc);
+}
+
 /* ALE receipt checklist (checklist.design pattern: clear state + helper text) */
 .ale-checklist {
   background: var(--panel, #1a1d24);

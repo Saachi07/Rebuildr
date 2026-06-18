@@ -45,6 +45,24 @@ const ALBERTA_REGIONS = [
   "Regional municipalities",
 ];
 
+// The provincial programs Rebuildr is built around. Plain reference info, kept
+// honest (no invented "live" figures), so a local visitor sees the platform
+// speaks their jurisdiction's language.
+const ALBERTA_DESK = [
+  {
+    title: "Disaster Recovery Program",
+    detail: "Provincial help for uninsurable losses. We track its deadlines and what it asks for.",
+  },
+  {
+    title: "211 Alberta",
+    detail: "Free, 24/7 line for shelter, food, and crisis support across the province.",
+  },
+  {
+    title: "Alberta Emergency Alert",
+    detail: "Official wildfire, flood, and evacuation notices for your area.",
+  },
+];
+
 // Two real testimonials go here once collected. Placeholders keep the layout and
 // tone in place; fill in `quote`, `name`, and `attribution` when ready.
 const TESTIMONIALS = [
@@ -106,6 +124,14 @@ export default function Landing() {
             <li key={r} className="pill">{r}</li>
           ))}
         </ul>
+        <div className="region-grid">
+          {ALBERTA_DESK.map((d) => (
+            <div key={d.title} className="region-card">
+              <strong>{d.title}</strong>
+              <span>{d.detail}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* #2: interactive no-login demo of the AI scan. */}

@@ -1,13 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, Terms } from "../api";
+import { api, ClaimStage, Terms } from "../api";
 import { SkeletonList } from "../components/Skeleton";
 import { useCases } from "../lib/CasesContext";
+
+// Friendly labels for the claim stage, mirroring the ClaimStage union.
+const STAGE_LABEL: Record<ClaimStage, string> = {
+  not_started: "Not started",
+  reported: "Reported",
+  adjuster_assigned: "Adjuster assigned",
+  estimate_received: "Estimate received",
+  settlement_offer: "Settlement offer",
+  payout: "Payout received",
+  closed: "Closed",
+  denied: "Denied",
+};
+
+// The five at-a-glance numbers, kept to exactly five so the dashboard never
+// overloads working memory (Miller's law). Each derives from a light query
+// and degrades to a helpful "do this next" link when there's nothing yet.
+type Metrics = {
+  assetValue: number;
+  aleTotal: number;
+  nextDeadlineDays: number | null;
+  pendingTasks: number | null;
+};
 
 export default function Dashboard() {
   const { cases, latest, refresh } = useCases();
   const [err, setErr] = useState<string | null>(null);
   const [terms, setTerms] = useState<Terms | null>(null);
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
     refresh().catch((e) => setErr(e.message ?? String(e)));
@@ -17,6 +40,39 @@ export default function Dashboard() {
   const latestCase = latest;
   const inventoryHref = latestCase ? `/cases/${latestCase.id}/inventory` : "/cases/new";
   const recommendationsHref = latestCase ? `/cases/${latestCase.id}/recommendations` : "/cases/new";
+  const showMetrics = !!latestCase && latestCase.status !== "draft";
+
+  // Pull the metric inputs in parallel, best-effort, only for a real case.
+  // Items are home-scoped; ALE and the plan are per-case.
+  useEffect(() => {
+    if (!showMetrics || !latestCase) { setMetrics(null); return; }
+    let cancelled = false;
+    (async () => {
+      const [items, ale, recs] = await Promise.allSettled([
+        api.listMyItems(),
+        api.listAleExpenses(latestCase.id),
+        api.getRecommendations(latestCase.id),
+      ]);
+      if (cancelled) return;
+      const assetValue =
+        items.status === "fulfilled"
+          ? items.value.items.reduce((s, it) => s + (it.estimated_value ?? 0), 0)
+          : 0;
+      const aleTotal = ale.status === "fulfilled" ? ale.value.total : 0;
+      let nextDeadlineDays: number | null = null;
+      let pendingTasks: number | null = null;
+      if (recs.status === "fulfilled") {
+        const days = (recs.value.deadline_radar ?? [])
+          .map((r) => r.days_until_deadline)
+          .filter((d): d is number => d != null && d >= 0)
+          .sort((a, b) => a - b);
+        nextDeadlineDays = days.length > 0 ? days[0] : null;
+        pendingTasks = (recs.value.todo ?? []).filter((r) => r.status !== "done").length;
+      }
+      setMetrics({ assetValue, aleTotal, nextDeadlineDays, pendingTasks });
+    })();
+    return () => { cancelled = true; };
+  }, [showMetrics, latestCase?.id]);
 
   return (
     <div className="container">
@@ -25,6 +81,40 @@ export default function Dashboard() {
         Pick up wherever you left off. Nothing here is going anywhere.
       </p>
       {err && <div className="error">{err}</div>}
+
+      {showMetrics && latestCase && (
+        <div className="metric-strip">
+          <Metric label="Claim phase" value={STAGE_LABEL[latestCase.claim_stage ?? "not_started"]} />
+          <Metric
+            label="Logged asset value"
+            value={metrics ? `$${metrics.assetValue.toLocaleString()}` : "…"}
+            hint={metrics && metrics.assetValue === 0 ? { text: "Add photos", to: inventoryHref } : undefined}
+          />
+          <Metric
+            label="Living expenses"
+            value={metrics ? `$${metrics.aleTotal.toLocaleString()}` : "…"}
+            hint={metrics && metrics.aleTotal === 0 ? { text: "Log a receipt", to: `/cases/${latestCase.id}` } : undefined}
+          />
+          <Metric
+            label="Next deadline"
+            value={
+              !metrics
+                ? "…"
+                : metrics.nextDeadlineDays == null
+                  ? "None tracked"
+                  : metrics.nextDeadlineDays === 0
+                    ? "Due today"
+                    : `${metrics.nextDeadlineDays} day${metrics.nextDeadlineDays === 1 ? "" : "s"}`
+            }
+            hint={metrics && metrics.nextDeadlineDays == null ? { text: "See your plan", to: recommendationsHref } : undefined}
+          />
+          <Metric
+            label="Pending tasks"
+            value={!metrics ? "…" : metrics.pendingTasks == null ? "-" : String(metrics.pendingTasks)}
+            hint={metrics && metrics.pendingTasks ? { text: "Open plan", to: recommendationsHref } : undefined}
+          />
+        </div>
+      )}
 
       <div className="grid grid-2 dashboard-tiles">
         <Link to={recommendationsHref} className="card tile big-tile">
@@ -89,6 +179,28 @@ export default function Dashboard() {
           <strong>Your data is encrypted</strong>
           <span className="muted">{terms.encryption_notice}</span>
         </div>
+      )}
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: { text: string; to: string };
+}) {
+  return (
+    <div className="metric">
+      <span className="metric-label">{label}</span>
+      <span className="metric-value">{value}</span>
+      {hint ? (
+        <Link to={hint.to} className="metric-hint">{hint.text}</Link>
+      ) : (
+        <span className="metric-hint-spacer" aria-hidden />
       )}
     </div>
   );
