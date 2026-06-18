@@ -618,7 +618,7 @@ def _add_inventory_reasons(r: dict, tags: set[str], reasons: list[str]) -> None:
         reasons.append("your photos showed medication left behind, and Health Link can help with refills")
     if "documents_destroyed" in tags and r["type"] == "documents":
         reasons.append("your photos suggest documents were lost. Replacement fees are waived after a declared disaster")
-    if "pet_items_present" in tags and r["id"] in {"red-cross-lodging", "211-alberta", "pet-friendly-shelters"}:
+    if "pet_items_present" in tags and r["id"] in {"red-cross-lodging", "211-alberta", "pet-friendly-shelters", "ab-spca-disaster"}:
         reasons.append("your photos showed pet items, and they can help locate pet friendly lodging")
 
 
