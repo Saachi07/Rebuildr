@@ -46,6 +46,11 @@ jobs:
         working-directory: frontend
         env:
           GITHUB_PAGES: "1" # makes vite use base "/Rebuildr/"
+          # Demo mode: no sign-up screen, each visitor silently gets their own
+          # demo account. Without this the deployed build has no way to sign
+          # anyone in (there is no login page), so every guarded route bounces
+          # back to the landing page. Requires email confirmation OFF in Supabase.
+          VITE_DISABLE_AUTH: "1"
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}

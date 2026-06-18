@@ -93,8 +93,12 @@ function StartButton() {
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  // No sign-in step in demo mode, every visitor goes straight into a new case.
-  const start = "/cases/new";
+  // Land on the phase-aware home, not straight into a recovery case. A visitor
+  // before any disaster gets the welcome (prepare vs recovery), someone already
+  // preparing gets the prepare hub, and someone mid-recovery gets their
+  // dashboard. Forcing everyone into "Tell us what happened" wrongly assumed a
+  // disaster had occurred and gave preparers no way in.
+  const start = "/home";
   return (
     <div>
       <button
