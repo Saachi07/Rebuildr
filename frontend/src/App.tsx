@@ -17,12 +17,14 @@ import Settings from "./pages/Settings";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import { TermsGate } from "./components/TermsGate";
-import { Spinner } from "./components/Skeleton";
+import { BrandLoader } from "./components/BrandLoader";
 import { HelpFooter } from "./components/HelpFooter";
 import { CasePicker } from "./components/CasePicker";
 import { OfflineBanner } from "./components/OfflineBanner";
 import { ToastProvider } from "./components/Toast";
 import { CasesProvider, useCases } from "./lib/CasesContext";
+import { PageBackProvider, usePageBack } from "./lib/PageBackContext";
+import { BackButton } from "./components/BackButton";
 import { useStartRecovery } from "./lib/useStartRecovery";
 import { useDismissable } from "./lib/useDismissable";
 import { api } from "./api";
@@ -274,28 +276,52 @@ function NotificationsButton() {
   );
 }
 
+// Phase-aware targets for the two contextual sections. With an active case,
+// Plan and Inventory resolve to that case; otherwise Plan starts a case and
+// Inventory opens the preparedness flow where pre-loss inventory lives.
+function useSectionTargets() {
+  const { latest, phase, latestOpen } = useCases();
+  const planTo = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
+  const inventoryTo =
+    phase === "recovery" && latestOpen ? `/cases/${latestOpen.id}/inventory` : "/prepare";
+  return { planTo, inventoryTo };
+}
+
+// The avatar opens one menu holding both navigation (Plan, Dashboard,
+// Inventory, Documents) and account actions. Folding the sections in here keeps
+// the header uncluttered; only "Get help" stays out on its own, since burying
+// emergency contacts in a dropdown adds friction at the worst moment.
 function ProfileMenu() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
+  const loc = useLocation();
+  const { planTo, inventoryTo } = useSectionTargets();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useDismissable(ref, open, () => setOpen(false));
 
   const initial = (user?.email ?? "?").trim().charAt(0).toUpperCase();
+  const sections = [
+    { label: "Plan", to: planTo },
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Inventory", to: inventoryTo },
+    { label: "Documents", to: "/documents" },
+  ];
 
   return (
     <div className="nav-pop" ref={ref}>
       <button
         className="avatar-btn"
-        aria-label="Profile menu"
+        aria-label="Menu"
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
         {initial}
       </button>
       {open && (
-        <div className="popover">
+        <div className="popover" role="menu">
           <div className="profile-head">
             <div className="avatar-lg">{initial}</div>
             <div>
@@ -303,6 +329,17 @@ function ProfileMenu() {
               <div className="profile-email">{user?.email}</div>
             </div>
           </div>
+          {sections.map((s) => (
+            <button
+              key={s.label}
+              className="menu-item"
+              aria-current={loc.pathname === s.to || undefined}
+              onClick={() => { setOpen(false); nav(s.to); }}
+            >
+              {s.label}
+            </button>
+          ))}
+          <div className="menu-divider" />
           <button className="menu-item" onClick={() => { setOpen(false); nav("/profile"); }}>
             View profile
           </button>
@@ -321,28 +358,16 @@ function ProfileMenu() {
   );
 }
 
-// Persistent links to the main sections, previously these were only
-// reachable through dashboard tiles, so users lost their way constantly.
+// Bottom tab bar links on phones: the essentials, always one thumb-tap away,
+// including emergency help. Desktop navigation lives in the avatar menu now,
+// so this is mobile-only.
 function SectionLinks({ className }: { className: string }) {
-  const { latest, phase, latestOpen } = useCases();
-  // With an active case, the two links resolve to that case's recommendations
-  // and inventory. With no case yet, they must stay distinct and must never
-  // both highlight as active: Plan starts a case, Inventory goes to the
-  // preparedness flow (pre-loss inventory lives there). Pointing them at the
-  // same path made the nav read as broken.
-  const planTo = latest ? `/cases/${latest.id}/recommendations` : "/cases/new";
-  // In recovery the user expects "Inventory" to open the inventory they are
-  // actively building for their open case, not the preparedness checklist.
-  // Only in the prepare phase does it land on the prep hub, which is the entry
-  // point into photographing rooms before anything has happened.
-  const inventoryTo =
-    phase === "recovery" && latestOpen
-      ? `/cases/${latestOpen.id}/inventory`
-      : "/prepare";
+  const { planTo, inventoryTo } = useSectionTargets();
+  const cls = ({ isActive }: { isActive: boolean }) => (isActive ? "active" : "");
   return (
     <nav className={className} aria-label="Main sections">
-      <NavLink to={planTo} end className={({ isActive }) => (isActive ? "active" : "")}>Plan</NavLink>
-      <NavLink to={inventoryTo} end className={({ isActive }) => (isActive ? "active" : "")}>Inventory</NavLink>
+      <NavLink to={planTo} end className={cls}>Plan</NavLink>
+      <NavLink to={inventoryTo} end className={cls}>Inventory</NavLink>
       <NavLink to="/emergency" className={({ isActive }) => (isActive ? "active urgent-link" : "urgent-link")}>
         Get help
       </NavLink>
@@ -405,13 +430,15 @@ function Nav() {
   const { user } = useAuth();
   return (
     <div className="nav">
-      <Link to={user ? "/home" : "/"} className="brand">Rebuildr</Link>
+      <Link to={user ? "/home" : "/"} className="brand">
+        <img className="brand-mark" src={`${import.meta.env.BASE_URL}brand/logo.png`} alt="" aria-hidden />
+        <span>Rebuildr</span>
+      </Link>
       <div className="row">
         {user ? (
           <>
             <PhaseChip />
-            <SectionLinks className="nav-links" />
-            <Link to="/dashboard" className="nav-dashboard">Dashboard</Link>
+            <NavLink to="/emergency" className={({ isActive }) => (isActive ? "nav-help active" : "nav-help")}>Get help</NavLink>
             <NotificationsButton />
             <ProfileMenu />
           </>
@@ -439,20 +466,23 @@ function MobileTabBar() {
 function ActionBar() {
   const { user } = useAuth();
   const loc = useLocation();
+  const back = usePageBack();
   if (!user) return null;
   if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
+  // Starting a case now lives inside the "Open a case" menu, so the right side
+  // of this row is where the current page's back button goes.
   return (
     <div className="actionbar">
       <CasePicker />
       <span className="spacer" />
-      <Link to="/cases/new"><button>+ Start a new case</button></Link>
+      {back && <BackButton to={back.to} label={back.label} />}
     </div>
   );
 }
 
 function Private({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="container"><Spinner /></div>;
+  if (loading) return <BrandLoader />;
   // Demo mode signs everyone in automatically, so there's no /login page; if a
   // session genuinely can't be established we send people to the landing page
   // rather than a route that no longer exists.
@@ -467,24 +497,31 @@ function Private({ children }: { children: JSX.Element }) {
 //
 // A brand-new user (no cases, no inventory) gets the one-time situational
 // welcome instead of the prepare hub. Everyone else auto-lands where they
-// left off: Dashboard once recovery is underway, the prepare hub otherwise.
+// left off: in recovery, straight into their active case (the case page is the
+// informative home now); the prepare hub otherwise. The Dashboard remains the
+// fallback when the only open case is still an unfinished draft.
 function Home() {
-  const { cases, myItems, phase, isNewUser } = useCases();
+  const { cases, myItems, phase, isNewUser, openCases } = useCases();
   if (cases === null || myItems === null) {
-    return <div className="container"><Spinner /></div>;
+    return <BrandLoader message="Loading your recovery space…" />;
   }
   if (phase === "prepare" && isNewUser) return <FirstRun />;
-  return phase === "prepare" ? <Prepare /> : <Dashboard />;
+  if (phase === "prepare") return <Prepare />;
+  const activeCase = openCases.find((c) => c.status === "active");
+  return activeCase ? <Navigate to={`/cases/${activeCase.id}`} replace /> : <Dashboard />;
 }
 
 export default function App() {
   return (
     <CasesProvider>
+      <PageBackProvider>
       <ToastProvider>
         <TermsGate>
           <OfflineBanner />
-          <Nav />
-          <ActionBar />
+          <header className="site-header">
+            <Nav />
+            <ActionBar />
+          </header>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/emergency" element={<Emergency />} />
@@ -506,6 +543,7 @@ export default function App() {
           <MobileTabBar />
         </TermsGate>
       </ToastProvider>
+      </PageBackProvider>
     </CasesProvider>
   );
 }

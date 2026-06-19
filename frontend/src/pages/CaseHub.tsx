@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, Case, ClaimStage, UserDocument } from "../api";
 import { Spinner } from "../components/Skeleton";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { useCases } from "../lib/CasesContext";
 import { useToast } from "../components/Toast";
 import ClaimLifecycle from "../components/claim/ClaimLifecycle";
@@ -26,6 +26,15 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "coverage", label: "Coverage" },
 ];
 
+// The at-a-glance figures the dashboard used to carry, now shown on the case
+// itself so the case page is the single, more informative status hub.
+type Metrics = {
+  assetValue: number;
+  aleTotal: number;
+  nextDeadlineDays: number | null;
+  pendingTasks: number | null;
+};
+
 export default function CaseHub() {
   const { id } = useParams();
   const { refresh } = useCases();
@@ -37,6 +46,7 @@ export default function CaseHub() {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -47,6 +57,38 @@ export default function CaseHub() {
   useEffect(() => {
     api.listMyDocuments().then((r) => setDocuments(r.documents)).catch(() => setDocuments([]));
   }, []);
+
+  // Status numbers for the strip. Best-effort, only for a real (non-draft)
+  // case. Items are home-scoped; ALE and the plan are per-case.
+  useEffect(() => {
+    if (!id || !c || c.status === "draft") { setMetrics(null); return; }
+    let cancelled = false;
+    (async () => {
+      const [items, ale, recs] = await Promise.allSettled([
+        api.listMyItems(),
+        api.listAleExpenses(id),
+        api.getRecommendations(id),
+      ]);
+      if (cancelled) return;
+      const assetValue =
+        items.status === "fulfilled"
+          ? items.value.items.reduce((s, it) => s + (it.estimated_value ?? 0), 0)
+          : 0;
+      const aleTotal = ale.status === "fulfilled" ? ale.value.total : 0;
+      let nextDeadlineDays: number | null = null;
+      let pendingTasks: number | null = null;
+      if (recs.status === "fulfilled") {
+        const days = (recs.value.deadline_radar ?? [])
+          .map((r) => r.days_until_deadline)
+          .filter((d): d is number => d != null && d >= 0)
+          .sort((a, b) => a - b);
+        nextDeadlineDays = days.length > 0 ? days[0] : null;
+        pendingTasks = (recs.value.todo ?? []).filter((r) => r.status !== "done").length;
+      }
+      setMetrics({ assetValue, aleTotal, nextDeadlineDays, pendingTasks });
+    })();
+    return () => { cancelled = true; };
+  }, [id, c?.status]);
 
   async function saveName() {
     if (!id || !c) return;
@@ -90,7 +132,7 @@ export default function CaseHub() {
 
   return (
     <div className="container">
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to="/dashboard" label="Dashboard" />
       <div className="row" style={{ marginTop: 16, alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {renaming ? (
@@ -147,6 +189,39 @@ export default function CaseHub() {
 
       {tab === "overview" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {c.status !== "draft" && (
+            <div className="metric-strip">
+              <Metric
+                label="Logged asset value"
+                value={metrics ? `$${metrics.assetValue.toLocaleString()}` : "…"}
+                hint={metrics && metrics.assetValue === 0 ? { text: "Add photos", to: `/cases/${c.id}/inventory` } : undefined}
+              />
+              <Metric
+                label="Living expenses"
+                value={metrics ? `$${metrics.aleTotal.toLocaleString()}` : "…"}
+                hint={metrics && metrics.aleTotal === 0 ? { text: "Log a receipt", onClick: () => setTab("expenses") } : undefined}
+              />
+              <Metric
+                label="Next deadline"
+                value={
+                  !metrics
+                    ? "…"
+                    : metrics.nextDeadlineDays == null
+                      ? "None tracked"
+                      : metrics.nextDeadlineDays === 0
+                        ? "Due today"
+                        : `${metrics.nextDeadlineDays} day${metrics.nextDeadlineDays === 1 ? "" : "s"}`
+                }
+                hint={metrics && metrics.nextDeadlineDays == null ? { text: "See your plan", to: `/cases/${c.id}/recommendations` } : undefined}
+              />
+              <Metric
+                label="Pending tasks"
+                value={!metrics ? "…" : metrics.pendingTasks == null ? "-" : String(metrics.pendingTasks)}
+                hint={metrics && metrics.pendingTasks ? { text: "Open plan", to: `/cases/${c.id}/recommendations` } : undefined}
+              />
+            </div>
+          )}
+
           <ClaimLifecycle stage={c.claim_stage} onChange={setStage} />
 
           <div className="grid grid-2" style={{ alignItems: "start" }}>
@@ -191,6 +266,34 @@ export default function CaseHub() {
           <CoverageDecisions caseDoc={c} onChange={onCaseChange} />
           <ReferralChain disasterType={c.disaster_type} />
         </div>
+      )}
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: { text: string; to?: string; onClick?: () => void };
+}) {
+  return (
+    <div className="metric">
+      <span className="metric-label">{label}</span>
+      <span className="metric-value">{value}</span>
+      {hint ? (
+        hint.to ? (
+          <Link to={hint.to} className="metric-hint">{hint.text}</Link>
+        ) : (
+          <button type="button" className="metric-hint metric-hint-btn" onClick={hint.onClick}>
+            {hint.text}
+          </button>
+        )
+      ) : (
+        <span className="metric-hint-spacer" aria-hidden />
       )}
     </div>
   );

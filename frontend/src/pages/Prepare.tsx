@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { useCases } from "../lib/CasesContext";
 import { useStartRecovery } from "../lib/useStartRecovery";
 
@@ -93,7 +93,7 @@ export default function Prepare() {
 
   return (
     <div className="container" style={{ maxWidth: 820 }}>
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to="/dashboard" label="Dashboard" />
       <h1 style={{ marginTop: 16 }}>Get ready before anything happens</h1>
       <p className="warm-note" style={{ marginTop: 8 }}>
         A little preparation now makes any future claim far easier. Two things

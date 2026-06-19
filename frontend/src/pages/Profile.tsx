@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, MeResponse } from "../api";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { Hint } from "../components/Hint";
 import { LocationAutocomplete } from "../components/LocationAutocomplete";
 import { useAuth } from "../auth/AuthContext";
@@ -53,7 +53,7 @@ export default function Profile() {
 
   return (
     <div className="container" style={{ maxWidth: 720 }}>
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to="/dashboard" label="Dashboard" />
       <h1 style={{ marginTop: 16 }}>Your profile</h1>
       <p className="warm-note" style={{ marginTop: 8 }}>
         A little about you, so we can tailor the help to your situation.
@@ -144,7 +144,7 @@ export default function Profile() {
               </label>
               <input
                 value={form.full_name}
-                placeholder="e.g. Saachi Gupta"
+                placeholder="e.g. Jane Doe"
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
               />
 

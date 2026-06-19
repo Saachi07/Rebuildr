@@ -117,21 +117,47 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 
 .container { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
 
+/* One sticky, frosted-glass header holding both the primary nav row and the
+   contextual sub-bar, so they read as a single unit with a single divider.
+   The blur keeps page content legible as it scrolls underneath. */
+.site-header {
+  position: sticky; top: 0; z-index: 160;
+  background: rgba(250, 246, 239, 0.82);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Inner rows align to the same width as page content, so the brand sits on
+   the same vertical line as the page heading below it. */
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 24px; border-bottom: 1px solid var(--border);
+  gap: 16px; max-width: 960px; margin: 0 auto;
+  padding: 12px 20px;
 }
-.nav .brand { font-weight: 700; font-size: 20px; }
+.nav .brand {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-weight: 700; font-size: 20px; letter-spacing: -0.01em;
+  color: var(--text);
+}
+.nav .brand:hover { color: var(--accent); }
+.brand-mark {
+  width: 30px; height: 30px; object-fit: contain;
+  display: block; flex: none;
+}
 .nav a { font-size: 15px; }
 
-/* Persistent links to the main sections (desktop) */
-.nav-links { display: flex; gap: 18px; align-items: center; margin-right: 8px; }
-.nav-links a { color: var(--muted-strong); font-weight: 500; padding: 6px 2px; }
-.nav-links a:hover { color: var(--text); }
-.nav-links a.active { color: var(--text); border-bottom: 2px solid var(--accent); }
-.nav-links a.urgent-link, .urgent-link { color: var(--danger-text); font-weight: 600; }
-.nav-dashboard { color: var(--muted-strong); font-weight: 500; }
-.nav-dashboard:hover { color: var(--text); }
+.urgent-link { color: var(--danger-text); font-weight: 600; }
+
+/* The one standalone section link kept in the header (sections now live in the
+   avatar menu): emergency help, always visible and one tap away on desktop. */
+.nav-help {
+  color: var(--danger-text); font-weight: 600; line-height: 1;
+  padding: 8px 12px; border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.nav-help:hover, .nav-help.active { background: var(--danger-soft); }
+@media (max-width: 700px) { .nav-help { display: none; } }
 
 /* Bottom tab bar (mobile): Plan / Inventory / Documents / Get help,
    always one thumb-tap away. */
@@ -222,10 +248,15 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .rec-accordion summary h2 { margin: 0; font-size: 18px; }
 .rec-accordion > .card { margin-left: 0; margin-right: 0; }
 
+/* Contextual sub-bar: case picker on the left, page back on the right. Quieter
+   than the primary row and borderless, since the header already carries the
+   single divider beneath both rows. A hairline separates the two rows. */
 .actionbar {
   display: flex; gap: 10px;
-  padding: 12px 24px; border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  max-width: 960px; margin: 0 auto;
+  padding: 10px 20px;
+  background: transparent;
+  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -275,6 +306,22 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   animation: spin 0.8s linear infinite; margin: 24px auto;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Branded loading screen: the animated Rebuildr logo (transparent webp) on the
+   app's cream background, used in place of a bare spinner for auth/phase loads. */
+.brand-loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; padding: 40px 20px;
+}
+.brand-loader-full { min-height: 70vh; }
+.brand-loader-anim { width: min(260px, 60vw); height: auto; display: block; }
+.brand-loader-msg { color: var(--muted-strong); font-size: 16px; margin: 0; }
+
+/* Hero logo on the landing page, above the headline. */
+.hero-logo {
+  width: min(160px, 42vw); height: auto; display: block;
+  margin: 0 auto 24px;
+}
 
 .notice {
   background: var(--panel-2); border: 1px solid var(--border);
@@ -371,6 +418,10 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 }
 .menu-item:hover { background: var(--panel-2); }
 .menu-item.danger-text { color: var(--danger-text); }
+/* Subtle marker for the section you're currently on (no heavy fill). */
+.menu-item[aria-current] { color: var(--accent-2); font-weight: 600; }
+/* Separates the navigation sections from the account actions in the menu. */
+.menu-divider { height: 1px; background: var(--border); margin: 6px 6px; }
 
 /* In-table row action menu (extracted from inline styles) */
 .row-menu {
@@ -395,6 +446,11 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 }
 .metric-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.2; }
 .metric-hint { font-size: 13px; color: var(--focus); text-decoration: underline; font-weight: 600; }
+/* The button variant (e.g. "Log a receipt" switches tabs) looks like the link. */
+.metric-hint-btn {
+  background: none; border: 0; padding: 0; min-height: 0;
+  cursor: pointer; text-align: left; font-family: inherit; align-self: flex-start;
+}
 .metric-hint-spacer { min-height: 18px; }
 
 .dashboard-tiles { margin-top: 16px; }
@@ -758,7 +814,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 /* ---- Print: the plan and inventory become claim paperwork ---- */
 @media print {
   body { background: white; color: black; }
-  .nav, .actionbar, .help-footer, .tabbar, .no-print, .back-btn,
+  .site-header, .nav, .actionbar, .help-footer, .tabbar, .no-print, .back-btn,
   .toast-stack, .offline-banner { display: none !important; }
   .card, .tile, .tbl, .rec-accordion { border-color: #999; background: white; color: black; }
   .muted, .muted-strong, .warm-note { color: #333; }
@@ -785,8 +841,6 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 
 /* ---- Mobile niceties ---- */
 @media (max-width: 700px) {
-  .nav-links { display: none; }
-  .nav-dashboard { display: none; }
   .tabbar { display: flex; }
   /* The Help tab replaces the dismissible footer bar on phones. */
   .help-footer { display: none; }

@@ -161,7 +161,7 @@ export default function Dashboard() {
           // A draft is a recovery the user started but has not confirmed yet.
           // Send it back to the intake to finish, and label it plainly.
           const isDraft = c.status === "draft";
-          const to = isDraft ? "/cases/new" : `/cases/${c.id}/recommendations`;
+          const to = isDraft ? "/cases/new" : `/cases/${c.id}`;
           return (
             <Link key={c.id} to={to} className="card tile">
               <h3>{c.case_name || "Untitled recovery"}</h3>

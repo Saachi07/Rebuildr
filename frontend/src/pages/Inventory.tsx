@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, ClaimClass, Item, RoomScan, Salvageable, ScannedItem } from "../api";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { Hint } from "../components/Hint";
 import { useToast } from "../components/Toast";
 import { useDismissable } from "../lib/useDismissable";
@@ -557,7 +557,7 @@ export default function Inventory() {
 
   return (
     <div className="container">
-      <BackButton to={id ? `/cases/${id}/recommendations` : "/dashboard"} label="Your plan" />
+      <PageBack to={id ? `/cases/${id}/recommendations` : "/dashboard"} label="Your plan" />
       <div className="row" style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>What you lost</h1>
         <span className="spacer" />

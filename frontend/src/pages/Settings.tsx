@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, Case } from "../api";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../auth/AuthContext";
 
@@ -84,7 +84,7 @@ export default function Settings() {
 
   return (
     <div className="container" style={{ maxWidth: 720 }}>
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to="/dashboard" label="Dashboard" />
       <h1 style={{ marginTop: 16 }}>Settings</h1>
 
       {err && <div className="error">{err}</div>}

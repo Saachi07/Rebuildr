@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, CaseReadiness, PersonalizeHint, RecGroups, Recommendation, RecStatus } from "../api";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { PersonalizeCard, ResolvedHint } from "../components/IntakeQuestions";
 
 // Friendly, recovery-phase-ordered category headers. Raw resource types
@@ -173,7 +173,7 @@ export default function Recommendations() {
 
   return (
     <div className="container plan-page">
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to={id ? `/cases/${id}` : "/dashboard"} label="Case" />
       <div className="row" style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Your recovery plan</h1>
         <span className="spacer" />

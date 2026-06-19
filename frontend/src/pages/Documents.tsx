@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, CoverageLimit, GeminiAnalysis, RichAnalysis, UserDocument } from "../api";
 import { Spinner } from "../components/Skeleton";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { Modal, ConfirmDialog } from "../components/Modal";
 import { useToast } from "../components/Toast";
 import { useCases } from "../lib/CasesContext";
@@ -170,7 +170,7 @@ export default function Documents() {
 
   return (
     <div className="container">
-      <BackButton to="/dashboard" label="Dashboard" />
+      <PageBack to="/dashboard" label="Dashboard" />
       <div className="row" style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Your documents</h1>
       </div>

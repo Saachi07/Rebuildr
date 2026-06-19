@@ -133,6 +133,7 @@ export default function Landing() {
   return (
     <div className="container">
       <div className="hero">
+        <img className="hero-logo" src={`${BASE}brand/logo.png`} alt="Rebuildr" />
         <h1>You're not doing this alone.</h1>
         <p className="warm">
           Rebuildr helps you document what you lost, understand your insurance,

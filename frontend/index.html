@@ -2,11 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/brand/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#faf6ef" />
     <title>Rebuildr</title>
+    <style>
+      /* First-paint splash, shown before the app bundle hydrates and removed
+         by main.tsx once React mounts. Cream matches the app background and the
+         logo animation is transparent, so there is no seam or flash. */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #faf6ef;
+        transition: opacity 0.45s ease;
+      }
+      #app-splash.app-splash-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #app-splash img {
+        width: min(300px, 64vw);
+        height: auto;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="app-splash">
+      <img src="/brand/logo-anim.webp" alt="Rebuildr" />
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

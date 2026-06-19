@@ -12,7 +12,7 @@ export function BackButton({ to, label = "Back" }: { to?: string; label?: string
       onClick={() => (to ? nav(to) : nav(-1))}
       aria-label={to ? `Go back to ${label}` : "Go back to the previous page"}
     >
-      ← {label}
+      {label} →
     </button>
   );
 }

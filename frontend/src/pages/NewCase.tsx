@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { Hint } from "../components/Hint";
 import { LocationAutocomplete } from "../components/LocationAutocomplete";
 import { Spinner } from "../components/Skeleton";
@@ -99,7 +99,9 @@ export default function NewCase() {
     const t = setTimeout(() => {
       api
         .updateCase(draftId, {
-          case_name: form.case_name,
+          // Fall back to the suggested name so an in-progress draft shows a
+          // sensible label instead of "Untitled"; a name the user typed wins.
+          case_name: form.case_name.trim() || suggestedName(),
           disaster_type: form.disaster_type,
           location: form.location,
           incident_date: form.incident_date || null,
@@ -183,7 +185,7 @@ export default function NewCase() {
 
   return (
     <div className="container" style={{ maxWidth: 620 }}>
-      <BackButton to="/prepare" label="Prepare" />
+      <PageBack to="/prepare" label="Prepare" />
       <h1 style={{ marginTop: 16 }}>Tell us what happened</h1>
       <p className="warm-note">
         One thing at a time. Everything you type saves as you go, so you can

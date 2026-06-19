@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
+import { PageBack } from "../lib/PageBackContext";
 import { useAuth } from "../auth/AuthContext";
 
 type Contact = {
@@ -68,7 +69,12 @@ export default function Emergency() {
   const { user } = useAuth();
   return (
     <div className="container">
-      <BackButton to={user ? "/dashboard" : "/"} label={user ? "Dashboard" : "Home"} />
+      {user ? (
+        <PageBack to="/dashboard" label="Dashboard" />
+      ) : (
+        // Public, signed-out view has no action bar, so keep an inline back.
+        <BackButton to="/" label="Home" />
+      )}
       <div style={{ marginTop: 16 }}>
         <h1 style={{ margin: 0 }}>Get help now</h1>
       </div>
