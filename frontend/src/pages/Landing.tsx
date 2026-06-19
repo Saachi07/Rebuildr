@@ -10,26 +10,29 @@ import { useAuth } from "../auth/AuthContext";
 
 // Three product pillars, each shown with a real screenshot mockup. Detail lives
 // on the inner pages, so each pillar links out rather than explaining in full.
+// Image paths are prefixed with BASE_URL so they resolve under the GitHub Pages
+// subpath (/Rebuildr/) as well as at the local-dev root (/).
+const BASE = import.meta.env.BASE_URL;
 const PILLARS = [
   {
     title: "List what you lost",
     body: "Photograph a room and our AI builds a claim-ready inventory with values.",
     // Drop a screenshot of the inventory scan result here (PNG, ~390px wide).
-    img: "/landing/mockup-inventory.png",
+    img: `${BASE}landing/mockup-inventory.png`,
     alt: "Rebuildr inventory: a scanned room with itemized values",
   },
   {
     title: "Read your insurance, for you",
     body: "Upload your policy and we pull out coverage, deductibles, and deadlines in plain language.",
     // Drop a screenshot of the document analysis summary here.
-    img: "/landing/mockup-policy.png",
+    img: `${BASE}landing/mockup-policy.png`,
     alt: "Rebuildr policy analysis: plain-language summary with deadlines",
   },
   {
     title: "A plan, one step at a time",
     body: "Everything becomes a clear set of next steps, with the dates that matter.",
     // Drop a screenshot of the recommendations / plan view here.
-    img: "/landing/mockup-plan.png",
+    img: `${BASE}landing/mockup-plan.png`,
     alt: "Rebuildr recovery plan: prioritized next steps",
   },
 ];
@@ -70,14 +73,12 @@ const ALBERTA_DESK = [
 const TESTIMONIALS = [
   {
     quote: "",
-    name: "",
-    attribution: "— Fire survivor (name withheld by request)",
+    name: "Fire survivor (name withheld by request)",
     placeholder: "The insurance process after a house fire has been stressful — identifying everything I owned and estimating its value. I wish there were AI tools to help streamline that task.",
   },
   {
     quote: "",
-    name: "",
-    attribution: "— Dr. Peter Silverstone, University of Alberta",
+    name: "Dr. Peter Silverstone, University of Alberta",
     placeholder: "Preparation is crucial. Are the photos important? Do you have them stored elsewhere? What about financial documents? What happens if you get locked out? Are there mementos that are really important?",
   },
 ];
@@ -223,10 +224,7 @@ export default function Landing() {
               <figcaption>
                 <span className="testimonial-avatar" aria-hidden />
                 <span>
-                  <strong>{t.name || "Name to come"}</strong>
-                  <span className="muted-strong" style={{ display: "block", fontSize: 13 }}>
-                    {t.attribution}
-                  </span>
+                  <strong>{t.name}</strong>
                 </span>
               </figcaption>
             </figure>
