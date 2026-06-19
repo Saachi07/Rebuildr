@@ -438,6 +438,7 @@ function Nav() {
         {user ? (
           <>
             <PhaseChip />
+            <CasePicker />
             <NavLink to="/emergency" className={({ isActive }) => (isActive ? "nav-help active" : "nav-help")}>Get help</NavLink>
             <NotificationsButton />
             <ProfileMenu />
@@ -469,13 +470,14 @@ function ActionBar() {
   const back = usePageBack();
   if (!user) return null;
   if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
-  // Starting a case now lives inside the "Open a case" menu, so the right side
-  // of this row is where the current page's back button goes.
+  // The case picker now lives in the main nav row. This sub-bar only carries
+  // the current page's back button, so when there's nothing to go back to we
+  // drop the whole row rather than show an empty bordered strip.
+  if (!back) return null;
   return (
     <div className="actionbar">
-      <CasePicker />
       <span className="spacer" />
-      {back && <BackButton to={back.to} label={back.label} />}
+      <BackButton to={back.to} label={back.label} />
     </div>
   );
 }

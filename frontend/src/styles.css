@@ -115,7 +115,7 @@ input:focus, select:focus, textarea:focus {
 }
 label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14px 0 6px; font-weight: 500; }
 
-.container { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
+.container { max-width: none; margin: 0; padding: 24px 32px 80px; }
 
 /* One sticky, frosted-glass header holding both the primary nav row and the
    contextual sub-bar, so they read as a single unit with a single divider.
@@ -132,8 +132,8 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
    the same vertical line as the page heading below it. */
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; max-width: 960px; margin: 0 auto;
-  padding: 12px 20px;
+  gap: 16px; max-width: none; margin: 0;
+  padding: 12px 32px;
 }
 .nav .brand {
   display: inline-flex; align-items: center; gap: 9px;
@@ -253,8 +253,8 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
    single divider beneath both rows. A hairline separates the two rows. */
 .actionbar {
   display: flex; gap: 10px;
-  max-width: 960px; margin: 0 auto;
-  padding: 10px 20px;
+  max-width: none; margin: 0;
+  padding: 10px 32px;
   background: transparent;
   border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   align-items: center;

@@ -1,8 +1,8 @@
 // Branded loading screen: the animated Rebuildr logo on the app's cream
 // background. Used for the auth/phase loading states that previously showed a
-// bare spinner. The animation is transparent (webp), with the gif as a
-// fallback for browsers without animated-webp support. Motion-sensitive users
-// get the static logo instead of the looping animation.
+// bare spinner. The animation is a transparent webp so it sits on the page
+// with no background rectangle. Motion-sensitive users get the static logo
+// instead of the looping animation.
 const BASE = import.meta.env.BASE_URL;
 
 function prefersReducedMotion(): boolean {
@@ -21,14 +21,11 @@ export function BrandLoader({
   const reduce = prefersReducedMotion();
   return (
     <div className={full ? "brand-loader brand-loader-full" : "brand-loader"} role="status" aria-live="polite">
-      {reduce ? (
-        <img className="brand-loader-anim" src={`${BASE}brand/logo.png`} alt="Rebuildr" />
-      ) : (
-        <picture>
-          <source srcSet={`${BASE}brand/logo-anim.webp`} type="image/webp" />
-          <img className="brand-loader-anim" src={`${BASE}brand/logo-anim.gif`} alt="Rebuildr" />
-        </picture>
-      )}
+      <img
+        className="brand-loader-anim"
+        src={`${BASE}brand/${reduce ? "logo.png" : "logo-anim.webp"}`}
+        alt="Rebuildr"
+      />
       {message && <p className="brand-loader-msg">{message}</p>}
     </div>
   );
