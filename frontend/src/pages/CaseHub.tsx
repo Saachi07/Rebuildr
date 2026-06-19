@@ -153,8 +153,17 @@ export default function CaseHub() {
           ) : (
             <div className="row" style={{ gap: 10, alignItems: "center" }}>
               <h1 style={{ margin: 0 }}>{c.case_name}</h1>
-              <button className="secondary no-print" style={{ minHeight: 32, padding: "4px 12px", fontSize: 13 }} onClick={() => setRenaming(true)}>
-                Rename
+              <button
+                className="secondary no-print"
+                style={{ minHeight: 32, width: 32, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                onClick={() => setRenaming(true)}
+                aria-label="Rename case"
+                title="Rename case"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+                </svg>
               </button>
             </div>
           )}

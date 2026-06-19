@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import { ClaimStage } from "../../api";
 import "../../styles/claims.css";
 
@@ -27,11 +28,34 @@ export default function ClaimLifecycle({
   const effective: ClaimStage = denied ? "adjuster_assigned" : current;
   const currentIndex = Math.max(0, STAGES.findIndex((s) => s.key === effective));
 
-  // Layout maths for the SVG road.
-  const width = 720;
+  // The SVG scales uniformly to its rendered width, so to elongate the road
+  // across a full-width container WITHOUT enlarging the markers, labels, figure,
+  // or overall height, we hold the scale constant and only stretch the road's
+  // coordinate space. SCALE is the marker-to-pixel ratio the road read at
+  // before going full-width; viewBox width = measured px width / SCALE keeps
+  // every element at that same size while the gaps between stages grow.
+  const SCALE = 1.29;
   const height = 150;
   const padX = 40;
   const roadY = 92;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [renderW, setRenderW] = useState(900);
+  useLayoutEffect(() => {
+    const el = svgRef.current;
+    if (!el || typeof ResizeObserver === "undefined") {
+      if (el) setRenderW(el.clientWidth || 900);
+      return;
+    }
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (w && w > 0) setRenderW(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Coordinate-space width. Clamped so a very narrow screen still reads sensibly.
+  const width = Math.max(560, renderW / SCALE);
   const step = STAGES.length > 1 ? (width - padX * 2) / (STAGES.length - 1) : 0;
   const x = (i: number) => padX + i * step;
   const walkerX = x(currentIndex);
@@ -39,6 +63,7 @@ export default function ClaimLifecycle({
   return (
     <div className="lifecycle">
       <svg
+        ref={svgRef}
         className="lifecycle-svg"
         viewBox={`0 0 ${width} ${height}`}
         role="group"

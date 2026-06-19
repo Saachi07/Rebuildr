@@ -26,6 +26,13 @@
   --status-damaged-text: #a8452e;
   --status-ok-bg: rgba(47, 125, 91, 0.16);
   --status-ok-text: #2f7d5b;
+
+  /* Warm-tinted elevation. Shadows are brown rather than neutral grey so they
+     sit in the same family as the cream surfaces and read as soft, intentional
+     stacked paper, not a generic drop shadow. */
+  --shadow-sm: 0 1px 2px rgba(58, 48, 39, 0.05), 0 2px 6px rgba(58, 48, 39, 0.05);
+  --shadow-md: 0 4px 16px rgba(58, 48, 39, 0.09);
+  --shadow-lg: 0 16px 40px rgba(58, 48, 39, 0.16);
 }
 
 /* The warm theme reads well in daylight (at a damaged property, outdoors) and
@@ -65,11 +72,33 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
+  /* A faint light wash at the very top fades out within the first screenful, so
+     the page reads as a sheet catching light near the header rather than a flat
+     fill. Subtle on purpose: it should register as calm depth, not decoration. */
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 280px);
+  background-repeat: no-repeat;
   color: var(--text);
   font-size: 16px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 a { color: inherit; text-decoration: none; }
+
+/* Deliberate heading scale. Most page titles previously inherited the browser
+   default sizing; giving headings intentional size, weight, tracking and
+   balanced wrapping is what turns "default document" into a designed page.
+   Only typographic properties are set here (no margins), so existing per-page
+   spacing and inline font-size overrides are left untouched. */
+h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; }
+h1 {
+  font-size: clamp(28px, 1.4rem + 1.4vw, 34px);
+  letter-spacing: -0.021em; line-height: 1.15;
+}
+h2 { font-size: 22px; letter-spacing: -0.014em; }
+h3 { font-size: 18px; letter-spacing: -0.008em; line-height: 1.3; }
+h1, h2 { text-wrap: balance; }
 button {
   background: var(--accent);
   color: white;
@@ -80,15 +109,31 @@ button {
   font-size: 15px;
   font-weight: 600;
   min-height: 44px;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
-button:hover { background: var(--accent-2); }
+button:hover { background: var(--accent-2); box-shadow: var(--shadow-md); }
+/* A small press displacement gives tactile confirmation, reassuring for a
+   stressed user who needs to know the tap registered. */
+button:active { transform: translateY(1px); box-shadow: var(--shadow-sm); }
 button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-button.secondary { background: var(--panel-2); color: var(--text); }
-button.secondary:hover { background: var(--border); }
-button.ghost { background: transparent; color: var(--text); }
-button.ghost:hover { background: var(--panel-2); }
+button.secondary { background: var(--panel-2); color: var(--text); box-shadow: none; }
+button.secondary:hover { background: var(--border); box-shadow: none; }
+button.ghost { background: transparent; color: var(--text); box-shadow: none; }
+button.ghost:hover { background: var(--panel-2); box-shadow: none; }
 button.danger { background: var(--danger); }
 button.big { padding: 16px 24px; font-size: 17px; min-height: 56px; }
+/* Flat utility controls (links, tabs, menu rows, header pills) share the base
+   <button> but are styled to read flat, so they opt out of the elevation the
+   filled action buttons carry, in both resting and hover states. */
+:is(.link-btn, .phase-chip, .filter-tab, .toggle-group button, .choice-card,
+.room-toggle, .board-add, .menu-item, .hint-btn, .close-x, .password-toggle,
+.metric-hint-btn, .case-picker, .back-btn, .toast-action, .row-menu button),
+:is(.link-btn, .phase-chip, .filter-tab, .toggle-group button, .choice-card,
+.room-toggle, .board-add, .menu-item, .hint-btn, .close-x, .password-toggle,
+.metric-hint-btn, .case-picker, .back-btn, .toast-action, .row-menu button):hover {
+  box-shadow: none;
+}
 button:disabled { opacity: 0.55; cursor: not-allowed; }
 button.chip-btn { padding: 6px 12px; font-size: 13px; min-height: 32px; }
 .link-btn {
@@ -108,6 +153,7 @@ input, select, textarea {
   width: 100%;
   font-family: inherit;
 }
+input, select, textarea { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 input:focus, select:focus, textarea:focus {
   outline: 3px solid var(--focus);
   outline-offset: 1px;
@@ -181,6 +227,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   border-radius: 14px;
   padding: 22px;
   margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
 }
 /* Colored-edge variants (replaces scattered hard-coded hex borders) */
 .accent-card { border-left: 4px solid var(--accent); }
@@ -202,8 +249,9 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   background: var(--panel-2); border: 1px solid var(--border);
   border-radius: 14px; padding: 22px; cursor: pointer;
   display: block;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
-.tile:hover { border-color: var(--accent); }
+.tile:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .tile h3 { margin: 0 0 6px; font-size: 18px; }
 .tile p { margin: 0; color: var(--muted-strong); font-size: 14px; }
 .step-num {
@@ -297,6 +345,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 14px; padding: 28px; max-width: 560px; width: 100%;
   max-height: 86vh; overflow: auto;
+  box-shadow: var(--shadow-lg);
 }
 .modal:focus { outline: none; }
 
@@ -464,9 +513,10 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .big-tile {
   display: flex; flex-direction: column;
   padding: 28px; min-height: 180px;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.big-tile:hover { transform: translateY(-2px); border-color: var(--accent); }
+.big-tile { box-shadow: var(--shadow-sm); }
+.big-tile:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow-md); }
 .big-tile-icon { font-size: 36px; margin-bottom: 12px; }
 .big-tile h2 { margin: 0 0 8px; font-size: 22px; }
 .big-tile p { margin: 0; color: var(--muted-strong); font-size: 15px; line-height: 1.5; }
@@ -814,8 +864,9 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; }
   .spinner { animation-duration: 2s; }
-  .big-tile, .meter-fill, .rec-accordion summary::after { transition: none; }
-  .big-tile:hover { transform: none; }
+  .big-tile, .meter-fill, .rec-accordion summary::after,
+  button, .tile { transition: none; }
+  .big-tile:hover, .tile:hover, button:active { transform: none; }
 }
 
 /* ---- Print: the plan and inventory become claim paperwork ---- */
