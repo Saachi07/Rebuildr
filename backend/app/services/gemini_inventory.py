@@ -35,6 +35,40 @@ class ModelOverloaded(RuntimeError):
 def _is_transient(exc: Exception) -> bool:
     return any(marker in str(exc) for marker in _TRANSIENT_MARKERS)
 
+
+# Phone photos are often 4-12 MB and 4000px+ wide, which makes both the upload
+# and the vision model slower while adding no accuracy for room/damage scans.
+# Gemini gets no extra signal above ~1568px, so we downscale and re-encode as
+# JPEG before sending.
+_MAX_DIMENSION = 1568
+_JPEG_QUALITY = 85
+
+
+def _compress_for_model(image_bytes: bytes) -> Image.Image:
+    """Downscale to a sane max dimension and re-encode, returning a PIL image
+    ready to hand to Gemini. Falls back to the original on any decode issue."""
+    image = Image.open(io.BytesIO(image_bytes))
+    # Respect EXIF orientation so rotated phone photos analyze correctly, then
+    # flatten to RGB (JPEG can't hold alpha / palette modes).
+    from PIL import ImageOps
+
+    image = ImageOps.exif_transpose(image)
+    if image.mode not in ("RGB", "L"):
+        image = image.convert("RGB")
+
+    longest = max(image.size)
+    if longest > _MAX_DIMENSION:
+        scale = _MAX_DIMENSION / longest
+        new_size = (round(image.width * scale), round(image.height * scale))
+        image = image.resize(new_size, Image.LANCZOS)
+
+    # Round-trip through JPEG so the bytes Gemini receives are actually smaller,
+    # not just a resized-in-memory object.
+    buf = io.BytesIO()
+    image.convert("RGB").save(buf, format="JPEG", quality=_JPEG_QUALITY, optimize=True)
+    buf.seek(0)
+    return Image.open(buf)
+
 # Shared prompt block: Canadian homeowner policy conventions for deciding
 # whether an item is claimed as contents (personal property) or as part of
 # the building (dwelling coverage). Mirrored by classify_claim_class below,
@@ -271,7 +305,7 @@ def analyze_room_photo(
     from .gemini_schema import to_gemini_schema
 
     client = genai.Client(api_key=api_key)
-    image = Image.open(io.BytesIO(image_bytes))
+    image = _compress_for_model(image_bytes)
     prompt = {"pre": PRE_PROMPT, "post": POST_PROMPT, "auto": AUTO_PROMPT}[pre_post]
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
