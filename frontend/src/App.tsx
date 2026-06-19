@@ -470,13 +470,12 @@ function ActionBar() {
   const back = usePageBack();
   if (!user) return null;
   if (loc.pathname.startsWith("/login") || loc.pathname.startsWith("/legal")) return null;
-  // The case picker now lives in the main nav row. This sub-bar only carries
-  // the current page's back button, so when there's nothing to go back to we
-  // drop the whole row rather than show an empty bordered strip.
+  // The case picker now lives in the main nav row, so there's no sub-bar left.
+  // The page's back control floats over the top-left of the content instead of
+  // sitting in a full-width strip; nothing renders when there's no back target.
   if (!back) return null;
   return (
-    <div className="actionbar">
-      <span className="spacer" />
+    <div className="back-fab">
       <BackButton to={back.to} label={back.label} />
     </div>
   );

@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-// Back navigation lives in the global header (the action bar), far right on the
-// same row as the case picker, so the top of every page is just its title and
-// content. Each page declares where "back" goes by rendering <PageBack>, which
-// registers the target here; the action bar reads it and draws the button.
+// Back navigation is a floating button anchored to the top-left of the page,
+// just below the header. Each page declares where "back" goes by rendering
+// <PageBack>, which registers the target here; the header reads it and draws
+// the floating button.
 type Back = { to?: string; label?: string } | null;
 
 const Ctx = createContext<{ back: Back; setBack: (b: Back) => void }>({
@@ -20,13 +20,16 @@ export function usePageBack(): Back {
   return useContext(Ctx).back;
 }
 
-// Declarative, renders nothing. A page mounts this to register its back target
-// and clears it on unmount, so a page with no <PageBack> shows no back button.
+// A page mounts this to register its back target (drawn as a floating button by
+// the header) and clears it on unmount, so a page with no <PageBack> shows no
+// button. It also renders a small spacer reserving room at the top of the page
+// so the floating button never overlaps the page title, scoped to exactly the
+// pages that have a back target.
 export function PageBack({ to, label }: { to?: string; label?: string }) {
   const { setBack } = useContext(Ctx);
   useEffect(() => {
     setBack({ to, label });
     return () => setBack(null);
   }, [to, label, setBack]);
-  return null;
+  return <div className="back-fab-spacer" aria-hidden />;
 }

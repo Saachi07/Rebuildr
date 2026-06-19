@@ -248,19 +248,6 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 .rec-accordion summary h2 { margin: 0; font-size: 18px; }
 .rec-accordion > .card { margin-left: 0; margin-right: 0; }
 
-/* Contextual sub-bar: case picker on the left, page back on the right. Quieter
-   than the primary row and borderless, since the header already carries the
-   single divider beneath both rows. A hairline separates the two rows. */
-.actionbar {
-  display: flex; gap: 10px;
-  max-width: none; margin: 0;
-  padding: 10px 32px;
-  background: transparent;
-  border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-  align-items: center;
-  flex-wrap: wrap;
-}
-.actionbar .spacer { flex: 1; }
 
 .back-btn {
   background: transparent;
@@ -273,6 +260,26 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
   border-radius: 8px;
 }
 .back-btn:hover { background: var(--panel-2); color: var(--text); }
+
+/* The page back control floats over the top-left of the content, just below the
+   sticky header, instead of living in a full-width sub-bar. Fixed so it stays
+   reachable as the page scrolls; elevated as a pill so it reads as floating. */
+.back-fab {
+  position: fixed;
+  top: calc(68px + 12px);
+  left: 24px;
+  z-index: 150;
+}
+.back-fab .back-btn {
+  background: var(--panel);
+  color: var(--muted-strong);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+.back-fab .back-btn:hover { background: var(--panel-2); color: var(--text); }
+@media (max-width: 700px) { .back-fab { left: 16px; } }
+/* Reserves room at the top of pages that have a back target so the floating
+   button clears the page title. */
+.back-fab-spacer { height: 44px; }
 
 .tbl { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
 .tbl th, .tbl td { padding: 12px 14px; text-align: left; font-size: 15px; border-bottom: 1px solid var(--border); }
@@ -814,7 +821,7 @@ label { display: block; font-size: 14px; color: var(--muted-strong); margin: 14p
 /* ---- Print: the plan and inventory become claim paperwork ---- */
 @media print {
   body { background: white; color: black; }
-  .site-header, .nav, .actionbar, .help-footer, .tabbar, .no-print, .back-btn,
+  .site-header, .nav, .back-fab, .back-fab-spacer, .help-footer, .tabbar, .no-print, .back-btn,
   .toast-stack, .offline-banner { display: none !important; }
   .card, .tile, .tbl, .rec-accordion { border-color: #999; background: white; color: black; }
   .muted, .muted-strong, .warm-note { color: #333; }
