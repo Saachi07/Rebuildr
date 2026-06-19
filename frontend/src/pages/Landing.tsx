@@ -71,14 +71,14 @@ const TESTIMONIALS = [
   {
     quote: "",
     name: "",
-    attribution: "Wildfire survivor",
-    placeholder: "Their words about what Rebuildr made easier will go here.",
+    attribution: "— Fire survivor (name withheld by request)",
+    placeholder: "The insurance process after a house fire has been stressful — identifying everything I owned and estimating its value. I wish there were AI tools to help streamline that task.",
   },
   {
     quote: "",
     name: "",
-    attribution: "Flood survivor",
-    placeholder: "A second short quote about getting back on their feet will go here.",
+    attribution: "— Dr. Peter Silverstone, University of Alberta",
+    placeholder: "Preparation is crucial. Are the photos important? Do you have them stored elsewhere? What about financial documents? What happens if you get locked out? Are there mementos that are really important?",
   },
 ];
 
@@ -200,16 +200,7 @@ export default function Landing() {
           {PILLARS.map((p) => (
             <div key={p.title} className="pillar">
               <div className="phone-mock">
-                {/* Screenshot placeholder: replace the src files in
-                    /public/landing when the mockups are finalized. */}
-                <img
-                  src={p.img}
-                  alt={p.alt}
-                  onError={(e) => { (e.currentTarget.style.display = "none"); }}
-                />
-                <div className="phone-mock-placeholder" aria-hidden>
-                  Screenshot coming soon
-                </div>
+                <img src={p.img} alt={p.alt} />
               </div>
               <h3>{p.title}</h3>
               <p className="muted-strong">{p.body}</p>
