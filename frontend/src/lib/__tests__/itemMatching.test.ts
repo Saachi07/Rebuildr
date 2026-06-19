@@ -145,7 +145,7 @@ describe("matchDrafts", () => {
 
   it("claims the higher-scoring pair first when targets compete", () => {
     const candidates: MatchCandidate[] = [
-      { id: "post-exact", name: "Oak dining table", category: "furniture", value: undefined },
+      { id: "post-exact", name: "Oak dining table", category: "furniture" },
     ];
     const targets: MatchTarget[] = [
       { id: "pre-loose", name: "Dining table", category: "furniture" },
