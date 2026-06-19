@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, RoomScan } from "../api";
 
 // "Try it yourself" on the public landing page: drop one room photo and see a
@@ -13,12 +13,21 @@ export default function DemoDropzone() {
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [scan, setScan] = useState<RoomScan | null>(null);
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
+  // The photo the visitor picked is shown back to them alongside the detection
+  // overlay. We hold it as an object URL and revoke it when it's replaced or the
+  // component unmounts so we don't leak blobs.
+  useEffect(() => {
+    return () => { if (imgUrl) URL.revokeObjectURL(imgUrl); };
+  }, [imgUrl]);
 
   async function run(file: File) {
     setBusy(true);
     setErr(null);
     setScan(null);
+    setImgUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(file); });
     try {
       const result = await api.analyzeDemoPhoto(file);
       if (!result.items || result.items.length === 0) {
@@ -53,7 +62,7 @@ export default function DemoDropzone() {
   const done = !!scan && items.length > 0;
 
   return (
-    <div className="demo-zone">
+    <div className={`demo-zone${done ? " has-result" : ""}`}>
       {!done && (
         <div
           className={`dropzone${dragOver ? " over" : ""}`}
@@ -99,28 +108,75 @@ export default function DemoDropzone() {
       {err && <div className="error" style={{ marginTop: 8 }}>{err}</div>}
 
       {scan && items.length > 0 && (
-        <div className="demo-result">
-          <div className="row" style={{ marginBottom: 8 }}>
-            <strong>{scan.room_type || "What we found"}</strong>
-            <span className="badge" style={{ marginLeft: 8 }}>{items.length} items shown</span>
+        <>
+          <div className="demo-panels">
+            {/* 1: the photo the visitor uploaded, untouched. */}
+            <div className="demo-panel">
+              <div className="demo-panel-head">
+                <span className="demo-step">1</span>
+                <strong>Your photo</strong>
+              </div>
+              <div className="demo-photo-wrap">
+                {imgUrl && <img src={imgUrl} alt="The room photo you uploaded" />}
+              </div>
+            </div>
+
+            {/* 2: the same photo with detection boxes the model placed. */}
+            <div className="demo-panel">
+              <div className="demo-panel-head">
+                <span className="demo-step">2</span>
+                <strong>What our AI detected</strong>
+              </div>
+              <div className="demo-photo-wrap">
+                {imgUrl && <img src={imgUrl} alt="Detected items outlined on your photo" />}
+                {items.map((it, i) => {
+                  const b = it.bounding_box;
+                  if (!b) return null;
+                  // Boxes come back normalized 0..1; lay them over the image as
+                  // percentages so they track any rendered size.
+                  const left = Math.max(0, Math.min(1, b.x1)) * 100;
+                  const top = Math.max(0, Math.min(1, b.y1)) * 100;
+                  const width = Math.max(0, Math.min(1, b.x2 - b.x1)) * 100;
+                  const height = Math.max(0, Math.min(1, b.y2 - b.y1)) * 100;
+                  return (
+                    <div
+                      key={i}
+                      className="demo-box"
+                      style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
+                    >
+                      <span className="demo-box-label">{it.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3: the structured metadata pulled from the photo. */}
+            <div className="demo-panel">
+              <div className="demo-panel-head">
+                <span className="demo-step">3</span>
+                <strong>{scan.room_type || "What we found"}</strong>
+                <span className="badge" style={{ marginLeft: "auto" }}>{items.length} items shown</span>
+              </div>
+              <ul className="demo-item-list">
+                {items.map((it, i) => {
+                  const est = it.canadian_retail_estimate_cad ?? { low: 0, high: 0 };
+                  const mid = Math.round((est.low + est.high) / 2);
+                  return (
+                    <li key={i} className="demo-item">
+                      <span>{it.name}</span>
+                      <strong>${mid.toLocaleString()}</strong>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
-          <ul className="demo-item-list">
-            {items.map((it, i) => {
-              const est = it.canadian_retail_estimate_cad ?? { low: 0, high: 0 };
-              const mid = Math.round((est.low + est.high) / 2);
-              return (
-                <li key={i} className="demo-item">
-                  <span>{it.name}</span>
-                  <strong>${mid.toLocaleString()}</strong>
-                </li>
-              );
-            })}
-          </ul>
-          <p className="muted-strong" style={{ fontSize: 13, margin: "10px 0 0" }}>
+          <p className="muted-strong" style={{ fontSize: 13, margin: "14px 0 0", textAlign: "center" }}>
             That is a small sample. Inside Rebuildr we list every room, value the
             damage, and build a claim-ready inventory.
           </p>
-        </div>
+        </>
       )}
     </div>
   );

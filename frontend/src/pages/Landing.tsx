@@ -74,7 +74,7 @@ const TESTIMONIALS = [
   {
     quote: "",
     name: "Fire survivor (name withheld by request)",
-    placeholder: "The insurance process after a house fire has been stressful — identifying everything I owned and estimating its value. I wish there were AI tools to help streamline that task.",
+    placeholder: "The insurance process after a house fire has been stressful, identifying everything I owned and estimating its value. I wish there were AI tools to help streamline that task.",
   },
   {
     quote: "",
@@ -214,7 +214,7 @@ export default function Landing() {
       {/* #5: testimonial placeholders. */}
       <section className="landing-section">
         <div className="section-head">
-          <h2>From people who have been through it</h2>
+          <h2>Why this matters</h2>
         </div>
         <div className="grid grid-2">
           {TESTIMONIALS.map((t, i) => (
@@ -223,7 +223,7 @@ export default function Landing() {
                 {t.quote || <span className="muted">{t.placeholder}</span>}
               </blockquote>
               <figcaption>
-                <span className="testimonial-avatar" aria-hidden />
+                <img className="testimonial-avatar" src={`${BASE}landing/avatar.svg`} alt="" aria-hidden />
                 <span>
                   <strong>{t.name}</strong>
                 </span>

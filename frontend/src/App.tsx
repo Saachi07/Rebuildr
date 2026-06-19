@@ -66,24 +66,28 @@ function useDerivedNotifications(): {
   dismiss: (id: string) => void;
 } {
   const { user } = useAuth();
+  // Reuse the shared cases list instead of refetching /cases here. Both this
+  // effect and CasesProvider used to request /cases (and retry on the slow
+  // cold-start backend), doubling the request pile-up; now there's one fetch.
+  const { cases } = useCases();
   const [notifs, setNotifs] = useState<DerivedNotif[]>([]);
   const [seen, setSeen] = useState<Set<string>>(() => readIdSet(SEEN_KEY));
   const [dismissed, setDismissed] = useState<Set<string>>(() => readIdSet(DISMISSED_KEY));
 
   useEffect(() => {
     if (!user) { setNotifs([]); return; }
+    // Wait for the shared cases list rather than fetching our own copy.
+    if (cases === null) return;
     let cancelled = false;
     (async () => {
       try {
-        const [casesRes, docsRes, alertsRes, meRes] = await Promise.all([
-          api.listCases(),
+        const [docsRes, alertsRes, meRes] = await Promise.all([
           api.listMyDocuments(),
           api.listAlerts(),
           api.getMe(),
         ]);
         if (cancelled) return;
         const out: DerivedNotif[] = [];
-        const cases = casesRes.cases;
         const docs = docsRes.documents;
         const alerts = (alertsRes && (alertsRes.alerts ?? [])) || [];
         const weatherTerms = ["tornado", "wildfire", "flood", "winter storm", "evacuation"];
@@ -191,7 +195,7 @@ function useDerivedNotifications(): {
       }
     })();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, cases]);
 
   const visible = notifs
     .filter((n) => !dismissed.has(n.id))
