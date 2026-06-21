@@ -21,6 +21,7 @@ from flask import Blueprint, g, jsonify, request
 
 from ..auth import require_auth
 from ..extensions import service_client, user_client
+from ..pagination import parse_pagination
 
 bp = Blueprint("items", __name__)
 
@@ -181,16 +182,38 @@ def delete_item_for_case(case_id: str, item_id: str):
 @lib_bp.get("")
 @require_auth
 def list_my_items():
-    """Every item the user owns, across cases or library-only."""
+    """Every item the user owns, across cases or library-only.
+
+    Returns all items by default (the Inventory page needs the full set for its
+    totals and exports). Pass ``limit`` (and optional ``offset``) to get a
+    bounded page plus a ``total`` count instead.
+    """
     sb = user_client(g.access_token)
+    limit, offset = parse_pagination(request.args)
+    if limit is None:
+        res = (
+            sb.table("case_items")
+            .select("*")
+            .eq("user_id", g.user_id)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        return jsonify({"items": res.data or []})
+
     res = (
         sb.table("case_items")
-        .select("*")
+        .select("*", count="exact")
         .eq("user_id", g.user_id)
         .order("created_at", desc=False)
+        .range(offset, offset + limit - 1)
         .execute()
     )
-    return jsonify({"items": res.data or []})
+    return jsonify({
+        "items": res.data or [],
+        "total": res.count,
+        "limit": limit,
+        "offset": offset,
+    })
 
 
 @lib_bp.post("")

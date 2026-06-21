@@ -442,7 +442,7 @@ export type RoomScan = {
 
 // Flat shape returned by the new Flask blueprint , 
 // see backend/app/blueprints/recommendations.py: Recommendation.to_dict().
-export type RecStatus = "suggested" | "saved" | "dismissed" | "done";
+export type RecStatus = "suggested" | "saved" | "dismissed" | "done" | "not_relevant";
 
 export type Recommendation = {
   id: string;
@@ -456,6 +456,9 @@ export type Recommendation = {
   days_until_deadline?: number | null;
   status?: RecStatus;
   rec_id?: string | null;
+  // Machine-extracted from a web page rather than hand-curated; the UI asks
+  // the user to confirm details on the official site.
+  unverified?: boolean;
 };
 
 export type RecGroups = Record<string, Recommendation[]>;

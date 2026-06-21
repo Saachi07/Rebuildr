@@ -26,6 +26,8 @@ from typing import Literal, Optional
 import requests
 from pydantic import BaseModel
 
+from .gemini_client import generate_with_retry
+
 # Resource types accepted by the catalog (mirrors the resources.type CHECK).
 _RESOURCE_TYPES = (
     "policy", "shelter", "health", "documents", "insurance", "financial",
@@ -43,6 +45,7 @@ _TAG_VOCAB = {
     "medication_visible", "documents_destroyed", "pet_items_present",
     "smoke_damage", "water_damage", "structural_damage", "total_loss",
     "appliances_lost", "cosmetic_only", "denial_received",
+    "first_nation_reserve", "metis_settlement", "inuit_community",
 }
 
 # Curated, trustworthy sources. region "*" means national; disaster_types
@@ -85,7 +88,41 @@ SOURCES: list[dict] = [
     },
 ]
 
-MAX_SOURCES_PER_RUN = 5
+# Extra curated sources pulled in only when the case's tags call for them, so a
+# household with a disability sees AISH, someone on assistance sees income
+# support, and an Indigenous community sees Indigenous Services Canada. Keyed by
+# tag; any matching tag adds its sources to the run, ahead of the base set.
+_TAG_SOURCES: dict[str, list[dict]] = {
+    "has_disability": [{
+        "key": "ab-aish", "url": "https://www.alberta.ca/aish",
+        "region": "AB", "disaster_types": ["*"], "default_type": "financial",
+    }],
+    "on_assistance": [{
+        "key": "ab-income-support", "url": "https://www.alberta.ca/income-support",
+        "region": "AB", "disaster_types": ["*"], "default_type": "financial",
+    }],
+    "income_disrupted": [{
+        "key": "ca-ei", "url": "https://www.canada.ca/en/services/benefits/ei.html",
+        "region": "*", "disaster_types": ["*"], "default_type": "financial",
+    }],
+    "has_pets": [{
+        "key": "redcross-pets",
+        "url": "https://www.redcross.ca/how-we-help/emergencies-and-disasters-in-canada/be-ready-emergency-preparedness-and-recovery/pets-and-emergencies",
+        "region": "*", "disaster_types": ["*"], "default_type": "community",
+    }],
+    "on_reserve_or_metis": [{
+        "key": "isc-emap",
+        "url": "https://www.sac-isc.gc.ca/eng/1100100010021/1535119469411",
+        "region": "*", "disaster_types": ["*"], "default_type": "community",
+    }],
+}
+# The finer Indigenous-community tags route to the same ISC pathway for now.
+for _t in ("first_nation_reserve", "metis_settlement", "inuit_community"):
+    _TAG_SOURCES[_t] = _TAG_SOURCES["on_reserve_or_metis"]
+
+MAX_SOURCES_PER_RUN = 6
+# Pages discovered live via Gemini search grounding, on top of the curated set.
+DISCOVERY_LIMIT = 3
 MAX_PAGE_CHARS = 15_000
 FETCH_TIMEOUT_S = 12
 _UA = {"User-Agent": "RebuildrBot/1.0 (+disaster recovery assistant; program discovery)"}
@@ -177,10 +214,10 @@ def _extract_programs(page_text: str, case_ctx: dict, api_key: str) -> list[Scra
         vocab=", ".join(sorted(_TAG_VOCAB)),
     )
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[prompt, page_text],
-        config=types.GenerateContentConfig(
+    response = generate_with_retry(
+        client,
+        [prompt, page_text],
+        types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=to_gemini_schema(ScrapedPrograms),
         ),
@@ -226,8 +263,24 @@ def _program_to_resource(p: ScrapedProgram, source: dict, incident: Optional[dat
 def _relevant_sources(case_ctx: dict) -> list[dict]:
     region = (case_ctx.get("region") or "").strip().lower()
     disaster = case_ctx.get("disaster_type")
-    picked = []
+    tags = case_ctx.get("tags") or set()
+
+    # Tag-driven sources first (most targeted to this person), then the
+    # always-on base set, de-duplicated by key.
+    candidates: list[dict] = []
+    seen: set[str] = set()
+    for tag in sorted(tags):
+        for s in _TAG_SOURCES.get(tag, []):
+            if s["key"] not in seen:
+                seen.add(s["key"])
+                candidates.append(s)
     for s in SOURCES:
+        if s["key"] not in seen:
+            seen.add(s["key"])
+            candidates.append(s)
+
+    picked = []
+    for s in candidates:
         src_region = s["region"].lower()
         if src_region != "*" and region and src_region not in region and region not in src_region:
             continue
@@ -235,6 +288,83 @@ def _relevant_sources(case_ctx: dict) -> list[dict]:
             continue
         picked.append(s)
     return picked[:MAX_SOURCES_PER_RUN]
+
+
+_DISCOVERY_PROMPT = (
+    "Find current, official disaster-recovery assistance programs in Canada for "
+    "someone recovering from {disaster} in {region}. Their situation (de-identified "
+    "tags): {tags}. Prefer government pages (.gc.ca, .alberta.ca), the Red Cross, "
+    "and established nonprofits that describe concrete programs a person could "
+    "apply to. List the most relevant program pages."
+)
+
+
+def _grounded_urls(response) -> list[str]:
+    """Pull http(s) URLs out of a grounded Gemini response, preferring the
+    structured grounding metadata and falling back to URLs in the text."""
+    urls: list[str] = []
+    try:
+        for cand in (response.candidates or []):
+            meta = getattr(cand, "grounding_metadata", None)
+            for chunk in (getattr(meta, "grounding_chunks", None) or []):
+                uri = getattr(getattr(chunk, "web", None), "uri", None)
+                if uri and uri.startswith("http"):
+                    urls.append(uri)
+    except Exception:  # noqa: BLE001
+        pass
+    if not urls:
+        text = getattr(response, "text", "") or ""
+        urls = re.findall(r"https?://[^\s)\]]+", text)
+    return urls
+
+
+def _discover_sources(case_ctx: dict, api_key: str, *, limit: int = DISCOVERY_LIMIT) -> list[dict]:
+    """Use Gemini with Google Search grounding to discover official program
+    pages beyond our curated allowlist, returning source dicts the normal
+    fetch+extract pipeline can use.
+
+    Best-effort: any failure (including an SDK without search grounding) returns
+    []. Privacy: only the disaster type, region, and de-identified semantic tags
+    are sent. No names, contact details, addresses, or policy numbers leave us.
+    """
+    from google import genai
+    from google.genai import types
+
+    query = _DISCOVERY_PROMPT.format(
+        disaster=case_ctx.get("disaster_type") or "a disaster",
+        region=case_ctx.get("region") or case_ctx.get("location") or "Canada",
+        tags=", ".join(sorted(case_ctx.get("tags") or [])) or "no extra detail",
+    )
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=query,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+            ),
+        )
+    except Exception:  # noqa: BLE001
+        return []
+
+    region = case_ctx.get("region") or "*"
+    sources: list[dict] = []
+    seen: set[str] = set()
+    for url in _grounded_urls(response):
+        if url in seen:
+            continue
+        seen.add(url)
+        digest = hashlib.sha1(url.encode()).hexdigest()[:12]
+        sources.append({
+            "key": f"discovered-{digest}",
+            "url": url,
+            "region": region if region else "*",
+            "disaster_types": ["*"],
+            "default_type": "financial",
+        })
+        if len(sources) >= limit:
+            break
+    return sources
 
 
 def scrape_programs_for_case(case: dict, tags: set[str], api_key: str, sb_service) -> dict:
@@ -254,9 +384,12 @@ def scrape_programs_for_case(case: dict, tags: set[str], api_key: str, sb_servic
         except ValueError:
             pass
 
+    # Curated/tag-driven sources, plus pages discovered live via search
+    # grounding so the catalog reaches programs we never hardcoded.
+    discovered = _discover_sources(case_ctx, api_key)
     rows: list[dict] = []
     sources_checked: list[str] = []
-    for source in _relevant_sources(case_ctx):
+    for source in _relevant_sources(case_ctx) + discovered:
         page_text = _fetch_text(source["url"])
         if not page_text:
             continue

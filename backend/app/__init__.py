@@ -11,7 +11,10 @@ def create_app(config_class: type = Config) -> Flask:
     # Gzip JSON responses, the documents/cases lists are the hot paths and
     # compress well. flask-compress only kicks in above ~500 bytes by default.
     Compress(app)
-    CORS(app, supports_credentials=True)
+    # Restrict cross-origin calls to known frontends rather than a wildcard,
+    # which is unsafe alongside supports_credentials. Origins come from config
+    # (CORS_ORIGINS env), defaulting to local dev.
+    CORS(app, resources={r"/*": {"origins": app.config["CORS_ORIGINS"]}}, supports_credentials=True)
 
     from .blueprints.health import bp as health_bp
     from .blueprints.auth import bp as auth_bp
@@ -69,6 +72,15 @@ def create_app(config_class: type = Config) -> Flask:
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         response.headers.setdefault("Content-Security-Policy", "default-src 'none'")
         return response
+
+    # A Gemini outage that survives retries surfaces as ModelOverloaded. Map it
+    # to 503 everywhere, so document analysis and program scraping degrade the
+    # same friendly way the photo scan already does, instead of an opaque 500.
+    from .services.gemini_client import ModelOverloaded
+
+    @app.errorhandler(ModelOverloaded)
+    def _model_overloaded(e):
+        return jsonify({"error": str(e)}), 503
 
     @app.errorhandler(404)
     def _not_found(_e):

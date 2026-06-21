@@ -20,6 +20,15 @@ def derive_tags(intake_answers: dict) -> set[str]:
         tags.add("displaced")
     if housing == 4:
         tags.add("on_reserve_or_metis")
+        # Optional follow-up shown only to this group: which community, so we
+        # can route to the right pathway (band/ISC, Métis settlement, Inuit).
+        community = intake_answers.get("indigenous_community")
+        if community == 0:
+            tags.add("first_nation_reserve")
+        elif community == 1:
+            tags.add("metis_settlement")
+        elif community == 2:
+            tags.add("inuit_community")
     if housing == 5:
         tags.add("needs_shelter")
         tags.add("displaced")

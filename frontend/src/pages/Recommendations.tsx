@@ -39,6 +39,12 @@ function matchLabel(score: number): string {
   return "Worth a look";
 }
 
+// Both "dismissed" (hide for now) and "not_relevant" (explicit "this doesn't
+// apply to me" feedback) drop a suggestion out of the active plan.
+function isHidden(s: RecStatus): boolean {
+  return s === "dismissed" || s === "not_relevant";
+}
+
 function deadlineBadge(days: number): string {
   if (days < 0) {
     const ago = -days;
@@ -139,8 +145,8 @@ export default function Recommendations() {
     [groups],
   );
   const savedRecs = allRecs.filter((r) => statusOf(r) === "saved");
-  const hiddenRecs = allRecs.filter((r) => statusOf(r) === "dismissed");
-  const visibleCount = allRecs.filter((r) => statusOf(r) !== "dismissed").length;
+  const hiddenRecs = allRecs.filter((r) => isHidden(statusOf(r)));
+  const visibleCount = allRecs.filter((r) => !isHidden(statusOf(r))).length;
 
   const empty = groups && Object.values(groups).every((g) => g.length === 0);
 
@@ -156,9 +162,9 @@ export default function Recommendations() {
     return { ...h, to: link.to, linkLabel: link.label };
   });
 
-  const openTodo = todo.filter((r) => statusOf(r) !== "dismissed" && statusOf(r) !== "done");
+  const openTodo = todo.filter((r) => !isHidden(statusOf(r)) && statusOf(r) !== "done");
   const focusList: Recommendation[] = [];
-  if (topPick && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed") {
+  if (topPick && statusOf(topPick) !== "done" && !isHidden(statusOf(topPick))) {
     focusList.push(topPick);
   }
   for (const r of openTodo) {
@@ -292,7 +298,7 @@ export default function Recommendations() {
                 at the top. Check them off as you go.
               </p>
               {todo
-                .filter((r) => statusOf(r) !== "dismissed")
+                .filter((r) => !isHidden(statusOf(r)))
                 .map((r, i) => {
                   const done = statusOf(r) === "done";
                   return (
@@ -323,7 +329,7 @@ export default function Recommendations() {
             </div>
           )}
 
-          {topPick && statusOf(topPick) !== "done" && statusOf(topPick) !== "dismissed" && (
+          {topPick && statusOf(topPick) !== "done" && !isHidden(statusOf(topPick)) && (
             <div className="card ok-card">
               <h3 style={{ marginTop: 0 }}>Start here</h3>
               <strong>{topPick.title}</strong>
@@ -361,7 +367,7 @@ export default function Recommendations() {
                     All <span className="filter-count">{visibleCount}</span>
                   </button>
                   {orderedGroups.map(([cat, recs]) => {
-                    const n = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed").length;
+                    const n = recs.filter(Boolean).filter((r) => !isHidden(statusOf(r))).length;
                     if (n === 0) return null;
                     return (
                       <button
@@ -382,7 +388,7 @@ export default function Recommendations() {
               {orderedGroups
                 .filter(([category]) => filter === "all" || filter === category)
                 .map(([category, recs]) => {
-                  const shown = recs.filter(Boolean).filter((r) => statusOf(r) !== "dismissed");
+                  const shown = recs.filter(Boolean).filter((r) => !isHidden(statusOf(r)));
                   if (shown.length === 0) return null;
                   // A single chosen category reads as a directory listing,
                   // open and flat; "All" keeps each category collapsible so a
@@ -549,6 +555,15 @@ function RecActions({
           Hide
         </button>
       )}
+      {canUpdate && status !== "done" && status !== "not_relevant" && (
+        <button
+          className="secondary"
+          title="Tells us this kind of help does not apply to you, so we show less like it."
+          onClick={() => onStatus(rec, "not_relevant")}
+        >
+          Not relevant to me
+        </button>
+      )}
     </div>
   );
 }
@@ -583,6 +598,12 @@ function RecCard({
         {rec.reasons?.length > 0 && !done && (
           <p className="muted-strong" style={{ margin: "6px 0 0", fontSize: 13 }}>
             Why this matters: {rec.reasons.join(" · ")}
+          </p>
+        )}
+        {rec.unverified && !done && (
+          <p className="muted" style={{ margin: "6px 0 0", fontSize: 12 }}>
+            We found this on an official page automatically. Please confirm the
+            details on their site before relying on it.
           </p>
         )}
         <RecActions rec={rec} status={status} onStatus={onStatus} />

@@ -20,6 +20,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel
 
 from .ai_guard import validate_model_output
+from .gemini_client import generate_with_retry
 
 DOC_TYPES = (
     "insurance_policy",
@@ -214,13 +215,10 @@ def analyze_document(
     from .gemini_schema import to_gemini_schema
 
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[
-            PROMPT,
-            types.Part.from_bytes(data=pdf_bytes, mime_type=mime_type),
-        ],
-        config=types.GenerateContentConfig(
+    response = generate_with_retry(
+        client,
+        [PROMPT, types.Part.from_bytes(data=pdf_bytes, mime_type=mime_type)],
+        types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=to_gemini_schema(DocumentAnalysis),
         ),
@@ -254,13 +252,10 @@ def analyze_image_rich(
     from .gemini_schema import to_gemini_schema
 
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[
-            RICH_IMAGE_PROMPT,
-            types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-        ],
-        config=types.GenerateContentConfig(
+    response = generate_with_retry(
+        client,
+        [RICH_IMAGE_PROMPT, types.Part.from_bytes(data=image_bytes, mime_type=mime_type)],
+        types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=to_gemini_schema(RichImageAnalysis),
         ),

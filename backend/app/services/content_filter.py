@@ -128,6 +128,10 @@ class Recommendation:
             "days_until_deadline": self.days_until_deadline,
             "status": self.status,
             "rec_id": self.rec_id,
+            # Machine-extracted from a web page (scraped or search-discovered),
+            # rather than hand-curated. The UI shows a "confirm on their site"
+            # note for these. Seeded catalog rows have human ids and stay trusted.
+            "unverified": str(self.resource["id"]).startswith("scraped-"),
         }
 
 
@@ -302,7 +306,11 @@ def recommend(
     for rec in recs:
         if rec.status == "done":
             rec.score -= PENALTY_DONE
-        elif rec.status == "dismissed":
+        elif rec.status in ("dismissed", "not_relevant"):
+            # "not_relevant" is explicit negative feedback (this does not apply
+            # to me), "dismissed" is hide-for-now. Both sink out of the plan; the
+            # distinction is kept for the status-change telemetry that will train
+            # the ranker.
             rec.score -= PENALTY_DISMISSED
 
     # 4. group by type, sort, take top-K, set rank
@@ -400,6 +408,38 @@ def personalize_hints(
 # Query / document construction
 # ---------------------------------------------------------------------------
 
+# Lightweight, no-API semantic boost. TF-IDF only matches shared words, so a
+# user tagged "displaced" misses a resource that says "evacuees", and a wildfire
+# case misses one about "smoke damage". We widen the *query* (never the catalog)
+# with domain synonyms before vectorizing, so recall improves without an
+# embedding model or any external call. Keys match whole, lowercased query parts.
+_SYNONYMS: dict[str, list[str]] = {
+    "wildfire": ["fire", "smoke", "ash", "soot"],
+    "flood": ["water damage", "flooding", "overland water", "sewer backup"],
+    "tornado": ["wind", "windstorm", "storm"],
+    "hurricane": ["wind", "windstorm", "storm"],
+    "displaced": ["evacuated", "evacuee", "out of home"],
+    "needs_shelter": ["shelter", "emergency housing", "nowhere to stay"],
+    "renter": ["tenant", "rental", "lease"],
+    "owner": ["homeowner", "mortgage"],
+    "uninsured": ["no insurance", "not insured"],
+    "income_disrupted": ["lost income", "out of work", "unemployed", "wage loss"],
+    "on_assistance": ["income support", "social assistance", "benefits"],
+    "has_pets": ["pet", "animal"],
+    "has_disability": ["disability", "accessibility", "accessible", "medical needs"],
+    "has_seniors": ["senior", "elderly", "older adult"],
+    "has_kids": ["children", "child", "family"],
+    "on_reserve_or_metis": ["indigenous", "first nation", "metis", "band office"],
+    "first_nation_reserve": ["indigenous", "first nation", "band office", "reserve"],
+    "metis_settlement": ["indigenous", "metis settlement"],
+    "inuit_community": ["indigenous", "inuit"],
+    "smoke_damage": ["smoke", "soot"],
+    "water_damage": ["flood", "water", "mold", "moisture"],
+    "structural_damage": ["structural", "building damage", "foundation"],
+    "total_loss": ["destroyed", "complete loss"],
+}
+
+
 def _build_query(case: dict, items: list[dict], tags: set[str]) -> str:
     parts: list[str] = []
     if case.get("disaster_type"):
@@ -414,7 +454,12 @@ def _build_query(case: dict, items: list[dict], tags: set[str]) -> str:
                 parts.append(str(v))
         if it.get("description"):
             parts.append(str(it["description"]))
-    return " ".join(parts) if parts else "disaster recovery"
+
+    # Widen with domain synonyms so different wording still matches.
+    expanded = list(parts)
+    for p in parts:
+        expanded.extend(_SYNONYMS.get(str(p).strip().lower(), ()))
+    return " ".join(expanded) if expanded else "disaster recovery"
 
 
 def _build_document(r: dict) -> str:

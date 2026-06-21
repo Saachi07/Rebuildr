@@ -68,20 +68,26 @@ export default function NewCase() {
     if (cases === null || initRef.current) return;
     initRef.current = true;
     (async () => {
+      // Everyone we serve is in Alberta, so default the location to the
+      // person's saved location and fall back to Alberta. It saves a step and
+      // means recommendations work even before they reach the location screen.
+      const me = await api.getMe().catch(() => null);
+      const defaultLocation = (me?.profile.location ?? "").trim() || "Alberta";
       if (activeDraft) {
         setDraftId(activeDraft.id);
         setForm({
           case_name: activeDraft.case_name ?? "",
           disaster_type: activeDraft.disaster_type || "wildfire",
-          location: activeDraft.location ?? "",
+          location: (activeDraft.location ?? "").trim() || defaultLocation,
           incident_date: activeDraft.incident_date ?? "",
         });
         setReady(true);
         return;
       }
       try {
-        const res = await api.createCase({ status: "draft" });
+        const res = await api.createCase({ status: "draft", location: defaultLocation });
         setDraftId(res.case.id);
+        setForm((f) => ({ ...f, location: defaultLocation }));
         await refresh();
       } catch (e: any) {
         setErr(e.message ?? String(e));
@@ -144,6 +150,11 @@ export default function NewCase() {
       const id = draftId
         ? (await api.updateCase(draftId, fields)).case.id
         : (await api.createCase(fields)).case.id;
+      // Starting a case makes its location the person's location, so the rest
+      // of the app (weather alerts, future cases) follows them. Best-effort.
+      if (fields.location.trim()) {
+        api.updateMe({ location: fields.location.trim() }).catch(() => {});
+      }
       await refresh();
       nav(`/cases/${id}/recommendations`);
     } catch (e: any) {
@@ -177,14 +188,14 @@ export default function NewCase() {
 
   if (!ready) {
     return (
-      <div className="container" style={{ maxWidth: 620 }}>
+      <div className="container">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ maxWidth: 620 }}>
+    <div className="container">
       <PageBack to="/prepare" label="Prepare" />
       <h1 style={{ marginTop: 16 }}>Tell us what happened</h1>
       <p className="warm-note">

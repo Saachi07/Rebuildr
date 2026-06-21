@@ -28,6 +28,19 @@ class Config:
 
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
+    # Browser origins allowed to call this API. A wildcard with credentials is
+    # unsafe, so we pin known origins. Defaults cover local Vite dev; set
+    # CORS_ORIGINS (comma-separated) in production to your deployed frontend,
+    # e.g. "https://<user>.github.io".
+    CORS_ORIGINS = [
+        o.strip()
+        for o in os.environ.get(
+            "CORS_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173",
+        ).split(",")
+        if o.strip()
+    ]
+
 
 class TestConfig(Config):
     TESTING = True

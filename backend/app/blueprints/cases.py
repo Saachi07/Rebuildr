@@ -11,6 +11,7 @@ from flask import Blueprint, g, jsonify, request
 
 from ..auth import require_auth
 from ..extensions import user_client
+from ..pagination import parse_pagination
 from ..services.tags import derive_tags
 
 bp = Blueprint("cases", __name__, url_prefix="/cases")
@@ -97,14 +98,31 @@ def _sync_profile_location(sb, case_row: dict | None) -> None:
 @require_auth
 def list_cases():
     sb = user_client(g.access_token)
+    limit, offset = parse_pagination(request.args)
+    if limit is None:
+        res = (
+            sb.table("recovery_cases")
+            .select("*")
+            .is_("deleted_at", "null")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return jsonify({"cases": res.data or []})
+
     res = (
         sb.table("recovery_cases")
-        .select("*")
+        .select("*", count="exact")
         .is_("deleted_at", "null")
         .order("created_at", desc=True)
+        .range(offset, offset + limit - 1)
         .execute()
     )
-    return jsonify({"cases": res.data or []})
+    return jsonify({
+        "cases": res.data or [],
+        "total": res.count,
+        "limit": limit,
+        "offset": offset,
+    })
 
 
 @bp.post("")

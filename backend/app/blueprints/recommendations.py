@@ -403,8 +403,8 @@ def scrape_programs(case_id: str):
 def update_recommendation(rec_id: str):
     data = request.get_json(silent=True) or {}
     status = data.get("status")
-    if status not in {"suggested", "saved", "dismissed", "done"}:
-        return jsonify({"error": "status must be one of suggested|saved|dismissed|done"}), 400
+    if status not in {"suggested", "saved", "dismissed", "done", "not_relevant"}:
+        return jsonify({"error": "status must be one of suggested|saved|dismissed|done|not_relevant"}), 400
     sb = user_client(g.access_token)
     res = sb.table("recommendations").update({"status": status}).eq("id", rec_id).execute()
     if not res.data:

@@ -6,6 +6,7 @@ import { Hint } from "../components/Hint";
 import { useToast } from "../components/Toast";
 import { useDismissable } from "../lib/useDismissable";
 import { depreciatedValue } from "../lib/depreciation";
+import { matchDrafts, MatchCandidate, MatchTarget, Suggestion } from "../lib/itemMatching";
 
 const DAMAGE_TYPES = ["fire", "smoke", "water", "wind", "mold", "other"];
 const CATEGORIES = ["furniture", "appliance", "electronics", "clothing", "other"];
@@ -183,6 +184,17 @@ export default function Inventory() {
   const [scanEmpty, setScanEmpty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [restored, setRestored] = useState(false);
+  // When a batch about to be saved looks like it contains items already in the
+  // inventory (the "after" photo of a sofa we already logged a "before" photo
+  // for), we pause here and let the user confirm the pairings instead of
+  // silently creating duplicates. `accepted` holds the draft ids the user agreed
+  // to merge onto their existing twin.
+  const [merge, setMerge] = useState<{
+    urlMap: Map<string, string>;
+    imageKey: "before_url" | "after_url";
+    suggestions: Suggestion[];
+  } | null>(null);
+  const [accepted, setAccepted] = useState<Set<string>>(new Set());
   // Photos picked but not yet scanned, people walk room to room and shoot
   // several at once; we process them one at a time.
   const [queue, setQueue] = useState<File[]>([]);
@@ -376,6 +388,8 @@ export default function Inventory() {
     setScan(null);
     setScanEmpty(false);
     setScannedFile(null);
+    setMerge(null);
+    setAccepted(new Set());
     if (queue.length > 0) scanNextInQueue();
   }
 
@@ -427,58 +441,141 @@ export default function Inventory() {
     });
   }
 
+  // Crop each draft's detected region out of the scanned photo and upload it,
+  // returning draft_id -> public image URL. Promise.allSettled so one failed
+  // crop never aborts the whole batch.
+  async function cropUploadAll(): Promise<Map<string, string>> {
+    const urlMap = new Map<string, string>();
+    if (!scannedFile) return urlMap;
+    const withBox = drafts.filter((d) => d.bounding_box);
+    const results = await Promise.allSettled(
+      withBox.map((d) =>
+        cropAndUpload(scannedFile, d.bounding_box!).then((url) => ({ draft_id: d.draft_id, url })),
+      ),
+    );
+    for (const r of results) {
+      if (r.status === "fulfilled") urlMap.set(r.value.draft_id, r.value.url);
+    }
+    return urlMap;
+  }
+
+  // Build the new-item rows for a set of drafts, attaching each draft's uploaded
+  // photo under the right before/after slot.
+  function draftsToRows(rows: Draft[], imageKey: "before_url" | "after_url", urlMap: Map<string, string>) {
+    return rows.map((d) => ({
+      name: d.name,
+      category: mapCategory(d.category),
+      damage_type: d.damage_type,
+      estimated_value: d.estimated_value,
+      purchase_date: d.purchase_date || undefined,
+      description: [d.visible_brand, d.approximate_size, `x${d.count}`].filter(Boolean).join(" · "),
+      room: batchRoom,
+      ...(urlMap.has(d.draft_id) ? { [imageKey]: urlMap.get(d.draft_id) } : {}),
+    }));
+  }
+
+  // Save the reviewed batch. First upload the crops, then check whether any of
+  // these items are the same physical object as something already in the
+  // inventory but missing this photo, so an "after" sofa attaches its photo to
+  // the "before" sofa row instead of creating a second row (the pairing is the
+  // whole point of before/after). We never merge silently: if there are
+  // candidates we pause and let the user confirm them.
   async function saveAllDrafts() {
     if (!id || drafts.length === 0) return;
     setBusy(true);
     setScanErr(null);
     try {
-      const count = drafts.length;
-      const imageKey = kind === "pre" ? "before_url" : "after_url";
+      const imageKey: "before_url" | "after_url" = kind === "pre" ? "before_url" : "after_url";
+      const urlMap = await cropUploadAll();
 
-      // Crop + upload in parallel for every draft that has a bounding box.
-      // Promise.allSettled so a single failed crop never aborts the whole save.
-      const urlMap = new Map<string, string>();
-      if (scannedFile) {
-        const targets = drafts.filter((d) => d.bounding_box);
-        const results = await Promise.allSettled(
-          targets.map((d) =>
-            cropAndUpload(scannedFile, d.bounding_box!).then((url) => ({
-              draft_id: d.draft_id,
-              url,
-            })),
-          ),
-        );
-        for (const r of results) {
-          if (r.status === "fulfilled") urlMap.set(r.value.draft_id, r.value.url);
-        }
-      }
-
-      await api.createItemsBulk(
-        id,
-        drafts.map((d) => ({
+      // Only photographed drafts are worth merging (the point is to carry over
+      // the photo); match them against existing items still missing this slot.
+      const candidates: MatchCandidate[] = drafts
+        .filter((d) => urlMap.has(d.draft_id))
+        .map((d) => ({
+          id: d.draft_id,
           name: d.name,
           category: mapCategory(d.category),
-          damage_type: d.damage_type,
-          estimated_value: d.estimated_value,
-          purchase_date: d.purchase_date || undefined,
-          description: [d.visible_brand, d.approximate_size, `x${d.count}`]
-            .filter(Boolean)
-            .join(" · "),
-          room: batchRoom,
-          ...(urlMap.has(d.draft_id) ? { [imageKey]: urlMap.get(d.draft_id) } : {}),
-        })),
+          brand: d.visible_brand,
+          size: d.approximate_size,
+          priceLow: d.canadian_retail_estimate_cad?.low ?? null,
+          priceHigh: d.canadian_retail_estimate_cad?.high ?? null,
+        }));
+      const targets: MatchTarget[] = items
+        .filter((it) => !it[imageKey])
+        .map((it) => ({ id: it.id, name: it.name, category: it.category ?? "other", value: it.estimated_value ?? null }));
+
+      const { suggestions } = matchDrafts(candidates, targets);
+      if (suggestions.length > 0) {
+        setMerge({ urlMap, imageKey, suggestions });
+        setAccepted(new Set(suggestions.filter((s) => s.confidence === "high").map((s) => s.candidateId)));
+        setBusy(false);
+        return; // wait for the user to confirm the pairings
+      }
+      await commitSave(urlMap, imageKey, new Map());
+    } catch (e: any) {
+      setScanErr(e.message ?? String(e));
+      setBusy(false);
+    }
+  }
+
+  // Apply the confirmed merges onto existing rows, then create whatever is left
+  // as new items. mergeMap is draft_id -> existing item id.
+  async function commitSave(
+    urlMap: Map<string, string>,
+    imageKey: "before_url" | "after_url",
+    mergeMap: Map<string, string>,
+  ) {
+    if (!id) return;
+    setBusy(true);
+    setScanErr(null);
+    try {
+      const count = drafts.length;
+      await Promise.allSettled(
+        Array.from(mergeMap.entries())
+          .filter(([draftId]) => urlMap.has(draftId))
+          .map(([draftId, targetId]) => api.updateMyItem(targetId, { [imageKey]: urlMap.get(draftId) })),
       );
+      const merged = new Set(mergeMap.keys());
+      const toCreate = drafts.filter((d) => !merged.has(d.draft_id));
+      if (toCreate.length > 0) {
+        await api.createItemsBulk(id, draftsToRows(toCreate, imageKey, urlMap));
+      }
+      const mergedCount = merged.size;
       setDrafts([]);
       setScan(null);
       setScannedFile(null);
+      setMerge(null);
+      setAccepted(new Set());
       load();
-      toast.show(`Saved ${count} item${count === 1 ? "" : "s"} to your inventory.`);
+      toast.show(
+        mergedCount > 0
+          ? `Saved ${count} item${count === 1 ? "" : "s"}, matched ${mergedCount} to a photo you already had.`
+          : `Saved ${count} item${count === 1 ? "" : "s"} to your inventory.`,
+      );
       if (queue.length > 0) scanNextInQueue();
     } catch (e: any) {
       setScanErr(e.message ?? String(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  function toggleAccepted(candidateId: string) {
+    setAccepted((prev) => {
+      const next = new Set(prev);
+      next.has(candidateId) ? next.delete(candidateId) : next.add(candidateId);
+      return next;
+    });
+  }
+
+  function confirmMerge() {
+    if (!merge) return;
+    const mergeMap = new Map<string, string>();
+    for (const s of merge.suggestions) {
+      if (accepted.has(s.candidateId)) mergeMap.set(s.candidateId, s.targetId);
+    }
+    commitSave(merge.urlMap, merge.imageKey, mergeMap);
   }
 
   // Deleting is immediate but reversible, kinder than a "can't be undone"
@@ -659,10 +756,58 @@ export default function Inventory() {
               <button className="ghost" onClick={discardBatch} disabled={busy}>
                 Discard
               </button>
-              <button onClick={saveAllDrafts} disabled={busy}>
+              <button onClick={saveAllDrafts} disabled={busy || merge !== null}>
                 {busy ? "Saving..." : `Looks good, save all ${drafts.length}`}
               </button>
             </div>
+
+            {merge && (
+              <div className="notice" style={{ marginTop: 12 }}>
+                <strong>Some of these look like items you already have.</strong>
+                <p className="muted-strong" style={{ fontSize: 14, margin: "4px 0 10px" }}>
+                  Tick the ones that are the same object, and this{" "}
+                  {merge.imageKey === "after_url" ? "after" : "before"} photo will attach to the
+                  row you already saved instead of adding a duplicate.
+                </p>
+                {merge.suggestions.map((s) => {
+                  const d = drafts.find((x) => x.draft_id === s.candidateId);
+                  const it = items.find((x) => x.id === s.targetId);
+                  if (!d || !it) return null;
+                  return (
+                    <label
+                      key={s.candidateId}
+                      className="row"
+                      style={{ gap: 8, alignItems: "center", padding: "4px 0", cursor: "pointer" }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={accepted.has(s.candidateId)}
+                        onChange={() => toggleAccepted(s.candidateId)}
+                      />
+                      <span>
+                        <strong>{d.name}</strong> matches your saved <strong>{it.name}</strong>
+                        {it.room ? ` (${it.room})` : ""}
+                        {s.confidence === "maybe" && (
+                          <span className="muted" style={{ fontSize: 12 }}> · not sure, your call</span>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+                <div className="row" style={{ marginTop: 10, gap: 8 }}>
+                  <button onClick={confirmMerge} disabled={busy}>
+                    {busy ? "Saving..." : "Save with these matches"}
+                  </button>
+                  <button
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => commitSave(merge.urlMap, merge.imageKey, new Map())}
+                  >
+                    None of these, save all as new
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-2" style={{ marginTop: 12 }}>
               <div>
@@ -948,7 +1093,7 @@ export default function Inventory() {
       ) : items.length > 0 && sortBy === "room" ? (
         <RoomGroupedItems items={items} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} />
       ) : items.length > 0 ? (
-        <ItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} />
+        <PaginatedItemTable items={sortItems(items, sortBy)} caseId={id ?? ""} rooms={allRooms} onChange={load} onDelete={deleteWithUndo} resetKey={sortBy} />
       ) : null}
 
       {items.length > 0 && (
@@ -1387,7 +1532,10 @@ function ItemTable(
           <th>Category</th>
           <th>Damage</th>
           <th>Est. value</th>
-          <th>Receipt</th>
+          <th>
+            Receipt{" "}
+            <Hint text="Coming soon: Rebuildr will read the price and date straight from a receipt photo for you. For now, add a receipt photo here and enter the value by hand." />
+          </th>
           <th></th>
         </tr>
       </thead>
@@ -1420,6 +1568,48 @@ function ItemTable(
         ))}
       </tbody>
     </table>
+  );
+}
+
+// Client-side pagination for the flat list view. The page already holds every
+// item in memory (the board, totals, coverage HUD, and CSV/PDF export all need
+// the full set), so this paginates the rendered rows only, to keep a long flat
+// table responsive. The room and board views stay whole; pagination just spares
+// the DOM when someone sorts a few hundred items into one list.
+const LIST_PAGE_SIZE = 25;
+
+function PaginatedItemTable(
+  { items, caseId, rooms, onChange, onDelete, resetKey }:
+  { items: Item[]; caseId: string; rooms: string[]; onChange: () => void; onDelete: (it: Item) => void; resetKey: string },
+) {
+  const [page, setPage] = useState(0);
+  // Jump back to the first page whenever the sort changes.
+  useEffect(() => { setPage(0); }, [resetKey]);
+
+  const pageCount = Math.max(1, Math.ceil(items.length / LIST_PAGE_SIZE));
+  // Clamp in case items shrank (e.g. after deletes) so we never show a blank page.
+  const current = Math.min(page, pageCount - 1);
+  const start = current * LIST_PAGE_SIZE;
+  const pageItems = items.slice(start, start + LIST_PAGE_SIZE);
+
+  return (
+    <>
+      <ItemTable items={pageItems} caseId={caseId} rooms={rooms} onChange={onChange} onDelete={onDelete} />
+      {pageCount > 1 && (
+        <div className="row no-print" style={{ alignItems: "center", marginTop: 12, gap: 8 }}>
+          <button className="secondary" disabled={current === 0} onClick={() => setPage(current - 1)}>
+            Previous
+          </button>
+          <span className="muted-strong" style={{ fontSize: 14 }}>
+            Showing {start + 1} to {Math.min(start + LIST_PAGE_SIZE, items.length)} of {items.length}
+          </span>
+          <span className="spacer" />
+          <button className="secondary" disabled={current >= pageCount - 1} onClick={() => setPage(current + 1)}>
+            Next
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 

@@ -21,6 +21,7 @@ import { BrandLoader } from "./components/BrandLoader";
 import { HelpFooter } from "./components/HelpFooter";
 import { CasePicker } from "./components/CasePicker";
 import { OfflineBanner } from "./components/OfflineBanner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider } from "./components/Toast";
 import { CasesProvider, useCases } from "./lib/CasesContext";
 import { PageBackProvider, usePageBack } from "./lib/PageBackContext";
@@ -517,6 +518,7 @@ function Home() {
 }
 
 export default function App() {
+  const location = useLocation();
   return (
     <CasesProvider>
       <PageBackProvider>
@@ -527,6 +529,7 @@ export default function App() {
             <Nav />
             <ActionBar />
           </header>
+          <ErrorBoundary routeKey={location.pathname}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/emergency" element={<Emergency />} />
@@ -544,6 +547,7 @@ export default function App() {
             <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </ErrorBoundary>
           <HelpFooter />
           <MobileTabBar />
         </TermsGate>

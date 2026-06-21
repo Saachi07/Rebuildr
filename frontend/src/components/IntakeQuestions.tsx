@@ -186,6 +186,43 @@ function QuestionStepper({
 
       {q?.key === "housing" && answers["housing"] === 5 && <ShelterEscalation />}
 
+      {/* Shown only when someone says they live on reserve or in a Métis
+          settlement: recovery works differently for First Nations, Métis, and
+          Inuit communities, so this routes them to the right pathway. Optional. */}
+      {q?.key === "housing" && answers["housing"] === 4 && (
+        <fieldset className="radio-group" style={{ marginTop: 12 }}>
+          <legend>Which best describes your community? (optional)</legend>
+          <p className="muted-strong" style={{ margin: "0 0 8px", fontSize: 13 }}>
+            Recovery support is coordinated differently for each, so this helps
+            us point you to the right place.
+          </p>
+          {[
+            { value: 0, label: "First Nation reserve" },
+            { value: 1, label: "Métis settlement" },
+            { value: 2, label: "Inuit community" },
+          ].map((c) => (
+            <label key={c.value} className="radio-row">
+              <input
+                type="radio"
+                name="indigenous_community"
+                checked={answers["indigenous_community"] === c.value}
+                onChange={() => setAnswer("indigenous_community", c.value)}
+              />
+              {c.label}
+            </label>
+          ))}
+          <label className="radio-row muted-strong">
+            <input
+              type="radio"
+              name="indigenous_community"
+              checked={answers["indigenous_community"] === undefined}
+              onChange={() => setAnswer("indigenous_community", undefined)}
+            />
+            Prefer not to say
+          </label>
+        </fieldset>
+      )}
+
       {isFlagStep && (
         <fieldset className="radio-group">
           <legend>Does any of this describe your household? Check all that apply.</legend>
