@@ -11,7 +11,7 @@ load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-PROMPT = """Analyze this room photo and return a structured inventory of everything visible.
+PROMPT = """Analyze this room photo and return a structured inventory of movable belongings and furnishings visible.
 
 For each item include:
 - A descriptive name (e.g. "wooden dining chair", "stainless steel refrigerator")
@@ -22,7 +22,9 @@ For each item include:
 - Approximate size
 - Canadian retail price estimate in CAD (realistic low and high range)
 
-Be thorough. Include all significant items — furniture, appliances, electronics, decor."""
+Include: furniture, appliances, electronics, decor, rugs, curtains, light fixtures (e.g. chandeliers, lamps), artwork, and other movable personal belongings.
+
+Do NOT include: floors, flooring materials, walls, wallpaper, paint, ceilings, baseboards, door frames, window frames, chandeliers or any other permanent structural or architectural element of the building."""
 
 
 class PriceRange(BaseModel):
