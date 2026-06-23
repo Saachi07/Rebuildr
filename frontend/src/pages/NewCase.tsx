@@ -305,8 +305,8 @@ export default function NewCase() {
             </>
           )}
 
-          {err && <div className="error">{err}</div>}
-
+          {//{err && <div className="error">{err}</div>}
+}
           <div className="row" style={{ marginTop: 20 }}>
             {step > 0 && (
               <button type="button" className="secondary" disabled={busy} onClick={() => setStep((s) => s - 1)}>

@@ -16,6 +16,7 @@ import FirstRun from "./pages/FirstRun";
 import Settings from "./pages/Settings";
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
+import Presentation from './pages/Presentation';
 import { TermsGate } from "./components/TermsGate";
 import { BrandLoader } from "./components/BrandLoader";
 import { HelpFooter } from "./components/HelpFooter";
@@ -546,6 +547,7 @@ export default function App() {
             <Route path="/cases/:id/inventory" element={<Private><Inventory /></Private>} />
             <Route path="/cases/:id/recommendations" element={<Private><Recommendations /></Private>} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/booth" element={<Presentation />} />
           </Routes>
           </ErrorBoundary>
           <HelpFooter />
