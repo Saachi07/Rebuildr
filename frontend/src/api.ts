@@ -10,8 +10,8 @@ export class ApiError extends Error {
   }
 }
 
-// export const OFFLINE_MESSAGE =
- //  "It looks like you're offline. Your information is safe, check your connection and try again.";
+export const OFFLINE_MESSAGE =
+  "It looks like you're offline. Your information is safe, check your connection and try again.";
 
 // Every error a user sees should be in plain language, never a status code
 // or a JSON blob. Server-provided `error` strings are already written for
@@ -123,7 +123,7 @@ async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
     try {
       res = await fetch(`${BASE}${path}`, { ...fetchInit, headers });
     } catch {
-      //lastError = new ApiError(OFFLINE_MESSAGE);
+      lastError = new ApiError(OFFLINE_MESSAGE);
       continue;
     }
     if (!res.ok) {
